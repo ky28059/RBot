@@ -1,0 +1,14 @@
+{
+  "name": "RBot",
+  "version": "1.0.0",
+  "description": "Another mod bot",
+  "main": "bot.js",
+  "author": "Kevin Yu",
+  "dependencies": {
+    "discord.io": "https://github.com/woor/discord.io/tarball/gateway_v6",
+    "winston": "^3.3.3"
+  },
+  "scripts": {
+    "run": "node bot.js"
+  }
+}
