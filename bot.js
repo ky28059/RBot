@@ -18,7 +18,8 @@ bot.on('ready', function (evt) {
   logger.info('Connected');
   logger.info('Logged in as: ');
   logger.info(bot.username + ' - (' + bot.id + ')');
-  bot.setPresence({game: {name: "!help"}}); // sets status
+  bot.setPresence({game: {name: '!help'}}); // sets status
+  //bot.setPresence({game: {name: 'whatever Amir\'s doing', type: 1, url: 'https://www.twitch.tv/speed__ow'}}); // streaming lol, using this to plug Amir's twitch
 });
 bot.on('message', function (user, userID, channelID, message, evt) {
   if (userID != '684587440777986090') { // Bot ignores itself
