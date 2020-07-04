@@ -1,6 +1,7 @@
 const Discord = require('discord.io');
 const logger = require('winston');
 const auth = require('./auth.json');
+let isStreaming = false;
 
 // Configure logger settings
 logger.remove(logger.transports.Console);
@@ -19,7 +20,6 @@ bot.on('ready', function (evt) {
   logger.info('Logged in as: ');
   logger.info(bot.username + ' - (' + bot.id + ')');
   bot.setPresence({game: {name: '!help'}}); // sets status
-  //bot.setPresence({game: {name: 'whatever Amir\'s doing', type: 1, url: 'https://www.twitch.tv/speed__ow'}}); // streaming lol, using this to plug Amir's twitch
 });
 bot.on('message', function (user, userID, channelID, message, evt) {
   if (userID != '684587440777986090') { // Bot ignores itself
@@ -63,6 +63,23 @@ bot.on('message', function (user, userID, channelID, message, evt) {
               message: 'You must specify what to say!'
             });
           }
+          break;
+
+        case 'stream': // streaming lol, using this to plug Amir's twitch
+          if (isStreaming) {
+            bot.setPresence({game: {name: '!help'}});
+            bot.sendMessage({
+              to: channelID,
+              message: 'Stopped streaming!'
+            });
+          } else {
+            bot.setPresence({game: {name: 'whatever Amir\'s doing', type: 1, url: 'https://www.twitch.tv/speed__ow'}});
+            bot.sendMessage({
+              to: channelID,
+              message: 'Now streaming!'
+            });
+          }
+          isStreaming = !isStreaming;
           break;
 
         case 'arugula':
