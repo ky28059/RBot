@@ -40,10 +40,10 @@ bot.on('message', function (user, userID, channelID, message, evt) {
       // Commands
       switch (cmd) {
         case 'ping':
-          let ping = Date.now() - message.createdTimestamp + " ms";
+          let ping = Date.now() - message.createdTimestamp; // returns NaN, still broken
           bot.sendMessage({
             to: channelID,
-            message: '<@!' + userID + '>, your ping is `' + ping + '`'
+            message: '<@!' + userID + '>, your ping is `' + ping + ' ms`'
           });
           break;
 
@@ -92,7 +92,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
         case 'help':
           bot.sendMessage({
             to: channelID,
-            message: 'My commands are: \n **!ping:** pings you \n **!say [message]:** says what you tell it to say \n **!stream** toggles whether the bot is plugging Amir\'s twitch or not \n **!arugula:** funny broccoli haha \n I also respond to anyone who dares use the word `incorrect` in their sentence.'
+            message: 'My commands are: \n **!ping:** pings you \n **!say [message]:** says what you tell it to say \n **!stream:** toggles whether the bot is plugging Amir\'s twitch or not \n **!arugula:** funny broccoli haha \n I also respond to anyone who dares use the word `incorrect` in their sentence.'
           });
           break;
         /*
