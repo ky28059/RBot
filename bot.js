@@ -65,21 +65,32 @@ bot.on('message', function (user, userID, channelID, message, evt) {
           }
           break;
 
-        case 'stream': // streaming lol, using this to plug Amir's twitch
-          if (isStreaming) {
-            bot.setPresence({game: {name: '!help'}});
+        case 'stream': // streaming lol
+          if (args.length == 1) { // doesn't check whether bot is already streaming so !stream can be used to update what the bot is streaming, not just to toggle
+            bot.setPresence({game: {name: args[0], type: 1, url: 'https://www.twitch.tv/' + args[0]}});
             bot.sendMessage({
               to: channelID,
-              message: 'Stopped streaming!'
+              message: 'Now streaming ' + args[0] + '!'
             });
+            if (!isStreaming) {
+              isStreaming = true;
+            }
           } else {
-            bot.setPresence({game: {name: 'whatever Amir\'s doing', type: 1, url: 'https://www.twitch.tv/speed__ow'}});
-            bot.sendMessage({
-              to: channelID,
-              message: 'Now streaming!'
-            });
+            if (!isStreaming) {
+              bot.setPresence({game: {name: 'whatever Amir\'s doing', type: 1, url: 'https://www.twitch.tv/speed__ow'}}); // default stream is Amir's twitch
+              bot.sendMessage({
+                to: channelID,
+                message: 'Now streaming!'
+              });
+            } else {
+              bot.setPresence({game: {name: '!help'}});
+              bot.sendMessage({
+                to: channelID,
+                message: 'Stopped streaming!'
+              });
+            }
+            isStreaming = !isStreaming;
           }
-          isStreaming = !isStreaming;
           break;
 
         case 'arugula':
@@ -92,7 +103,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
         case 'help':
           bot.sendMessage({
             to: channelID,
-            message: 'My commands are: \n **!ping:** pings you \n **!say [message]:** says what you tell it to say \n **!stream:** toggles whether the bot is plugging Amir\'s twitch or not \n **!arugula:** funny broccoli haha \n I also respond to anyone who dares use the word `incorrect` in their sentence.'
+            message: 'My commands are: \n **!ping:** pings you \n **!say [message]:** says what you tell it to say \n **!stream [twitch name]:** tells the bot to stream twitch.tv/[twitch name]; if no argument is provided it defaults to plugging Amir\'s twitch \n **!arugula:** funny broccoli haha \n I also respond to anyone who dares use the word `incorrect` in their sentence.'
           });
           break;
         /*
