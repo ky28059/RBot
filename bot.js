@@ -37,6 +37,15 @@ client.on('message', async message => {
         }
         break;
 
+      case 'avatar':
+        const user = message.mentions.users.first() || message.author;
+        const avatarEmbed = new Discord.MessageEmbed()
+          .setColor(0x333333)
+          .setAuthor(user.username)
+          .setImage(user.avatarURL());
+        message.channel.send(avatarEmbed);
+        break;
+
       /*
       case 'stream': // streaming lol
         if (args.length >= 1) { // doesn't check whether bot is already streaming so !stream can be used to update what the bot is streaming, not just to toggle
@@ -69,8 +78,19 @@ client.on('message', async message => {
         message.channel.send('Broccoli');
         break;
 
-      case 'help':
-        message.channel.send({to: channelID, message: 'My commands are: \n **!ping:** gets latency \n **!say [message]:** says what you tell it to say \n **!arugula:** funny broccoli haha \n I also respond to anyone who dares use the word `incorrect` in their sentence.'});
+      case 'help': // https://discordjs.guide/popular-topics/embeds.html#using-the-richembedmessageembed-constructor
+        const helpEmbed = new Discord.MessageEmbed()
+          .setColor(0x333333)
+          .setTitle('Dashboard')
+          .setDescription('My commands are:')
+          .addFields(
+        		{name: '!ping:', value: 'Gets latency'},
+        		{name: '!say [message]:', value: 'Makes bot say what you tell it to say'},
+        		{name: '!avatar @[user]:', value: 'Gets the discord avatar of the mentioned user, defaults to get your avatar when no user is mentioned'},
+        		{name: '!purge [2-100]:', value: 'Bulk deletes the specified number of messages in the channel the command is called in'},
+            {name: '!arugula:', value: 'funny broccoli haha'}
+        	)
+        message.channel.send(helpEmbed);
         break;
 
       case 'purge': // This command removes all messages from all users in the channel, up to 100.
@@ -81,11 +101,11 @@ client.on('message', async message => {
           if(!deleteCount || deleteCount < 2 || deleteCount > 100)
             return message.reply("Please provide a number between 2 and 100 for the number of messages to delete");
 
-          // So we get our messages, and delete them. Simple enough, right?
           const fetched = await message.channel.messages.fetch({limit: deleteCount});
           message.channel.bulkDelete(fetched)
             .catch(error => message.reply(`Couldn't delete messages because of: ${error}`));
         }
+        break;
     }
   }
 });
