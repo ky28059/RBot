@@ -5,11 +5,15 @@ const auth = require('./auth.json');
 
 // Initialize Discord Bot
 client.on('ready', () => {
-  console.log('Logged in as ${client.user.tag}!');
+  console.log(`Logged in as ${client.user.tag}!`);
   client.user.setActivity('!help'); // sets status
 });
 client.on('message', async message => {
   if (message.author.bot) return; // Bot ignores itself and other bots
+
+  // maybe move this code elsewhere? idk
+  const guild = message.guild;
+  const member = guild.member(message.author); // creates a GuildMember of the message's author, needed for the admin only commands
 
   // Responses that are not commands
   if (message.content.toLowerCase().includes('incorrect')) { // toLowerCase makes this non case sensitive
@@ -41,7 +45,7 @@ client.on('message', async message => {
         const user = message.mentions.users.first() || message.author;
         const avatarEmbed = new Discord.MessageEmbed()
           .setColor(0x333333)
-          .setAuthor(user.username)
+          .setAuthor(user.username) // maybe change to .setTitle()?
           .setImage(user.avatarURL());
         message.channel.send(avatarEmbed);
         break;
@@ -50,11 +54,8 @@ client.on('message', async message => {
       case 'stream': // streaming lol
         if (args.length >= 1) { // doesn't check whether bot is already streaming so !stream can be used to update what the bot is streaming, not just to toggle
           let msg = args[0];
-          if (args.length >= 2) { // theres most likely a better and less clunky way to do this
-            msg = '';
-            for (let i = 1; i < args.length; i++) {
-              msg = msg + args[i] + ' ';
-            }
+          if (args.length >= 2) {
+            msg = args.shift().join(" ");
           }
           bot.setPresence({game: {name: msg, type: 1, url: 'https://www.twitch.tv/' + args[0]}});
           message.channel.send('Now streaming `https://www.twitch.tv/' + args[0] + '` with the message `' + msg + '`!');
@@ -74,6 +75,7 @@ client.on('message', async message => {
         break;
         */
 
+      // going to retire this eventually
       case 'arugula':
         message.channel.send('Broccoli');
         break;
@@ -84,27 +86,72 @@ client.on('message', async message => {
           .setTitle('Dashboard')
           .setDescription('My commands are:')
           .addFields(
-        		{name: '!ping:', value: 'Gets latency'},
-        		{name: '!say [message]:', value: 'Makes bot say what you tell it to say'},
-        		{name: '!avatar @[user]:', value: 'Gets the discord avatar of the mentioned user, defaults to get your avatar when no user is mentioned'},
-        		{name: '!purge [2-100]:', value: 'Bulk deletes the specified number of messages in the channel the command is called in'},
+            {name: '!ping:', value: 'Gets latency'},
+            {name: '!say [message]:', value: 'Makes bot say what you tell it to say'},
+            {name: '!avatar @[user]:', value: 'Gets the discord avatar of the mentioned user, defaults to get your avatar when no user is mentioned'},
+            {name: '!purge [2-100]:', value: 'Bulk deletes the specified number of messages in the channel the command is called in'},
+            {name: '!kick @[user] [reason]:', value: 'Kicks the specified user from the server'},
+            {name: '!ban @[user] [reason]:', value: 'Bans the specified user from the server'},
             {name: '!arugula:', value: 'funny broccoli haha'}
-        	)
+          )
         message.channel.send(helpEmbed);
         break;
 
-      case 'purge': // This command removes all messages from all users in the channel, up to 100.
-        if (message.author.id == '355534246439419904') {
-          // get the delete count, as an actual number.
-          const deleteCount = parseInt(args[0], 10);
-
-          if(!deleteCount || deleteCount < 2 || deleteCount > 100)
-            return message.reply("Please provide a number between 2 and 100 for the number of messages to delete");
-
-          const fetched = await message.channel.messages.fetch({limit: deleteCount});
-          message.channel.bulkDelete(fetched)
-            .catch(error => message.reply(`Couldn't delete messages because of: ${error}`));
+      case 'purge':
+        if (!member.hasPermission('MANAGE_MESSAGES')) { // restricts this command to mods only
+          return message.reply('You do not have sufficient perms to do that!');
         }
+        // get the delete count, as an actual number.
+        const deleteCount = parseInt(args[0], 10);
+
+        if(!deleteCount || deleteCount < 2 || deleteCount > 100) {
+          return message.reply("Please provide a number between 2 and 100 for the number of messages to delete");
+        }
+        const fetched = await message.channel.messages.fetch({limit: deleteCount});
+        message.channel.bulkDelete(fetched)
+          .catch(error => message.reply(`Couldn't delete messages because of: ${error}`));
+        break;
+
+      case 'kick':
+        if (!member.hasPermission('KICK_MEMBERS')) { // restricts this command to mods only
+          return message.reply('You do not have sufficient perms to do that!');
+        }
+
+        let kickTarget = message.mentions.members.first();
+        if (!kickTarget) {
+          return message.reply("Please mention a valid member of this server");
+        }
+        if (!kickTarget.kickable) {
+          return message.reply("I cannot kick this user!");
+        }
+        // joins remaining args for reason
+        let kickReason = args.slice(1).join(' ');
+        if (!kickReason) kickReason = "No reason provided";
+
+        await kickTarget.kick(kickReason)
+          .catch(error => message.reply(`Sorry ${message.author}, I couldn't kick because of : ${error}`));
+        message.channel.send(`${kickTarget.user.tag} has been kicked by ${message.author.tag} for the reason: ${kickReason}`);
+        break;
+
+      case 'ban':
+        if (!member.hasPermission('BAN_MEMBERS')) { // restricts this command to mods only
+          return message.reply('You do not have sufficient perms to do that!');
+        }
+
+        let banTarget = message.mentions.members.first();
+        if (!banTarget) {
+          return message.reply("Please mention a valid member of this server");
+        }
+        if (!banTarget.bannable) {
+          return message.reply("I cannot ban this user!");
+        }
+        // joins remaining args for reason
+        let banReason = args.slice(1).join(' ');
+        if (!banReason) banReason = "No reason provided";
+
+        await banTarget.ban(banReason)
+          .catch(error => message.reply(`Sorry ${message.author}, I couldn't ban because of : ${error}`));
+        message.channel.send(`${banTarget.user.tag} has been banned by ${message.author.tag} for the reason: ${banReason}`);
         break;
     }
   }
