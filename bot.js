@@ -1,7 +1,7 @@
 const Discord = require('discord.js');
 const client = new Discord.Client();
 const auth = require('./auth.json');
-//let isStreaming = false;
+let censorship = false;
 
 // Initialize Discord Bot
 client.on('ready', () => {
@@ -10,6 +10,16 @@ client.on('ready', () => {
 });
 client.on('message', async message => {
   if (message.author.bot) return; // Bot ignores itself and other bots
+
+  if (message.author.id === '314228445204840458' && censorship) {
+    const travisEmbed = new Discord.MessageEmbed()
+      .setColor(0x333333)
+      .setTitle(Date.now() + ', in ' + message.channel.name)
+      .addField('Travis said:', (message.content ? message.content : '[Empty Message]'));
+    client.channels.cache.get('714316492434440243').send(travisEmbed);
+    await message.delete()
+      .catch(error => client.channels.cache.get('714316492434440243').send(`The message could not be censored because of ${error}!`));
+  }
 
   // maybe move this code elsewhere? idk
   const guild = message.guild;
@@ -45,39 +55,9 @@ client.on('message', async message => {
         const user = message.mentions.users.first() || message.author;
         const avatarEmbed = new Discord.MessageEmbed()
           .setColor(0x333333)
-          .setAuthor(user.username) // maybe change to .setTitle()?
+          .setTitle(user.username)
           .setImage(user.avatarURL());
         message.channel.send(avatarEmbed);
-        break;
-
-      /*
-      case 'stream': // streaming lol
-        if (args.length >= 1) { // doesn't check whether bot is already streaming so !stream can be used to update what the bot is streaming, not just to toggle
-          let msg = args[0];
-          if (args.length >= 2) {
-            msg = args.shift().join(" ");
-          }
-          bot.setPresence({game: {name: msg, type: 1, url: 'https://www.twitch.tv/' + args[0]}});
-          message.channel.send('Now streaming `https://www.twitch.tv/' + args[0] + '` with the message `' + msg + '`!');
-          if (!isStreaming) {
-            isStreaming = true;
-          }
-        } else {
-          if (!isStreaming) {
-            bot.setPresence({game: {name: 'whatever Amir\'s doing', type: 1, url: 'https://www.twitch.tv/speed__ow'}}); // default stream is Amir's twitch
-            message.channel.send('Now streaming!');
-          } else {
-            bot.setPresence({game: {name: '!help'}});
-            message.channel.send('Stopped streaming!');
-          }
-          isStreaming = !isStreaming;
-        }
-        break;
-        */
-
-      // going to retire this eventually
-      case 'arugula':
-        message.channel.send('Broccoli');
         break;
 
       case 'help': // https://discordjs.guide/popular-topics/embeds.html#using-the-richembedmessageembed-constructor
@@ -92,9 +72,20 @@ client.on('message', async message => {
             {name: '!purge [2-100]:', value: 'Bulk deletes the specified number of messages in the channel the command is called in'},
             {name: '!kick @[user] [reason]:', value: 'Kicks the specified user from the server'},
             {name: '!ban @[user] [reason]:', value: 'Bans the specified user from the server'},
-            {name: '!arugula:', value: 'funny broccoli haha'}
           )
         message.channel.send(helpEmbed);
+        break;
+
+      case 'censor':
+        if (!member.hasPermission('MANAGE_MESSAGES')) { // restricts this command to mods only
+          return message.reply('You do not have sufficient perms to do that!');
+        }
+        if (censorship) {
+          message.channel.send('Uncensoring Travis!');
+        } else {
+          message.channel.send('Censoring Travis!');
+        }
+        censorship = !censorship;
         break;
 
       case 'purge':
@@ -156,5 +147,11 @@ client.on('message', async message => {
     }
   }
 });
+/*
+client.on("messageDelete", messageDelete => {
+  const channel = messageDelete.guild.channels.find(ch => ch.name === 'delete-logs');
+  channel.send(`The message : "${messageDelete.content}" by ${messageDelete.author} was deleted. There ID is ${messageDelete.author.id}`);
+});
+*/
 
 client.login(auth.token);
