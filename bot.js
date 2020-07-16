@@ -98,9 +98,9 @@ client.on('message', async message => {
         break;
 
       case 'purge':
-        if (!member.hasPermission('MANAGE_MESSAGES')) { // restricts this command to mods only
-          return message.reply('You do not have sufficient perms to do that!');
-        }
+        //if (!member.hasPermission('MANAGE_MESSAGES')) { // restricts this command to mods only
+        //  return message.reply('You do not have sufficient perms to do that!');
+        //}
         // get the delete count, as an actual number.
         const deleteCount = parseInt(args[0], 10);
 
@@ -113,9 +113,9 @@ client.on('message', async message => {
         break;
 
       case 'kick':
-        if (!member.hasPermission('KICK_MEMBERS')) { // restricts this command to mods only
-          return message.reply('You do not have sufficient perms to do that!');
-        }
+        //if (!member.hasPermission('KICK_MEMBERS')) { // restricts this command to mods only
+        //  return message.reply('You do not have sufficient perms to do that!');
+        //}
 
         let kickTarget = message.mentions.members.first();
         if (!kickTarget) {
@@ -134,9 +134,9 @@ client.on('message', async message => {
         break;
 
       case 'ban':
-        if (!member.hasPermission('BAN_MEMBERS')) { // restricts this command to mods only
-          return message.reply('You do not have sufficient perms to do that!');
-        }
+        //if (!member.hasPermission('BAN_MEMBERS')) { // restricts this command to mods only
+        //  return message.reply('You do not have sufficient perms to do that!');
+        //}
 
         let banTarget = message.mentions.members.first();
         if (!banTarget) {
