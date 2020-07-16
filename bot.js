@@ -154,10 +154,8 @@ client.on('message', async message => {
         message.channel.send(`${banTarget.user.tag} has been banned by ${message.author.tag} for the reason: ${banReason}`);
         break;
       case 'mods':
-        guild.roles.cache.find(role => role.name == 'MODS').members.filter(member => member.presence.status === 'online').each(user => message.channel.send('${user}'));
+        guild.roles.cache.find(role => role.name == 'MODS').members.filter(member => member.presence.status !== 'offline').each(user => message.channel.send(Help me ${user}));
       break;
-
-
     }
   }
 });
