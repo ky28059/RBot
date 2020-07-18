@@ -8,6 +8,11 @@ client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
   client.user.setActivity('!help'); // sets status
 });
+
+client.on("guildCreate", guild => {
+  console.log(`New guild joined: ${guild.name} (id: ${guild.id}). This guild has ${guild.memberCount} members!`);
+});
+
 client.on('message', async message => {
   if (message.author.bot) return; // Bot ignores itself and other bots
 
@@ -56,7 +61,8 @@ client.on('message', async message => {
         const avatarEmbed = new Discord.MessageEmbed()
           .setColor(0x333333)
           .setTitle(user.username)
-          .setImage(user.avatarURL());
+          .setImage(user.avatarURL())
+          .setFooter(`Requested by ${message.author.tag}`);
         message.channel.send(avatarEmbed);
         break;
 
@@ -73,6 +79,7 @@ client.on('message', async message => {
             {name: '!kick @[user] [reason]:', value: 'Kicks the specified user from the server'},
             {name: '!ban @[user] [reason]:', value: 'Bans the specified user from the server'},
           )
+          .setFooter(`Requested by ${message.author.tag}`);
         message.channel.send(helpEmbed);
         break;
 
@@ -147,11 +154,16 @@ client.on('message', async message => {
     }
   }
 });
-/*
-client.on("messageDelete", messageDelete => {
-  const channel = messageDelete.guild.channels.find(ch => ch.name === 'delete-logs');
-  channel.send(`The message : "${messageDelete.content}" by ${messageDelete.author} was deleted. There ID is ${messageDelete.author.id}`);
+
+client.on("messageDelete", messageDelete => { // TODO: make this not stupid and not bound to a specific name for a channel
+  const channel = messageDelete.guild.channels.cache.find(ch => ch.name === 'delete-logs');
+  if (channel) {
+    const deleteEmbed = new Discord.MessageEmbed()
+      .setColor(0x333333)
+      .addField(`Message by ${messageDelete.author} in ${messageDelete.channel.name} was deleted:`, `${messageDelete.content}`)
+      .setFooter(`${new Date()}`);
+    channel.send(deleteEmbed);
+  }
 });
-*/
 
 client.login(auth.token);
