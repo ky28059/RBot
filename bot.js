@@ -155,14 +155,34 @@ client.on('message', async message => {
   }
 });
 
-client.on("messageDelete", messageDelete => { // TODO: make this not stupid and not bound to a specific name for a channel
-  const channel = messageDelete.guild.channels.cache.find(ch => ch.name === 'delete-logs');
+client.on("messageDelete", message => { // TODO: make this not stupid and not bound to a specific name for a channel
+  if (message.author.bot) return; // Bot ignores itself and other bots
+
+  const channel = message.guild.channels.cache.find(ch => ch.name === 'delete-logs');
   if (channel) {
     const deleteEmbed = new Discord.MessageEmbed()
       .setColor(0x333333)
-      .addField(`Message by ${messageDelete.author} in ${messageDelete.channel.name} was deleted:`, `${messageDelete.content}`)
+      .setTitle(`Message by ${message.author} in ${message.channel.name} was deleted:`)
+      .setDescription(`\u200b${message.content}`) // the \u200b is to not get RangeErrors from empty messages
       .setFooter(`${new Date()}`);
     channel.send(deleteEmbed);
+  }
+});
+
+client.on("messageUpdate", (oldMessage, newMessage) => { // same for this
+  if (oldMessage.author.bot) return; // Bot ignores itself and other bots
+
+  const channel = oldMessage.guild.channels.cache.find(ch => ch.name === 'delete-logs');
+  if (channel) {
+    const editEmbed = new Discord.MessageEmbed()
+      .setColor(0x333333)
+      .setTitle(`Message by ${oldMessage.author} in ${oldMessage.channel.name} was edited:`)
+      .addFields(
+        {name: 'Before:', value: `\u200b${oldMessage.content}`}, // the \u200b is to not get RangeErrors from empty messages
+        {name: 'After:', value: `\u200b${newMessage.content}`}
+      )
+      .setFooter(`${new Date()}`);
+    channel.send(editEmbed);
   }
 });
 
