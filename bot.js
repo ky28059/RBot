@@ -19,8 +19,9 @@ client.on('message', async message => {
   if (message.author.id === '314228445204840458' && censorship) {
     const travisEmbed = new Discord.MessageEmbed()
       .setColor(0x333333)
-      .setTitle(Date.now() + ', in ' + message.channel.name)
-      .addField('Travis said:', (message.content ? message.content : '[Empty Message]'));
+      .setAuthor('Travis said, in ' + message.channel.name + ':')
+      .setDescription(`\u200b${message.content}`)
+      .setFooter(`${new Date()}`);
     client.channels.cache.get('714316492434440243').send(travisEmbed);
     await message.delete()
       .catch(error => client.channels.cache.get('714316492434440243').send(`The message could not be censored because of ${error}!`));
@@ -162,21 +163,24 @@ client.on("messageDelete", message => { // TODO: make this not stupid and not bo
   if (channel) {
     const deleteEmbed = new Discord.MessageEmbed()
       .setColor(0x333333)
-      .setTitle(`Message by ${message.author} in ${message.channel.name} was deleted:`)
+      .setAuthor(`Message by ${message.author} in ${message.channel.name} was deleted:`)
       .setDescription(`\u200b${message.content}`) // the \u200b is to not get RangeErrors from empty messages
       .setFooter(`${new Date()}`);
     channel.send(deleteEmbed);
   }
 });
 
+// https://stackoverflow.com/questions/59190635/client-onmessageupdate-not-working-properly
+// bruh
 client.on("messageUpdate", (oldMessage, newMessage) => { // same for this
   if (oldMessage.author.bot) return; // Bot ignores itself and other bots
+  if (oldMessage.content == newMessage.content) return; // fixes weird link preview glitch
 
   const channel = oldMessage.guild.channels.cache.find(ch => ch.name === 'delete-logs');
   if (channel) {
     const editEmbed = new Discord.MessageEmbed()
       .setColor(0x333333)
-      .setTitle(`Message by ${oldMessage.author} in ${oldMessage.channel.name} was edited:`)
+      .setAuthor(`Message by ${oldMessage.author} in ${oldMessage.channel.name} was edited:`)
       .addFields(
         {name: 'Before:', value: `\u200b${oldMessage.content}`}, // the \u200b is to not get RangeErrors from empty messages
         {name: 'After:', value: `\u200b${newMessage.content}`}
