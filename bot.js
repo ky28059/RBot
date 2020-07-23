@@ -2,6 +2,7 @@ const Discord = require('discord.js');
 const fs = require('fs');
 const auth = require('./auth.json');
 const fm = require('./fileManager.js');
+//const parser = require('./toolkit/parser.js');
 //import {readFile, writeFile} from './fileManager.js'; // modernity R E J E C T E D
 const client = new Discord.Client();
 
@@ -25,9 +26,9 @@ client.on('message', async message => {
   // maybe move this code elsewhere? idk
   const guild = message.guild;
   const member = guild.member(message.author); // creates a GuildMember of the message's author, needed for the admin only commands
-  let tokenData = {}; // probably better way to do this
 
   // code block reads token and then gets log channel + censored users
+  let tokenData = {}; // probably better way to do this
   const path = `./tokens/${guild.id}.json`;
   if (fs.existsSync(path)) { // checks if the token exists
     tokenData = await fm.readFile(`./tokens/${guild.id}.json`);
@@ -36,11 +37,11 @@ client.on('message', async message => {
   const logChannel = tokenData.logchannel || false;
   const censoredUsers = tokenData.censoredusers || false;
 
-  if (message.author.id === censoredUsers) { // TEMP: update later to check if censoredusers is a list
+  if (censoredUsers && censoredUsers.includes(message.author.id)) {
     const censoredEmbed = new Discord.MessageEmbed()
       .setColor(0x333333)
-      .setAuthor(`\u200b${message.author.tag}`)
-      .setDescription(`Message by ${message.author.tag} censored in ${message.channel.name}: ${message.content}`)
+      .setAuthor(`\u200b${message.author.tag}`, message.author.avatarURL())
+      .addField(`Message by ${message.author.tag} censored in ${message.channel.name}:`, `\u200b${message.content}`)
       .setFooter(`${new Date()}`);
     if (logChannel) {
       client.channels.cache.get(logChannel).send(censoredEmbed);
@@ -96,13 +97,40 @@ client.on('message', async message => {
             {name: '!ping:', value: 'Gets latency'},
             {name: '!say [message]:', value: 'Makes bot say what you tell it to say'},
             {name: '!avatar @[user]:', value: 'Gets the discord avatar of the mentioned user, defaults to get your avatar when no user is mentioned'},
+            {name: '!update:', value: 'Updates the server\'s token'},
+            {name: '!set #[channel]:', value: 'Sets which channel RBot logs in'},
             {name: '!purge [2-100]:', value: 'Bulk deletes the specified number of messages in the channel the command is called in'},
             {name: '!kick @[user] [reason]:', value: 'Kicks the specified user from the server'},
             {name: '!ban @[user] [reason]:', value: 'Bans the specified user from the server'},
-            {name: '!censor @[user]:', value: 'Censors the specified user (autodeletes their messages and logs it in the log channel)'}
+            {name: '!censor @[user]: (work in progress)', value: 'Censors the specified user (autodeletes their messages and logs it in the log channel)'},
+            {name: '!uncensor @[user]: (work in progress)', value: 'Uncensors the specified user'}
           )
           .setFooter(`Requested by ${message.author.tag}`);
         message.channel.send(helpEmbed);
+        break;
+
+      case 'update': // TODO: make this actually update token, not just create one if the server was missing one (maybe check against an example token?)
+        if (!fs.existsSync(path)) { // checks if there's an already existing token for that server
+          fm.writeFile(path, '{\n "logchannel": "",\n "censoredusers": ""\n}');
+        }
+        message.channel.send('Token updated!');
+        break;
+
+      case 'set':
+        if (!member.hasPermission('MANAGE_MESSAGES')) { // restricts this command to mods only, maybe require a different perm for this command?
+          return message.reply('You do not have sufficient perms to do that!');
+        }
+        if (!fs.existsSync(path)) {
+          return message.reply('This server does not have a valid token yet! Try doing !update!');
+        }
+
+        let channel = message.mentions.channels.first();
+        if (!channel) {
+          return message.reply("Please mention a valid channel in this server");
+        }
+        tokenData.logchannel = channel.id;
+        await fm.writeFile(path, JSON.stringify(tokenData));
+        message.channel.send(`Success! Log channel has been updated to ${channel.name}!`);
         break;
 
       case 'censor':
@@ -115,6 +143,18 @@ client.on('message', async message => {
           return message.reply("Please mention a valid member of this server");
         }
         // TODO: finish censor by making it update the server token
+        break;
+
+      case 'uncensor':
+        if (!member.hasPermission('MANAGE_MESSAGES')) { // restricts this command to mods only
+          return message.reply('You do not have sufficient perms to do that!');
+        }
+        let uncensorTarget = message.mentions.members.first();
+        if (!uncensorTarget) {
+          return message.reply("Please mention a valid member of this server");
+        }
+        // TODO: finish uncensorTarget
+        // Note: rereading token is not needed here since on the sending of a message bot already reads token
         break;
 
       case 'purge':
@@ -182,14 +222,17 @@ client.on("messageDelete", async message => {
 
   // code block reads token and then gets log channel + censored users
   const guild = message.guild;
-  let tokenData = {}; // probably better way to do this
 
+  let tokenData = {}; // probably better way to do this
   const path = `./tokens/${guild.id}.json`;
   if (fs.existsSync(path)) { // checks if the token exists
     tokenData = await fm.readFile(`./tokens/${guild.id}.json`);
     tokenData = JSON.parse(tokenData);
   }
   const logChannel = tokenData.logchannel || false;
+  const censoredUsers = tokenData.censoredusers || false;
+
+  if (censoredUsers && censoredUsers.includes(message.author.id)) return; // prevents double logging of censored messages, probably better way of doing this
 
   if (logChannel) {
     const deleteEmbed = new Discord.MessageEmbed()
@@ -207,8 +250,8 @@ client.on("messageUpdate", async (oldMessage, newMessage) => {
 
   // code block reads token and then gets log channel + censored users
   const guild = oldMessage.guild;
-  let tokenData = {}; // probably better way to do this
 
+  let tokenData = {}; // probably better way to do this
   const path = `./tokens/${guild.id}.json`;
   if (fs.existsSync(path)) { // checks if the token exists
     tokenData = await fm.readFile(`./tokens/${guild.id}.json`);
