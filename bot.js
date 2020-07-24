@@ -102,8 +102,8 @@ client.on('message', async message => {
             {name: '!purge [2-100]:', value: 'Bulk deletes the specified number of messages in the channel the command is called in'},
             {name: '!kick @[user] [reason]:', value: 'Kicks the specified user from the server'},
             {name: '!ban @[user] [reason]:', value: 'Bans the specified user from the server'},
-            {name: '!censor @[user]: (work in progress)', value: 'Censors the specified user (autodeletes their messages and logs it in the log channel)'},
-            {name: '!uncensor @[user]: (work in progress)', value: 'Uncensors the specified user'}
+            {name: '!censor @[user]:', value: 'Censors the specified user (autodeletes their messages and logs it in the log channel)'},
+            {name: '!uncensor @[user]:', value: 'Uncensors the specified user'}
           )
           .setFooter(`Requested by ${message.author.tag}`);
         message.channel.send(helpEmbed);
@@ -134,27 +134,43 @@ client.on('message', async message => {
         break;
 
       case 'censor':
-        if (!member.hasPermission('MANAGE_MESSAGES')) { // restricts this command to mods only
+        if (!member.hasPermission('MANAGE_MESSAGES')) { // restricts this command to mods only, maybe add extra required perms?
           return message.reply('You do not have sufficient perms to do that!');
+        }
+        if (!fs.existsSync(path)) {
+          return message.reply('This server does not have a valid token yet! Try doing !update!');
         }
 
         let censorTarget = message.mentions.members.first();
         if (!censorTarget) {
           return message.reply("Please mention a valid member of this server");
         }
-        // TODO: finish censor by making it update the server token
+        if (tokenData.censoredusers.includes(censorTarget.id)) {
+          return message.reply("That user is already censored!");
+        }
+        tokenData.censoredusers += censorTarget.id + ' ';
+        await fm.writeFile(path, JSON.stringify(tokenData));
+        message.channel.send(`Now censoring ${censorTarget.tag}!`); // weirdly, user.tag is not working in this one specific instance
         break;
 
       case 'uncensor':
-        if (!member.hasPermission('MANAGE_MESSAGES')) { // restricts this command to mods only
+        if (!member.hasPermission('MANAGE_MESSAGES')) { // restricts this command to mods only, maybe add extra required perms?
           return message.reply('You do not have sufficient perms to do that!');
         }
+        if (!fs.existsSync(path)) {
+          return message.reply('This server does not have a valid token yet! Try doing !update!');
+        }
+
         let uncensorTarget = message.mentions.members.first();
         if (!uncensorTarget) {
           return message.reply("Please mention a valid member of this server");
         }
-        // TODO: finish uncensorTarget
-        // Note: rereading token is not needed here since on the sending of a message bot already reads token
+        if (!tokenData.censoredusers.includes(uncensorTarget.id)) {
+          return message.reply("That user was not censored!");
+        }
+        tokenData.censoredusers = tokenData.censoredusers.replace(uncensorTarget.id + ' ', '');
+        await fm.writeFile(path, JSON.stringify(tokenData));
+        message.channel.send(`Now uncensoring ${uncensorTarget.tag}!`); // for whatever reason this doesnt send the message and I do not know why
         break;
 
       case 'purge':
