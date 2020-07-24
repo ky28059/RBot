@@ -1,7 +1,10 @@
 const Discord = require('discord.js');
-const client = new Discord.Client();
+const fs = require('fs');
 const auth = require('./auth.json');
-let censorship = false;
+const fm = require('./fileManager.js');
+//const parser = require('./toolkit/parser.js');
+//import {readFile, writeFile} from './fileManager.js'; // modernity R E J E C T E D
+const client = new Discord.Client();
 
 // Initialize Discord Bot
 client.on('ready', () => {
@@ -10,31 +13,49 @@ client.on('ready', () => {
 });
 
 client.on("guildCreate", guild => {
+  const path = `./tokens/${guild.id}.json`;
+  if (!fs.existsSync(path)) { // checks if there's an already existing token for that server
+    fm.writeFile(path, '{\n "logchannel": "",\n "censoredusers": ""\n}');
+  }
   console.log(`New guild joined: ${guild.name} (id: ${guild.id}). This guild has ${guild.memberCount} members!`);
 });
 
 client.on('message', async message => {
   if (message.author.bot) return; // Bot ignores itself and other bots
 
-  if (message.author.id === '314228445204840458' && censorship) {
-    const travisEmbed = new Discord.MessageEmbed()
-      .setColor(0x333333)
-      .setAuthor('Travis said, in ' + message.channel.name + ':')
-      .setDescription(`\u200b${message.content}`)
-      .setFooter(`${new Date()}`);
-    client.channels.cache.get('714316492434440243').send(travisEmbed);
-    await message.delete()
-      .catch(error => client.channels.cache.get('714316492434440243').send(`The message could not be censored because of ${error}!`));
-  }
-
   // maybe move this code elsewhere? idk
   const guild = message.guild;
   const member = guild.member(message.author); // creates a GuildMember of the message's author, needed for the admin only commands
 
+  // code block reads token and then gets log channel + censored users
+  let tokenData = {}; // probably better way to do this
+  const path = `./tokens/${guild.id}.json`;
+  if (fs.existsSync(path)) { // checks if the token exists
+    tokenData = await fm.readFile(`./tokens/${guild.id}.json`);
+    tokenData = JSON.parse(tokenData);
+  }
+  const logChannel = tokenData.logchannel || false;
+  const censoredUsers = tokenData.censoredusers || false;
+
+  if (censoredUsers && censoredUsers.includes(message.author.id)) {
+    const censoredEmbed = new Discord.MessageEmbed()
+      .setColor(0x333333)
+      .setAuthor(`\u200b${message.author.tag}`, message.author.avatarURL())
+      .addField(`Message by ${message.author.tag} censored in ${message.channel.name}:`, `\u200b${message.content}`)
+      .setFooter(`${new Date()}`);
+    if (logChannel) {
+      client.channels.cache.get(logChannel).send(censoredEmbed);
+    }
+    await message.delete()
+      .catch(error => message.reply(`That message could not be censored because of ${error}!`));
+  }
+
+  /*
   // Responses that are not commands
   if (message.content.toLowerCase().includes('incorrect')) { // toLowerCase makes this non case sensitive
     message.channel.send('Misleading and Wrong.'); // maybe too spammy?
   }
+  */
 
   // Bot listens to messages with the prefix !
   if (message.content.substring(0, 1) == '!') {
@@ -76,24 +97,80 @@ client.on('message', async message => {
             {name: '!ping:', value: 'Gets latency'},
             {name: '!say [message]:', value: 'Makes bot say what you tell it to say'},
             {name: '!avatar @[user]:', value: 'Gets the discord avatar of the mentioned user, defaults to get your avatar when no user is mentioned'},
+            {name: '!update:', value: 'Updates the server\'s token'},
+            {name: '!set #[channel]:', value: 'Sets which channel RBot logs in'},
             {name: '!purge [2-100]:', value: 'Bulk deletes the specified number of messages in the channel the command is called in'},
             {name: '!kick @[user] [reason]:', value: 'Kicks the specified user from the server'},
             {name: '!ban @[user] [reason]:', value: 'Bans the specified user from the server'},
+            {name: '!censor @[user]:', value: 'Censors the specified user (autodeletes their messages and logs it in the log channel)'},
+            {name: '!uncensor @[user]:', value: 'Uncensors the specified user'}
           )
           .setFooter(`Requested by ${message.author.tag}`);
         message.channel.send(helpEmbed);
         break;
 
-      case 'censor':
-        if (!member.hasPermission('MANAGE_MESSAGES')) { // restricts this command to mods only
+      case 'update': // TODO: make this actually update token, not just create one if the server was missing one (maybe check against an example token?)
+        if (!fs.existsSync(path)) { // checks if there's an already existing token for that server
+          fm.writeFile(path, '{\n "logchannel": "",\n "censoredusers": ""\n}');
+        }
+        message.channel.send('Token updated!');
+        break;
+
+      case 'set':
+        if (!member.hasPermission('MANAGE_MESSAGES')) { // restricts this command to mods only, maybe require a different perm for this command?
           return message.reply('You do not have sufficient perms to do that!');
         }
-        if (censorship) {
-          message.channel.send('Uncensoring Travis!');
-        } else {
-          message.channel.send('Censoring Travis!');
+        if (!fs.existsSync(path)) {
+          return message.reply('This server does not have a valid token yet! Try doing !update!');
         }
-        censorship = !censorship;
+
+        let channel = message.mentions.channels.first();
+        if (!channel) {
+          return message.reply("Please mention a valid channel in this server");
+        }
+        tokenData.logchannel = channel.id;
+        await fm.writeFile(path, JSON.stringify(tokenData));
+        message.channel.send(`Success! Log channel has been updated to ${channel.name}!`);
+        break;
+
+      case 'censor':
+        if (!member.hasPermission('MANAGE_MESSAGES')) { // restricts this command to mods only, maybe add extra required perms?
+          return message.reply('You do not have sufficient perms to do that!');
+        }
+        if (!fs.existsSync(path)) {
+          return message.reply('This server does not have a valid token yet! Try doing !update!');
+        }
+
+        let censorTarget = message.mentions.members.first();
+        if (!censorTarget) {
+          return message.reply("Please mention a valid member of this server");
+        }
+        if (tokenData.censoredusers.includes(censorTarget.id)) {
+          return message.reply("That user is already censored!");
+        }
+        tokenData.censoredusers += censorTarget.id + ' ';
+        await fm.writeFile(path, JSON.stringify(tokenData));
+        message.channel.send(`Now censoring ${censorTarget.tag}!`); // weirdly, user.tag is not working in this one specific instance
+        break;
+
+      case 'uncensor':
+        if (!member.hasPermission('MANAGE_MESSAGES')) { // restricts this command to mods only, maybe add extra required perms?
+          return message.reply('You do not have sufficient perms to do that!');
+        }
+        if (!fs.existsSync(path)) {
+          return message.reply('This server does not have a valid token yet! Try doing !update!');
+        }
+
+        let uncensorTarget = message.mentions.members.first();
+        if (!uncensorTarget) {
+          return message.reply("Please mention a valid member of this server");
+        }
+        if (!tokenData.censoredusers.includes(uncensorTarget.id)) {
+          return message.reply("That user was not censored!");
+        }
+        tokenData.censoredusers = tokenData.censoredusers.replace(uncensorTarget.id + ' ', '');
+        await fm.writeFile(path, JSON.stringify(tokenData));
+        message.channel.send(`Now uncensoring ${uncensorTarget.tag}!`); // for whatever reason this doesnt send the message and I do not know why
         break;
 
       case 'purge':
@@ -156,28 +233,49 @@ client.on('message', async message => {
   }
 });
 
-client.on("messageDelete", message => { // TODO: make this not stupid and not bound to a specific name for a channel
+client.on("messageDelete", async message => {
   if (message.author.bot) return; // Bot ignores itself and other bots
 
-  const channel = message.guild.channels.cache.find(ch => ch.name === 'delete-logs');
-  if (channel) {
+  // code block reads token and then gets log channel + censored users
+  const guild = message.guild;
+
+  let tokenData = {}; // probably better way to do this
+  const path = `./tokens/${guild.id}.json`;
+  if (fs.existsSync(path)) { // checks if the token exists
+    tokenData = await fm.readFile(`./tokens/${guild.id}.json`);
+    tokenData = JSON.parse(tokenData);
+  }
+  const logChannel = tokenData.logchannel || false;
+  const censoredUsers = tokenData.censoredusers || false;
+
+  if (censoredUsers && censoredUsers.includes(message.author.id)) return; // prevents double logging of censored messages, probably better way of doing this
+
+  if (logChannel) {
     const deleteEmbed = new Discord.MessageEmbed()
       .setColor(0x333333)
       .setAuthor(`Message by ${message.author} in ${message.channel.name} was deleted:`)
       .setDescription(`\u200b${message.content}`) // the \u200b is to not get RangeErrors from empty messages
       .setFooter(`${new Date()}`);
-    channel.send(deleteEmbed);
+    client.channels.cache.get(logChannel).send(deleteEmbed);
   }
 });
 
-// https://stackoverflow.com/questions/59190635/client-onmessageupdate-not-working-properly
-// bruh
-client.on("messageUpdate", (oldMessage, newMessage) => { // same for this
+client.on("messageUpdate", async (oldMessage, newMessage) => {
   if (oldMessage.author.bot) return; // Bot ignores itself and other bots
   if (oldMessage.content == newMessage.content) return; // fixes weird link preview glitch
 
-  const channel = oldMessage.guild.channels.cache.find(ch => ch.name === 'delete-logs');
-  if (channel) {
+  // code block reads token and then gets log channel + censored users
+  const guild = oldMessage.guild;
+
+  let tokenData = {}; // probably better way to do this
+  const path = `./tokens/${guild.id}.json`;
+  if (fs.existsSync(path)) { // checks if the token exists
+    tokenData = await fm.readFile(`./tokens/${guild.id}.json`);
+    tokenData = JSON.parse(tokenData);
+  }
+  const logChannel = tokenData.logchannel || false;
+
+  if (logChannel) {
     const editEmbed = new Discord.MessageEmbed()
       .setColor(0x333333)
       .setAuthor(`Message by ${oldMessage.author} in ${oldMessage.channel.name} was edited:`)
@@ -186,7 +284,7 @@ client.on("messageUpdate", (oldMessage, newMessage) => { // same for this
         {name: 'After:', value: `\u200b${newMessage.content}`}
       )
       .setFooter(`${new Date()}`);
-    channel.send(editEmbed);
+    client.channels.cache.get(logChannel).send(editEmbed);
   }
 });
 
