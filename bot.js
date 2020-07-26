@@ -1,9 +1,9 @@
+// TODO: code cleanup
 const Discord = require('discord.js');
 const fs = require('fs');
 const auth = require('./auth.json');
 const fm = require('./fileManager.js');
 //const parser = require('./toolkit/parser.js');
-//import {readFile, writeFile} from './fileManager.js'; // modernity R E J E C T E D
 const client = new Discord.Client();
 
 // Initialize Discord Bot
@@ -15,7 +15,7 @@ client.on('ready', () => {
 client.on("guildCreate", guild => {
   const path = `./tokens/${guild.id}.json`;
   if (!fs.existsSync(path)) { // checks if there's an already existing token for that server
-    fm.writeFile(path, '{\n "logchannel": "",\n "censoredusers": ""\n}');
+    fm.writeFile(path, '{"logchannel": "", "censoredusers": ""}');
   }
   console.log(`New guild joined: ${guild.name} (id: ${guild.id}). This guild has ${guild.memberCount} members!`);
 });
@@ -49,13 +49,6 @@ client.on('message', async message => {
     await message.delete()
       .catch(error => message.reply(`That message could not be censored because of ${error}!`));
   }
-
-  /*
-  // Responses that are not commands
-  if (message.content.toLowerCase().includes('incorrect')) { // toLowerCase makes this non case sensitive
-    message.channel.send('Misleading and Wrong.'); // maybe too spammy?
-  }
-  */
 
   // Bot listens to messages with the prefix !
   if (message.content.substring(0, 1) == '!') {
@@ -97,6 +90,7 @@ client.on('message', async message => {
             {name: '!ping:', value: 'Gets latency'},
             {name: '!say [message]:', value: 'Makes bot say what you tell it to say'},
             {name: '!avatar @[user]:', value: 'Gets the discord avatar of the mentioned user, defaults to get your avatar when no user is mentioned'},
+            {name: '!censored:', value: 'Shows which users are currently censored'},
             {name: '!update:', value: 'Updates the server\'s token'},
             {name: '!set #[channel]:', value: 'Sets which channel RBot logs in'},
             {name: '!purge [2-100]:', value: 'Bulk deletes the specified number of messages in the channel the command is called in'},
@@ -111,7 +105,7 @@ client.on('message', async message => {
 
       case 'update': // TODO: make this actually update token, not just create one if the server was missing one (maybe check against an example token?)
         if (!fs.existsSync(path)) { // checks if there's an already existing token for that server
-          fm.writeFile(path, '{\n "logchannel": "",\n "censoredusers": ""\n}');
+          fm.writeFile(path, '{"logchannel": "", "censoredusers": ""}');
         }
         message.channel.send('Token updated!');
         break;
@@ -145,12 +139,15 @@ client.on('message', async message => {
         if (!censorTarget) {
           return message.reply("Please mention a valid member of this server");
         }
+        if (censorTarget.user.id === message.author.id) {
+          return message.reply("You cannot censor yourself!");
+        }
         if (tokenData.censoredusers.includes(censorTarget.id)) {
           return message.reply("That user is already censored!");
         }
         tokenData.censoredusers += censorTarget.id + ' ';
         await fm.writeFile(path, JSON.stringify(tokenData));
-        message.channel.send(`Now censoring ${censorTarget.tag}!`); // weirdly, user.tag is not working in this one specific instance
+        message.channel.send(`Now censoring ${censorTarget.user.tag}!`);
         break;
 
       case 'uncensor':
@@ -170,7 +167,24 @@ client.on('message', async message => {
         }
         tokenData.censoredusers = tokenData.censoredusers.replace(uncensorTarget.id + ' ', '');
         await fm.writeFile(path, JSON.stringify(tokenData));
-        message.channel.send(`Now uncensoring ${uncensorTarget.tag}!`); // for whatever reason this doesnt send the message and I do not know why
+        message.channel.send(`Now uncensoring ${uncensorTarget.user.tag}!`);
+        break;
+
+      case 'censored':
+        const censoredListEmbed = new Discord.MessageEmbed()
+          .setColor(0x333333)
+          .setTitle('Censored Users:')
+          .setFooter(`Requested by ${message.author.tag}`);
+
+        if (!tokenData.censoredusers) {
+          censoredListEmbed.setDescription('No one is censored!')
+        } else {
+          let censoredList = tokenData.censoredusers.trim().split(' ');
+          censoredList.forEach(user =>
+            censoredListEmbed.addField(`\u200b${client.users.cache.get(user).tag}`, `\u200b${client.users.cache.get(user).id}`)
+          )
+        }
+        message.channel.send(censoredListEmbed);
         break;
 
       case 'purge':
@@ -197,6 +211,9 @@ client.on('message', async message => {
         if (!kickTarget) {
           return message.reply("Please mention a valid member of this server");
         }
+        if (kickTarget.user.id === message.author.id) {
+          return message.reply("You cannot kick yourself!");
+        }
         if (!kickTarget.kickable) {
           return message.reply("I cannot kick this user!");
         }
@@ -217,6 +234,9 @@ client.on('message', async message => {
         let banTarget = message.mentions.members.first();
         if (!banTarget) {
           return message.reply("Please mention a valid member of this server");
+        }
+        if (banTarget.user.id === message.author.id) {
+          return message.reply("You cannot ban yourself!");
         }
         if (!banTarget.bannable) {
           return message.reply("I cannot ban this user!");
