@@ -98,6 +98,7 @@ client.on('message', async message => {
             {name: '!ban @[user] [reason]:', value: 'Bans the specified user from the server'},
             {name: '!censor @[user]:', value: 'Censors the specified user (autodeletes their messages and logs it in the log channel)'},
             {name: '!uncensor @[user]:', value: 'Uncensors the specified user'}
+            {name: '!makeaemote [link/file] [name]:', value: 'adds a emote with a given link or file, with a given name'}
           )
           .setFooter(`Requested by ${message.author.tag}`);
         message.channel.send(helpEmbed);
@@ -248,6 +249,11 @@ client.on('message', async message => {
         await banTarget.ban(banReason)
           .catch(error => message.reply(`Sorry ${message.author}, I couldn't ban because of : ${error}`));
         message.channel.send(`${banTarget.user.tag} has been banned by ${message.author.tag} for the reason: ${banReason}`);
+        break;
+      case 'makeaemote':
+        guild.emojis.create(args[0], args[1])
+          .then(emoji => message.channel.send(`Created new emoji with name ${emoji.name}!`))
+          .catch(error => message.channel.send(`shit, well that didn't work. Try harder?`));
         break;
     }
   }
