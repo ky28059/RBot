@@ -98,6 +98,7 @@ client.on('message', async message => {
             {name: '!ban @[user] [reason]:', value: 'Bans the specified user from the server'},
             {name: '!censor @[user]:', value: 'Censors the specified user (autodeletes their messages and logs it in the log channel)'},
             {name: '!uncensor @[user]:', value: 'Uncensors the specified user'}
+            {name: '!makeaemote [link/file] [name]:', value: 'adds a emote with a given link or file, with a given name'}
           )
           .setFooter(`Requested by ${message.author.tag}`);
         message.channel.send(helpEmbed);
