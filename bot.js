@@ -90,15 +90,15 @@ client.on('message', async message => {
             {name: '!ping:', value: 'Gets latency'},
             {name: '!say [message]:', value: 'Makes bot say what you tell it to say'},
             {name: '!avatar @[user]:', value: 'Gets the discord avatar of the mentioned user, defaults to get your avatar when no user is mentioned'},
-            {name: '!censored:', value: 'Shows which users are currently censored'},
+            {name: '!addemote [image link] [name]:', value: 'Creates an emoji with the given image and name'},
             {name: '!update:', value: 'Updates the server\'s token'},
             {name: '!set #[channel]:', value: 'Sets which channel RBot logs in'},
             {name: '!purge [2-100]:', value: 'Bulk deletes the specified number of messages in the channel the command is called in'},
             {name: '!kick @[user] [reason]:', value: 'Kicks the specified user from the server'},
             {name: '!ban @[user] [reason]:', value: 'Bans the specified user from the server'},
             {name: '!censor @[user]:', value: 'Censors the specified user (autodeletes their messages and logs it in the log channel)'},
-            {name: '!uncensor @[user]:', value: 'Uncensors the specified user'}
-            {name: '!makeaemote [link/file] [name]:', value: 'adds a emote with a given link or file, with a given name'}
+            {name: '!uncensor @[user]:', value: 'Uncensors the specified user'},
+            {name: '!censored:', value: 'Shows which users are currently censored'}
           )
           .setFooter(`Requested by ${message.author.tag}`);
         message.channel.send(helpEmbed);
@@ -250,10 +250,15 @@ client.on('message', async message => {
           .catch(error => message.reply(`Sorry ${message.author}, I couldn't ban because of : ${error}`));
         message.channel.send(`${banTarget.user.tag} has been banned by ${message.author.tag} for the reason: ${banReason}`);
         break;
-      case 'makeaemote':
-        guild.emojis.create(args[0], args[1])
+
+      case 'addemote':
+        if (!member.hasPermission('MANAGE_EMOJIS')) { // restricts this command to mods only
+          return message.reply('You do not have sufficient perms to do that!');
+        }
+        let name = args.slice(1).join('_'); // discord does not allow spaces or dashes in emoji names :(
+        guild.emojis.create(args[0], name)
           .then(emoji => message.channel.send(`Created new emoji with name ${emoji.name}!`))
-          .catch(error => message.channel.send(`shit, well that didn't work. Try harder?`));
+          .catch(error => message.channel.send(`Sorry ${message.author}, I couldn't create emoji because of : ${error}`));
         break;
     }
   }
