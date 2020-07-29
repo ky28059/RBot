@@ -15,7 +15,9 @@ client.on('ready', () => {
 client.on("guildCreate", guild => {
   const path = `./tokens/${guild.id}.json`;
   if (!fs.existsSync(path)) { // checks if there's an already existing token for that server
-    fm.writeFile(path, '{"logchannel": "", "censoredusers": ""}');
+    fm.readFile('./tokens/example.json').then(cache =>
+      fm.writeFile(path, cache)
+    );
   }
   console.log(`New guild joined: ${guild.name} (id: ${guild.id}). This guild has ${guild.memberCount} members!`);
 });
@@ -34,8 +36,8 @@ client.on('message', async message => {
     tokenData = await fm.readFile(`./tokens/${guild.id}.json`);
     tokenData = JSON.parse(tokenData);
   }
-  const logChannel = tokenData.logchannel || false;
-  const censoredUsers = tokenData.censoredusers || false;
+  const logChannel = tokenData.logchannel || false; // necessary?
+  const censoredUsers = tokenData.censoredusers || false; // necessary?
 
   if (censoredUsers && censoredUsers.includes(message.author.id)) {
     const censoredEmbed = new Discord.MessageEmbed()
@@ -106,66 +108,52 @@ client.on('message', async message => {
 
       case 'update': // TODO: make this actually update token, not just create one if the server was missing one (maybe check against an example token?)
         if (!fs.existsSync(path)) { // checks if there's an already existing token for that server
-          fm.writeFile(path, '{"logchannel": "", "censoredusers": ""}');
+          fm.readFile('./tokens/example.json').then(cache =>
+            fm.writeFile(path, cache)
+          );
+          message.channel.send('Token generated!');
+        } else {
+          message.channel.send('Your token is up to date!');
         }
-        message.channel.send('Token updated!');
         break;
 
       case 'set':
-        if (!member.hasPermission('MANAGE_MESSAGES')) { // restricts this command to mods only, maybe require a different perm for this command?
-          return message.reply('You do not have sufficient perms to do that!');
-        }
-        if (!fs.existsSync(path)) {
-          return message.reply('This server does not have a valid token yet! Try doing !update!');
-        }
+        if (!member.hasPermission('MANAGE_MESSAGES')) return message.reply('You do not have sufficient perms to do that!'); // restricts this command to mods only, maybe require a different perm for this command?
+        if (!fs.existsSync(path)) return message.reply('This server does not have a valid token yet! Try doing !update!');
 
         let channel = message.mentions.channels.first();
-        if (!channel) {
-          return message.reply("Please mention a valid channel in this server");
-        }
+
+        if (!channel) return message.reply("Please mention a valid channel in this server");
+
         tokenData.logchannel = channel.id;
         await fm.writeFile(path, JSON.stringify(tokenData));
         message.channel.send(`Success! Log channel has been updated to ${channel.name}!`);
         break;
 
       case 'censor':
-        if (!member.hasPermission('MANAGE_MESSAGES')) { // restricts this command to mods only, maybe add extra required perms?
-          return message.reply('You do not have sufficient perms to do that!');
-        }
-        if (!fs.existsSync(path)) {
-          return message.reply('This server does not have a valid token yet! Try doing !update!');
-        }
+        if (!member.hasPermission('MANAGE_MESSAGES')) return message.reply('You do not have sufficient perms to do that!'); // restricts this command to mods only, maybe add extra required perms?
+        if (!fs.existsSync(path)) return message.reply('This server does not have a valid token yet! Try doing !update!');
 
         let censorTarget = message.mentions.members.first();
-        if (!censorTarget) {
-          return message.reply("Please mention a valid member of this server");
-        }
-        if (censorTarget.user.id === message.author.id) {
-          return message.reply("You cannot censor yourself!");
-        }
-        if (tokenData.censoredusers.includes(censorTarget.id)) {
-          return message.reply("That user is already censored!");
-        }
+
+        if (!censorTarget) return message.reply("Please mention a valid member of this server");
+        if (censorTarget.user.id === message.author.id) return message.reply("You cannot censor yourself!");
+        if (tokenData.censoredusers.includes(censorTarget.id)) return message.reply("That user is already censored!");
+
         tokenData.censoredusers += censorTarget.id + ' ';
         await fm.writeFile(path, JSON.stringify(tokenData));
         message.channel.send(`Now censoring ${censorTarget.user.tag}!`);
         break;
 
       case 'uncensor':
-        if (!member.hasPermission('MANAGE_MESSAGES')) { // restricts this command to mods only, maybe add extra required perms?
-          return message.reply('You do not have sufficient perms to do that!');
-        }
-        if (!fs.existsSync(path)) {
-          return message.reply('This server does not have a valid token yet! Try doing !update!');
-        }
+        if (!member.hasPermission('MANAGE_MESSAGES')) return message.reply('You do not have sufficient perms to do that!'); // restricts this command to mods only, maybe add extra required perms?
+        if (!fs.existsSync(path)) return message.reply('This server does not have a valid token yet! Try doing !update!');
 
         let uncensorTarget = message.mentions.members.first();
-        if (!uncensorTarget) {
-          return message.reply("Please mention a valid member of this server");
-        }
-        if (!tokenData.censoredusers.includes(uncensorTarget.id)) {
-          return message.reply("That user was not censored!");
-        }
+
+        if (!uncensorTarget) return message.reply("Please mention a valid member of this server");
+        if (!tokenData.censoredusers.includes(uncensorTarget.id)) return message.reply("That user was not censored!");
+
         tokenData.censoredusers = tokenData.censoredusers.replace(uncensorTarget.id + ' ', '');
         await fm.writeFile(path, JSON.stringify(tokenData));
         message.channel.send(`Now uncensoring ${uncensorTarget.user.tag}!`);
@@ -189,35 +177,27 @@ client.on('message', async message => {
         break;
 
       case 'purge':
-        if (!member.hasPermission('MANAGE_MESSAGES')) { // restricts this command to mods only
-          return message.reply('You do not have sufficient perms to do that!');
-        }
+        if (!member.hasPermission('MANAGE_MESSAGES')) return message.reply('You do not have sufficient perms to do that!'); // restricts this command to mods only
+
         // get the delete count, as an actual number.
         const deleteCount = parseInt(args[0], 10);
 
-        if(!deleteCount || deleteCount < 2 || deleteCount > 100) {
-          return message.reply("Please provide a number between 2 and 100 for the number of messages to delete");
-        }
+        if (!deleteCount || deleteCount < 2 || deleteCount > 100) return message.reply("Please provide a number between 2 and 100 for the number of messages to delete");
+
         const fetched = await message.channel.messages.fetch({limit: deleteCount});
         message.channel.bulkDelete(fetched)
           .catch(error => message.reply(`Couldn't delete messages because of: ${error}`));
         break;
 
       case 'kick':
-        if (!member.hasPermission('KICK_MEMBERS')) { // restricts this command to mods only
-          return message.reply('You do not have sufficient perms to do that!');
-        }
+        if (!member.hasPermission('KICK_MEMBERS')) return message.reply('You do not have sufficient perms to do that!'); // restricts this command to mods only
 
         let kickTarget = message.mentions.members.first();
-        if (!kickTarget) {
-          return message.reply("Please mention a valid member of this server");
-        }
-        if (kickTarget.user.id === message.author.id) {
-          return message.reply("You cannot kick yourself!");
-        }
-        if (!kickTarget.kickable) {
-          return message.reply("I cannot kick this user!");
-        }
+
+        if (!kickTarget) return message.reply("Please mention a valid member of this server");
+        if (kickTarget.user.id === message.author.id) return message.reply("You cannot kick yourself!");
+        if (!kickTarget.kickable) return message.reply("I cannot kick this user!");
+
         // joins remaining args for reason
         let kickReason = args.slice(1).join(' ');
         if (!kickReason) kickReason = "No reason provided";
@@ -228,20 +208,14 @@ client.on('message', async message => {
         break;
 
       case 'ban':
-        if (!member.hasPermission('BAN_MEMBERS')) { // restricts this command to mods only
-          return message.reply('You do not have sufficient perms to do that!');
-        }
+        if (!member.hasPermission('BAN_MEMBERS')) return message.reply('You do not have sufficient perms to do that!'); // restricts this command to mods only
 
         let banTarget = message.mentions.members.first();
-        if (!banTarget) {
-          return message.reply("Please mention a valid member of this server");
-        }
-        if (banTarget.user.id === message.author.id) {
-          return message.reply("You cannot ban yourself!");
-        }
-        if (!banTarget.bannable) {
-          return message.reply("I cannot ban this user!");
-        }
+
+        if (!banTarget) return message.reply("Please mention a valid member of this server");
+        if (banTarget.user.id === message.author.id) return message.reply("You cannot ban yourself!");
+        if (!banTarget.bannable) return message.reply("I cannot ban this user!");
+
         // joins remaining args for reason
         let banReason = args.slice(1).join(' ');
         if (!banReason) banReason = "No reason provided";
@@ -252,9 +226,8 @@ client.on('message', async message => {
         break;
 
       case 'addemote':
-        if (!member.hasPermission('MANAGE_EMOJIS')) { // restricts this command to mods only
-          return message.reply('You do not have sufficient perms to do that!');
-        }
+        if (!member.hasPermission('MANAGE_EMOJIS')) return message.reply('You do not have sufficient perms to do that!'); // restricts this command to mods only
+
         let name = args.slice(1).join('_'); // discord does not allow spaces or dashes in emoji names :(
         guild.emojis.create(args[0], name)
           .then(emoji => message.channel.send(`Created new emoji with name ${emoji.name}!`))
@@ -276,16 +249,16 @@ client.on("messageDelete", async message => {
     tokenData = await fm.readFile(`./tokens/${guild.id}.json`);
     tokenData = JSON.parse(tokenData);
   }
-  const logChannel = tokenData.logchannel || false;
-  const censoredUsers = tokenData.censoredusers || false;
+  const logChannel = tokenData.logchannel || false; // necessary?
+  const censoredUsers = tokenData.censoredusers || false; // necessary?
 
   if (censoredUsers && censoredUsers.includes(message.author.id)) return; // prevents double logging of censored messages, probably better way of doing this
 
   if (logChannel) {
     const deleteEmbed = new Discord.MessageEmbed()
       .setColor(0x333333)
-      .setAuthor(`Message by ${message.author} in ${message.channel.name} was deleted:`)
-      .setDescription(`\u200b${message.content}`) // the \u200b is to not get RangeErrors from empty messages
+      .setAuthor(`\u200b${message.author.tag}`, message.author.avatarURL())
+      .setDescription(`**Message by ${message.author} in ${message.channel} was deleted:**\n\u200b${message.content}`) // the \u200b is to not get RangeErrors from empty messages
       .setFooter(`${new Date()}`);
     client.channels.cache.get(logChannel).send(deleteEmbed);
   }
@@ -304,18 +277,50 @@ client.on("messageUpdate", async (oldMessage, newMessage) => {
     tokenData = await fm.readFile(`./tokens/${guild.id}.json`);
     tokenData = JSON.parse(tokenData);
   }
-  const logChannel = tokenData.logchannel || false;
+  const logChannel = tokenData.logchannel || false; // necessary?
 
   if (logChannel) {
     const editEmbed = new Discord.MessageEmbed()
       .setColor(0x333333)
-      .setAuthor(`Message by ${oldMessage.author} in ${oldMessage.channel.name} was edited:`)
+      .setAuthor(`\u200b${oldMessage.author.tag}`, oldMessage.author.avatarURL())
+      .setDescription(`**Message by ${oldMessage.author} in ${oldMessage.channel} was edited:**`)
       .addFields(
         {name: 'Before:', value: `\u200b${oldMessage.content}`}, // the \u200b is to not get RangeErrors from empty messages
         {name: 'After:', value: `\u200b${newMessage.content}`}
       )
       .setFooter(`${new Date()}`);
     client.channels.cache.get(logChannel).send(editEmbed);
+  }
+});
+
+client.on("guildMemberUpdate", async (oldMember, newMember) => { // TODO: finish this by adding role logging
+  if (oldMember.user.bot) return;
+
+  // code block reads token and then gets log channel + censored users
+  const guild = oldMember.guild;
+
+  let tokenData = {}; // probably better way to do this
+  const path = `./tokens/${guild.id}.json`;
+  if (fs.existsSync(path)) { // checks if the token exists
+    tokenData = await fm.readFile(`./tokens/${guild.id}.json`);
+    tokenData = JSON.parse(tokenData);
+  }
+  const logChannel = tokenData.logchannel || false; // necessary?
+
+  if (logChannel) {
+    const updateEmbed = new Discord.MessageEmbed()
+      .setColor(0x333333)
+      .setAuthor(`\u200b${newMember.user.tag}`, newMember.user.avatarURL())
+      .setFooter(`${new Date()}`);
+    if (oldMember.nickname != newMember.nickname) {
+      updateEmbed
+        .setDescription(`**${newMember.user} changed their nickname:**`)
+        .addFields(
+          {name: 'Before:', value: `\u200b${oldMember.nickname}`}, // the \u200b is to not get RangeErrors from empty messages
+          {name: 'After:', value: `\u200b${newMember.nickname}`}
+        );
+    }
+    client.channels.cache.get(logChannel).send(updateEmbed);
   }
 });
 
