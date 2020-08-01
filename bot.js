@@ -1,4 +1,4 @@
-// TODO: code cleanup
+// TODO: add in .catch()s so that the bot wont break as much
 const Discord = require('discord.js');
 const fs = require('fs');
 const auth = require('./auth.json');
@@ -36,17 +36,15 @@ client.on('message', async message => {
     tokenData = await fm.readFile(`./tokens/${guild.id}.json`);
     tokenData = JSON.parse(tokenData);
   }
-  const logChannel = tokenData.logchannel || false; // necessary?
-  const censoredUsers = tokenData.censoredusers || false; // necessary?
 
-  if (censoredUsers && censoredUsers.includes(message.author.id)) {
+  if (tokenData.censoredusers && tokenData.censoredusers.includes(message.author.id)) {
     const censoredEmbed = new Discord.MessageEmbed()
       .setColor(0x333333)
       .setAuthor(`\u200b${message.author.tag}`, message.author.avatarURL())
-      .addField(`Message by ${message.author.tag} censored in ${message.channel.name}:`, `\u200b${message.content}`)
+      .setDescription(`**Message by ${message.author} censored in ${message.channel}:**\n${message.content}`)
       .setFooter(`${new Date()}`);
-    if (logChannel) {
-      client.channels.cache.get(logChannel).send(censoredEmbed);
+    if (tokenData.logchannel) {
+      client.channels.cache.get(tokenData.logchannel).send(censoredEmbed);
     }
     await message.delete()
       .catch(error => message.reply(`That message could not be censored because of ${error}!`));
@@ -181,7 +179,6 @@ client.on('message', async message => {
 
         // get the delete count, as an actual number.
         const deleteCount = parseInt(args[0], 10);
-
         if (!deleteCount || deleteCount < 2 || deleteCount > 100) return message.reply("Please provide a number between 2 and 100 for the number of messages to delete");
 
         const fetched = await message.channel.messages.fetch({limit: deleteCount});
@@ -193,7 +190,6 @@ client.on('message', async message => {
         if (!member.hasPermission('KICK_MEMBERS')) return message.reply('You do not have sufficient perms to do that!'); // restricts this command to mods only
 
         let kickTarget = message.mentions.members.first();
-
         if (!kickTarget) return message.reply("Please mention a valid member of this server");
         if (kickTarget.user.id === message.author.id) return message.reply("You cannot kick yourself!");
         if (!kickTarget.kickable) return message.reply("I cannot kick this user!");
@@ -211,7 +207,6 @@ client.on('message', async message => {
         if (!member.hasPermission('BAN_MEMBERS')) return message.reply('You do not have sufficient perms to do that!'); // restricts this command to mods only
 
         let banTarget = message.mentions.members.first();
-
         if (!banTarget) return message.reply("Please mention a valid member of this server");
         if (banTarget.user.id === message.author.id) return message.reply("You cannot ban yourself!");
         if (!banTarget.bannable) return message.reply("I cannot ban this user!");
@@ -249,18 +244,15 @@ client.on("messageDelete", async message => {
     tokenData = await fm.readFile(`./tokens/${guild.id}.json`);
     tokenData = JSON.parse(tokenData);
   }
-  const logChannel = tokenData.logchannel || false; // necessary?
-  const censoredUsers = tokenData.censoredusers || false; // necessary?
+  if (tokenData.censoredusers && tokenData.censoredusers.includes(message.author.id)) return; // prevents double logging of censored messages, probably better way of doing this
 
-  if (censoredUsers && censoredUsers.includes(message.author.id)) return; // prevents double logging of censored messages, probably better way of doing this
-
-  if (logChannel) {
+  if (tokenData.logchannel) {
     const deleteEmbed = new Discord.MessageEmbed()
       .setColor(0x333333)
       .setAuthor(`\u200b${message.author.tag}`, message.author.avatarURL())
-      .setDescription(`**Message by ${message.author} in ${message.channel} was deleted:**\n\u200b${message.content}`) // the \u200b is to not get RangeErrors from empty messages
+      .setDescription(`**Message by ${message.author} in ${message.channel} was deleted:**\n${message.content}`)
       .setFooter(`${new Date()}`);
-    client.channels.cache.get(logChannel).send(deleteEmbed);
+    client.channels.cache.get(tokenData.logchannel).send(deleteEmbed);
   }
 });
 
@@ -277,9 +269,8 @@ client.on("messageUpdate", async (oldMessage, newMessage) => {
     tokenData = await fm.readFile(`./tokens/${guild.id}.json`);
     tokenData = JSON.parse(tokenData);
   }
-  const logChannel = tokenData.logchannel || false; // necessary?
 
-  if (logChannel) {
+  if (tokenData.logchannel) {
     const editEmbed = new Discord.MessageEmbed()
       .setColor(0x333333)
       .setAuthor(`\u200b${oldMessage.author.tag}`, oldMessage.author.avatarURL())
@@ -289,7 +280,7 @@ client.on("messageUpdate", async (oldMessage, newMessage) => {
         {name: 'After:', value: `\u200b${newMessage.content}`}
       )
       .setFooter(`${new Date()}`);
-    client.channels.cache.get(logChannel).send(editEmbed);
+    client.channels.cache.get(tokenData.logchannel).send(editEmbed);
   }
 });
 
@@ -305,9 +296,8 @@ client.on("guildMemberUpdate", async (oldMember, newMember) => { // TODO: finish
     tokenData = await fm.readFile(`./tokens/${guild.id}.json`);
     tokenData = JSON.parse(tokenData);
   }
-  const logChannel = tokenData.logchannel || false; // necessary?
 
-  if (logChannel) {
+  if (tokenData.logchannel) {
     const updateEmbed = new Discord.MessageEmbed()
       .setColor(0x333333)
       .setAuthor(`\u200b${newMember.user.tag}`, newMember.user.avatarURL())
@@ -316,12 +306,24 @@ client.on("guildMemberUpdate", async (oldMember, newMember) => { // TODO: finish
       updateEmbed
         .setDescription(`**${newMember.user} changed their nickname:**`)
         .addFields(
-          {name: 'Before:', value: `\u200b${oldMember.nickname}`}, // the \u200b is to not get RangeErrors from empty messages
-          {name: 'After:', value: `\u200b${newMember.nickname}`}
+          {name: 'Before:', value: oldMember.nickname ? oldMember.nickname : 'None'},
+          {name: 'After:', value: newMember.nickname ? newMember.nickname : 'None'}
         );
     }
-    client.channels.cache.get(logChannel).send(updateEmbed);
+    client.channels.cache.get(tokenData.logchannel).send(updateEmbed);
   }
+});
+
+client.on("guildMemberRemove", (member) => {
+  const guild = member.guild;
+
+  const leaveEmbed = new Discord.MessageEmbed()
+    .setColor(0x333333)
+    .setAuthor('Member left the server', member.user.avatarURL())
+    .setDescription(`${member.user} ${member.user.tag}`)
+    .setFooter(`${new Date()}`);
+
+  if (guild.systemChannel) guild.systemChannel.send(leaveEmbed);
 });
 
 client.login(auth.token);
