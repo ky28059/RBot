@@ -39,7 +39,7 @@ client.on('message', async message => {
 
   if (tokenData.censoredusers && tokenData.censoredusers.includes(message.author.id)) {
     const censoredEmbed = new Discord.MessageEmbed()
-      .setColor(0x333333)
+      .setColor(0x7f0000)
       .setAuthor(`\u200b${message.author.tag}`, message.author.avatarURL())
       .setDescription(`**Message by ${message.author} censored in ${message.channel}:**\n${message.content}`)
       .setFooter(`${new Date()}`);
@@ -48,6 +48,7 @@ client.on('message', async message => {
     }
     await message.delete()
       .catch(error => message.reply(`That message could not be censored because of ${error}!`));
+    return;
   }
 
   // Bot listens to messages with the prefix !
@@ -81,27 +82,77 @@ client.on('message', async message => {
         message.channel.send(avatarEmbed);
         break;
 
+      case 'gild':
+        message.channel.messages.fetch({limit: 2}).then(messages => {
+          let gildTarget = messages.last();
+          gildTarget.react('727100873016344687');
+          gildTarget.react('726691291970404353');
+          gildTarget.react('726691292020736110');
+          messages.first().delete();
+        });
+        break;
+
       case 'help': // https://discordjs.guide/popular-topics/embeds.html#using-the-richembedmessageembed-constructor
-        const helpEmbed = new Discord.MessageEmbed()
+        const helpEmbed1 = new Discord.MessageEmbed()
           .setColor(0x333333)
-          .setTitle('Dashboard')
-          .setDescription('My commands are:')
+          .setTitle('Non-Admin Commands:')
           .addFields(
             {name: '!ping:', value: 'Gets latency'},
             {name: '!say [message]:', value: 'Makes bot say what you tell it to say'},
             {name: '!avatar @[user]:', value: 'Gets the discord avatar of the mentioned user, defaults to get your avatar when no user is mentioned'},
-            {name: '!addemote [image link] [name]:', value: 'Creates an emoji with the given image and name'},
-            {name: '!update:', value: 'Updates the server\'s token'},
-            {name: '!set #[channel]:', value: 'Sets which channel RBot logs in'},
+            {name: '!gild:', value: 'Gives some Reddit gold to the last message sent'}
+          )
+          .setFooter(`Requested by ${message.author.tag}`);
+        const helpEmbed2 = new Discord.MessageEmbed()
+          .setColor(0x333333)
+          .setTitle('Admin Commands:')
+          .addFields(
             {name: '!purge [2-100]:', value: 'Bulk deletes the specified number of messages in the channel the command is called in'},
             {name: '!kick @[user] [reason]:', value: 'Kicks the specified user from the server'},
             {name: '!ban @[user] [reason]:', value: 'Bans the specified user from the server'},
             {name: '!censor @[user]:', value: 'Censors the specified user (autodeletes their messages and logs it in the log channel)'},
             {name: '!uncensor @[user]:', value: 'Uncensors the specified user'},
-            {name: '!censored:', value: 'Shows which users are currently censored'}
+            {name: '!censored:', value: 'Shows which users are currently censored'},
+            {name: '!addemote [image link] [name]:', value: 'Creates an emoji with the given image and name'} // this feels awkward here
           )
           .setFooter(`Requested by ${message.author.tag}`);
-        message.channel.send(helpEmbed);
+        const helpEmbed3 = new Discord.MessageEmbed()
+          .setColor(0x333333)
+          .setTitle('Token Commands:')
+          .addFields(
+            {name: '!update:', value: 'Updates the server\'s token'},
+            {name: '!set #[channel]:', value: 'Sets which channel RBot logs in'},
+            {name: '!token:', value: 'Gets the values of the server\'s current token'}
+          )
+          .setFooter(`Requested by ${message.author.tag}`);
+
+        // high level reaction listening
+        const helpMessage = await message.channel.send(helpEmbed1);
+        await helpMessage.react('1️⃣');
+        await helpMessage.react('2️⃣');
+        await helpMessage.react('3️⃣');
+
+        const filter = (reaction, user) => {
+        	return ['1️⃣', '2️⃣', '3️⃣'].includes(reaction.emoji.name) && user.id === message.author.id;
+        };
+
+        // TODO: make this work more than once maybe
+        helpMessage.awaitReactions(filter, { max: 1, time: 30000 })
+          .then(collected => {
+            switch (collected.first().emoji.name) {
+              case '1️⃣':
+                helpMessage.edit(helpEmbed1);
+                break;
+              case '2️⃣':
+                helpMessage.edit(helpEmbed2);
+                break;
+              case '3️⃣':
+                helpMessage.edit(helpEmbed3);
+                break;
+            }
+          }).catch(() => { // necessary? users shouldn't have to react to !help
+            message.reply('No reaction after 30 seconds, operation canceled');
+          });
         break;
 
       case 'update': // TODO: make this actually update token, not just create one if the server was missing one (maybe check against an example token?)
@@ -120,7 +171,6 @@ client.on('message', async message => {
         if (!fs.existsSync(path)) return message.reply('This server does not have a valid token yet! Try doing !update!');
 
         let channel = message.mentions.channels.first();
-
         if (!channel) return message.reply("Please mention a valid channel in this server");
 
         tokenData.logchannel = channel.id;
@@ -128,12 +178,25 @@ client.on('message', async message => {
         message.channel.send(`Success! Log channel has been updated to ${channel.name}!`);
         break;
 
+      case 'token':
+        if (!fs.existsSync(path)) return message.reply('This server does not have a valid token yet! Try doing !update!');
+
+        const tokenEmbed = new Discord.MessageEmbed()
+          .setColor(0x333333)
+          .setTitle('Token Data:')
+          .addFields( // TODO: make a for each loop that adds available fields automatically so this command won't need to be manually updated
+            {name: 'Log Channel:', value: tokenData.logchannel ? tokenData.logchannel : 'None'}
+          )
+          .setFooter(`Requested by ${message.author.tag}`);
+
+        message.channel.send(tokenEmbed);
+        break;
+
       case 'censor':
         if (!member.hasPermission('MANAGE_MESSAGES')) return message.reply('You do not have sufficient perms to do that!'); // restricts this command to mods only, maybe add extra required perms?
         if (!fs.existsSync(path)) return message.reply('This server does not have a valid token yet! Try doing !update!');
 
         let censorTarget = message.mentions.members.first();
-
         if (!censorTarget) return message.reply("Please mention a valid member of this server");
         if (censorTarget.user.id === message.author.id) return message.reply("You cannot censor yourself!");
         if (tokenData.censoredusers.includes(censorTarget.id)) return message.reply("That user is already censored!");
@@ -148,7 +211,6 @@ client.on('message', async message => {
         if (!fs.existsSync(path)) return message.reply('This server does not have a valid token yet! Try doing !update!');
 
         let uncensorTarget = message.mentions.members.first();
-
         if (!uncensorTarget) return message.reply("Please mention a valid member of this server");
         if (!tokenData.censoredusers.includes(uncensorTarget.id)) return message.reply("That user was not censored!");
 
@@ -248,7 +310,7 @@ client.on("messageDelete", async message => {
 
   if (tokenData.logchannel) {
     const deleteEmbed = new Discord.MessageEmbed()
-      .setColor(0x333333)
+      .setColor(0xb50300)
       .setAuthor(`\u200b${message.author.tag}`, message.author.avatarURL())
       .setDescription(`**Message by ${message.author} in ${message.channel} was deleted:**\n${message.content}`)
       .setFooter(`${new Date()}`);
@@ -272,7 +334,7 @@ client.on("messageUpdate", async (oldMessage, newMessage) => {
 
   if (tokenData.logchannel) {
     const editEmbed = new Discord.MessageEmbed()
-      .setColor(0x333333)
+      .setColor(0xed7501)
       .setAuthor(`\u200b${oldMessage.author.tag}`, oldMessage.author.avatarURL())
       .setDescription(`**Message by ${oldMessage.author} in ${oldMessage.channel} was edited:**`)
       .addFields(
@@ -299,9 +361,10 @@ client.on("guildMemberUpdate", async (oldMember, newMember) => { // TODO: finish
 
   if (tokenData.logchannel) {
     const updateEmbed = new Discord.MessageEmbed()
-      .setColor(0x333333)
+      .setColor(0xf6b40c)
       .setAuthor(`\u200b${newMember.user.tag}`, newMember.user.avatarURL())
       .setFooter(`${new Date()}`);
+
     if (oldMember.nickname != newMember.nickname) {
       updateEmbed
         .setDescription(`**${newMember.user} changed their nickname:**`)
