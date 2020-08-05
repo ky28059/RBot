@@ -9,10 +9,10 @@ const client = new Discord.Client();
 // Initialize Discord Bot
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
-  client.user.setActivity('!help'); // sets status
+  client.user.setActivity('!help', { type: "LISTENING" });
 });
 
-client.on("guildCreate", guild => {
+client.on("guildCreate", guild => { // writes token upon joining new server
   const path = `./tokens/${guild.id}.json`;
   if (!fs.existsSync(path)) { // checks if there's an already existing token for that server
     fm.readFile('./tokens/example.json').then(cache =>
@@ -73,13 +73,28 @@ client.on('message', async message => {
         break;
 
       case 'avatar':
-        const user = message.mentions.users.first() || message.author;
+        const avatarTarget = message.mentions.users.first() || message.author;
         const avatarEmbed = new Discord.MessageEmbed()
           .setColor(0x333333)
-          .setTitle(user.username)
-          .setImage(user.avatarURL())
+          .setTitle(avatarTarget.username)
+          .setImage(avatarTarget.avatarURL())
           .setFooter(`Requested by ${message.author.tag}`);
         message.channel.send(avatarEmbed);
+        break;
+
+      case 'profile':
+        const profileTarget = message.mentions.users.first() || message.author;
+        const guildProfileTarget = guild.member(profileTarget);
+
+        const profileEmbed = new Discord.MessageEmbed()
+          .setColor(0x333333)
+          .setAuthor(`\u200b${profileTarget.tag}`, profileTarget.avatarURL())
+          .addFields(
+            {name: 'Account created on', value: `\u200b${profileTarget.createdAt}`},
+            {name: 'Server joined on', value: `\u200b${guildProfileTarget.joinedAt}`},
+          )
+          .setFooter(`Requested by ${message.author.tag}`);
+        message.channel.send(profileEmbed);
         break;
 
       case 'gild':
@@ -100,6 +115,7 @@ client.on('message', async message => {
             {name: '!ping:', value: 'Gets latency'},
             {name: '!say [message]:', value: 'Makes bot say what you tell it to say'},
             {name: '!avatar @[user]:', value: 'Gets the discord avatar of the mentioned user, defaults to get your avatar when no user is mentioned'},
+            {name: '!profile @[user]:', value: 'Gets some information about the mentioned user'},
             {name: '!gild:', value: 'Gives some Reddit gold to the last message sent'}
           )
           .setFooter(`Requested by ${message.author.tag}`);
@@ -136,6 +152,7 @@ client.on('message', async message => {
         	return ['1️⃣', '2️⃣', '3️⃣'].includes(reaction.emoji.name) && user.id === message.author.id;
         };
 
+        // https://discordjs.guide/popular-topics/reactions.html#awaiting-reactions
         // TODO: make this work more than once maybe
         helpMessage.awaitReactions(filter, { max: 1, time: 30000 })
           .then(collected => {
@@ -199,6 +216,7 @@ client.on('message', async message => {
         let censorTarget = message.mentions.members.first();
         if (!censorTarget) return message.reply("Please mention a valid member of this server");
         if (censorTarget.user.id === message.author.id) return message.reply("You cannot censor yourself!");
+        if (censorTarget.user.bot) return message.reply("Bots cannot be censored!"); // should bots be allowed to be censored?
         if (tokenData.censoredusers.includes(censorTarget.id)) return message.reply("That user is already censored!");
 
         tokenData.censoredusers += censorTarget.id + ' ';
@@ -294,6 +312,8 @@ client.on('message', async message => {
   }
 });
 
+// Bot logs the following events:
+
 client.on("messageDelete", async message => {
   if (message.author.bot) return; // Bot ignores itself and other bots
 
@@ -315,6 +335,28 @@ client.on("messageDelete", async message => {
       .setDescription(`**Message by ${message.author} in ${message.channel} was deleted:**\n${message.content}`)
       .setFooter(`${new Date()}`);
     client.channels.cache.get(tokenData.logchannel).send(deleteEmbed);
+  }
+});
+
+client.on("messageDeleteBulk", async messages => {
+  // code block reads token and then gets log channel + censored users
+  const guild = messages.first().guild;
+
+  let tokenData = {}; // probably better way to do this
+  const path = `./tokens/${guild.id}.json`;
+  if (fs.existsSync(path)) { // checks if the token exists
+    tokenData = await fm.readFile(`./tokens/${guild.id}.json`);
+    tokenData = JSON.parse(tokenData);
+  }
+
+  // temporary Dyno-like bulkdelete logging system, will convert into superior system later
+  if (tokenData.logchannel) {
+    const bulkDeleteEmbed = new Discord.MessageEmbed()
+      .setColor(0xb50300)
+      .setAuthor(`\u200b${guild.name}`, guild.iconURL())
+      .setDescription(`**${messages.array().length} messages were deleted in ${messages.first().channel}**`)
+      .setFooter(`${new Date()}`);
+    client.channels.cache.get(tokenData.logchannel).send(bulkDeleteEmbed);
   }
 });
 
@@ -372,8 +414,8 @@ client.on("guildMemberUpdate", async (oldMember, newMember) => { // TODO: finish
           {name: 'Before:', value: oldMember.nickname ? oldMember.nickname : 'None'},
           {name: 'After:', value: newMember.nickname ? newMember.nickname : 'None'}
         );
+      client.channels.cache.get(tokenData.logchannel).send(updateEmbed);
     }
-    client.channels.cache.get(tokenData.logchannel).send(updateEmbed);
   }
 });
 
