@@ -1,10 +1,13 @@
 // TODO: add in .catch()s so that the bot wont break as much
+// TODO: add in catchs on commands that require token information to check for if a token is lacking the field that command requires (currently only have checks for if a server is missing a token)
 const Discord = require('discord.js');
 const fs = require('fs');
 const auth = require('./auth.json');
 const fm = require('./fileManager.js');
 //const parser = require('./toolkit/parser.js');
 const client = new Discord.Client();
+
+const talkedRecently = new Set();
 
 // Initialize Discord Bot
 client.on('ready', () => {
@@ -24,18 +27,30 @@ client.on("guildCreate", guild => { // writes token upon joining new server
 
 client.on('message', async message => {
   if (message.author.bot) return; // Bot ignores itself and other bots
+  if (talkedRecently.has(message.author.id)) return; // Spam prevention
+
+  talkedRecently.add(message.author.id);
+  setTimeout(() => {
+    // Removes the user from the set after 1 second
+    talkedRecently.delete(message.author.id);
+  }, 1000);
 
   // maybe move this code elsewhere? idk
   const guild = message.guild;
-  const member = guild.member(message.author); // creates a GuildMember of the message's author, needed for the admin only commands
+  const member = guild.member(message.author);
+
+  const userTarget = message.mentions.users.first();
+  const memberTarget = message.mentions.members.first();
+  const channelTarget = message.mentions.channels.first();
 
   // code block reads token and then gets log channel + censored users
   let tokenData = {}; // probably better way to do this
   const path = `./tokens/${guild.id}.json`;
   if (fs.existsSync(path)) { // checks if the token exists
-    tokenData = await fm.readFile(`./tokens/${guild.id}.json`);
+    tokenData = await fm.readFile(path);
     tokenData = JSON.parse(tokenData);
   }
+  const prefix = tokenData.prefix || '!'; // maybe move somewhere else?
 
   if (tokenData.censoredusers && tokenData.censoredusers.includes(message.author.id)) {
     const censoredEmbed = new Discord.MessageEmbed()
@@ -46,14 +61,13 @@ client.on('message', async message => {
     if (tokenData.logchannel) {
       client.channels.cache.get(tokenData.logchannel).send(censoredEmbed);
     }
-    await message.delete()
-      .catch(error => message.reply(`That message could not be censored because of ${error}!`));
+    await message.delete() // TODO: fix this hilariousness of pinging the censored person and apologizing for not being able to delete their message
+      .catch(error => message.reply(`that message could not be censored because of ${error}!`));
     return;
   }
 
-  // Bot listens to messages with the prefix !
-  if (message.content.substring(0, 1) == '!') {
-    const args = message.content.slice(1).trim().split(/ +/g); // removes the prefix, then the spaces, then splits into array
+  if (message.content.substring(0, prefix.length) == prefix) {
+    const args = message.content.slice(prefix.length).trim().split(/ +/g); // removes the prefix, then the spaces, then splits into array
     const command = args.shift().toLowerCase(); // removes the command from the args array
 
     // Commands
@@ -73,7 +87,7 @@ client.on('message', async message => {
         break;
 
       case 'avatar':
-        const avatarTarget = message.mentions.users.first() || message.author;
+        const avatarTarget = userTarget || message.author;
         const avatarEmbed = new Discord.MessageEmbed()
           .setColor(0x333333)
           .setTitle(avatarTarget.username)
@@ -83,7 +97,7 @@ client.on('message', async message => {
         break;
 
       case 'profile':
-        const profileTarget = message.mentions.users.first() || message.author;
+        const profileTarget = userTarget || message.author;
         const guildProfileTarget = guild.member(profileTarget);
 
         const profileEmbed = new Discord.MessageEmbed()
@@ -124,6 +138,7 @@ client.on('message', async message => {
           .setTitle('Admin Commands:')
           .addFields(
             {name: '!purge [2-100]:', value: 'Bulk deletes the specified number of messages in the channel the command is called in'},
+            {name: '!expunge [2-100]:', value: 'Removes all reactions from the specifed number of messages in the channel the command is called in'},
             {name: '!kick @[user] [reason]:', value: 'Kicks the specified user from the server'},
             {name: '!ban @[user] [reason]:', value: 'Bans the specified user from the server'},
             {name: '!censor @[user]:', value: 'Censors the specified user (autodeletes their messages and logs it in the log channel)'},
@@ -137,71 +152,98 @@ client.on('message', async message => {
           .setTitle('Token Commands:')
           .addFields(
             {name: '!update:', value: 'Updates the server\'s token'},
-            {name: '!set #[channel]:', value: 'Sets which channel RBot logs in'},
+            {name: '!set [token field] [value]:', value: 'Sets token data'},
             {name: '!token:', value: 'Gets the values of the server\'s current token'}
           )
           .setFooter(`Requested by ${message.author.tag}`);
 
         // high level reaction listening
         const helpMessage = await message.channel.send(helpEmbed1);
-        await helpMessage.react('1️⃣');
-        await helpMessage.react('2️⃣');
-        await helpMessage.react('3️⃣');
 
         const filter = (reaction, user) => {
-        	return ['1️⃣', '2️⃣', '3️⃣'].includes(reaction.emoji.name) && user.id === message.author.id;
+          return ['1️⃣', '2️⃣', '3️⃣'].includes(reaction.emoji.name) && user.id === message.author.id;
         };
 
-        // https://discordjs.guide/popular-topics/reactions.html#awaiting-reactions
-        // TODO: make this work more than once maybe
-        helpMessage.awaitReactions(filter, { max: 1, time: 30000 })
-          .then(collected => {
-            switch (collected.first().emoji.name) {
-              case '1️⃣':
-                helpMessage.edit(helpEmbed1);
-                break;
-              case '2️⃣':
-                helpMessage.edit(helpEmbed2);
-                break;
-              case '3️⃣':
-                helpMessage.edit(helpEmbed3);
-                break;
-            }
-          }).catch(() => { // necessary? users shouldn't have to react to !help
-            message.reply('No reaction after 30 seconds, operation canceled');
-          });
+        //for (let i = 0; i < 5; i++) { // this doesn't work, thanks james!!
+          await helpMessage.react('1️⃣');
+          await helpMessage.react('2️⃣');
+          await helpMessage.react('3️⃣');
+
+          // https://discordjs.guide/popular-topics/reactions.html#awaiting-reactions
+          helpMessage.awaitReactions(filter, { max: 1, time: 30000 })
+            .then(collected => {
+              switch (collected.first().emoji.name) {
+                case '1️⃣':
+                  helpMessage.edit(helpEmbed1);
+                  break;
+                case '2️⃣':
+                  helpMessage.edit(helpEmbed2);
+                  break;
+                case '3️⃣':
+                  helpMessage.edit(helpEmbed3);
+                  break;
+              }
+              //helpMessage.reactions.removeAll();
+            });
+        //}
         break;
 
-      case 'update': // TODO: make this actually update token, not just create one if the server was missing one (maybe check against an example token?)
+      case 'update':
+        const exTokenContents = await fm.readFile('./tokens/example.json');
+        const exTokenData = JSON.parse(exTokenContents); // my variable names are so horrible
+
+        const tokenDataKeys = Object.keys(tokenData);
+        const exTokenDataKeys = Object.keys(exTokenData);
+
         if (!fs.existsSync(path)) { // checks if there's an already existing token for that server
-          fm.readFile('./tokens/example.json').then(cache =>
-            fm.writeFile(path, cache)
-          );
+          fm.writeFile(path, exTokenContents)
           message.channel.send('Token generated!');
+
+        } else if (JSON.stringify(tokenDataKeys) != JSON.stringify(exTokenDataKeys)) {
+          tokenData = { ...exTokenData, ...tokenData};
+          fm.writeFile(path, JSON.stringify(tokenData));
+          message.channel.send('Token updated!'); // maybe add in fields so that people know exactly which fields were updated? seems super complicated tho
+
         } else {
           message.channel.send('Your token is up to date!');
         }
         break;
 
       case 'set':
-        if (!member.hasPermission('MANAGE_MESSAGES')) return message.reply('You do not have sufficient perms to do that!'); // restricts this command to mods only, maybe require a different perm for this command?
-        if (!fs.existsSync(path)) return message.reply('This server does not have a valid token yet! Try doing !update!');
+        if (!member.hasPermission('MANAGE_MESSAGES')) return message.reply('you do not have sufficient perms to do that!'); // TODO: require a different perm for this command
+        if (!fs.existsSync(path)) return message.reply('this server does not have a valid token yet! Try doing !update!');
+        if (!args[0]) return message.reply('you must specify the token field to modify!');
 
-        let channel = message.mentions.channels.first();
-        if (!channel) return message.reply("Please mention a valid channel in this server");
+        const field = args.shift().toLowerCase();
 
-        tokenData.logchannel = channel.id;
-        await fm.writeFile(path, JSON.stringify(tokenData));
-        message.channel.send(`Success! Log channel has been updated to ${channel.name}!`);
+        switch (field) {
+          case 'logchannel':
+            if (!channelTarget) return message.reply("please mention a valid channel in this server");
+
+            tokenData.logchannel = channelTarget.id;
+            await fm.writeFile(path, JSON.stringify(tokenData));
+            message.channel.send(`Success! Log channel has been updated to ${channelTarget}!`);
+            break;
+
+          case 'prefix':
+            const newPrefix = args.join(" ");
+            if (!newPrefix) return message.reply('you must specify a prefix to set!')
+
+            tokenData.prefix = newPrefix;
+            await fm.writeFile(path, JSON.stringify(tokenData));
+            message.channel.send(`Success! Prefix has been updated to \`${newPrefix}\`!`);
+            break;
+        }
         break;
 
       case 'token':
-        if (!fs.existsSync(path)) return message.reply('This server does not have a valid token yet! Try doing !update!');
+        if (!fs.existsSync(path)) return message.reply('this server does not have a valid token yet! Try doing !update!');
 
         const tokenEmbed = new Discord.MessageEmbed()
           .setColor(0x333333)
           .setTitle('Token Data:')
           .addFields( // TODO: make a for each loop that adds available fields automatically so this command won't need to be manually updated
+            {name: 'Prefix:', value: tokenData.prefix ? tokenData.prefix : '!'},
             {name: 'Log Channel:', value: tokenData.logchannel ? tokenData.logchannel : 'None'}
           )
           .setFooter(`Requested by ${message.author.tag}`);
@@ -210,31 +252,29 @@ client.on('message', async message => {
         break;
 
       case 'censor':
-        if (!member.hasPermission('MANAGE_MESSAGES')) return message.reply('You do not have sufficient perms to do that!'); // restricts this command to mods only, maybe add extra required perms?
-        if (!fs.existsSync(path)) return message.reply('This server does not have a valid token yet! Try doing !update!');
+        if (!member.hasPermission('MANAGE_MESSAGES')) return message.reply('you do not have sufficient perms to do that!'); // restricts this command to mods only, maybe add extra required perms?
+        if (!fs.existsSync(path)) return message.reply('this server does not have a valid token yet! Try doing !update!');
 
-        let censorTarget = message.mentions.members.first();
-        if (!censorTarget) return message.reply("Please mention a valid member of this server");
-        if (censorTarget.user.id === message.author.id) return message.reply("You cannot censor yourself!");
-        if (censorTarget.user.bot) return message.reply("Bots cannot be censored!"); // should bots be allowed to be censored?
-        if (tokenData.censoredusers.includes(censorTarget.id)) return message.reply("That user is already censored!");
+        if (!memberTarget) return message.reply("please mention a valid member of this server");
+        if (memberTarget.id === message.author.id) return message.reply("you cannot censor yourself!");
+        if (userTarget.bot) return message.reply("bots cannot be censored!"); // should bots be allowed to be censored?
+        if (tokenData.censoredusers.includes(memberTarget.id)) return message.reply("that user is already censored!");
 
-        tokenData.censoredusers += censorTarget.id + ' ';
+        tokenData.censoredusers += memberTarget.id + ' ';
         await fm.writeFile(path, JSON.stringify(tokenData));
-        message.channel.send(`Now censoring ${censorTarget.user.tag}!`);
+        message.channel.send(`Now censoring ${userTarget.tag}!`);
         break;
 
       case 'uncensor':
-        if (!member.hasPermission('MANAGE_MESSAGES')) return message.reply('You do not have sufficient perms to do that!'); // restricts this command to mods only, maybe add extra required perms?
-        if (!fs.existsSync(path)) return message.reply('This server does not have a valid token yet! Try doing !update!');
+        if (!member.hasPermission('MANAGE_MESSAGES')) return message.reply('you do not have sufficient perms to do that!'); // restricts this command to mods only, maybe add extra required perms?
+        if (!fs.existsSync(path)) return message.reply('this server does not have a valid token yet! Try doing !update!');
 
-        let uncensorTarget = message.mentions.members.first();
-        if (!uncensorTarget) return message.reply("Please mention a valid member of this server");
-        if (!tokenData.censoredusers.includes(uncensorTarget.id)) return message.reply("That user was not censored!");
+        if (!memberTarget) return message.reply("please mention a valid member of this server");
+        if (!tokenData.censoredusers.includes(memberTarget.id)) return message.reply("that user was not censored!");
 
-        tokenData.censoredusers = tokenData.censoredusers.replace(uncensorTarget.id + ' ', '');
+        tokenData.censoredusers = tokenData.censoredusers.replace(memberTarget.id + ' ', '');
         await fm.writeFile(path, JSON.stringify(tokenData));
-        message.channel.send(`Now uncensoring ${uncensorTarget.user.tag}!`);
+        message.channel.send(`Now uncensoring ${userTarget.tag}!`);
         break;
 
       case 'censored':
@@ -255,53 +295,79 @@ client.on('message', async message => {
         break;
 
       case 'purge':
-        if (!member.hasPermission('MANAGE_MESSAGES')) return message.reply('You do not have sufficient perms to do that!'); // restricts this command to mods only
+        if (!member.hasPermission('MANAGE_MESSAGES')) return message.reply('you do not have sufficient perms to do that!'); // restricts this command to mods only
 
         // get the delete count, as an actual number.
         const deleteCount = parseInt(args[0], 10);
-        if (!deleteCount || deleteCount < 2 || deleteCount > 100) return message.reply("Please provide a number between 2 and 100 for the number of messages to delete");
+        if (!deleteCount || deleteCount < 2 || deleteCount > 100) return message.reply("please provide a number between 2 and 100 for the number of messages to delete");
 
-        const fetched = await message.channel.messages.fetch({limit: deleteCount});
-        message.channel.bulkDelete(fetched)
-          .catch(error => message.reply(`Couldn't delete messages because of: ${error}`));
+        const fetchedDeletes = await message.channel.messages.fetch({limit: deleteCount});
+        message.channel.bulkDelete(fetchedDeletes)
+          .catch(error => message.reply(`couldn't delete messages because of: ${error}`));
+        break;
+
+      case 'expunge': // TODO: make this not super slow
+        if (!member.hasPermission('MANAGE_MESSAGES')) return message.reply('you do not have sufficient perms to do that!'); // restricts this command to mods only, maybe require different perms?
+
+        // get the delete count, as an actual number.
+        const expungeCount = parseInt(args[0], 10);
+        if (!expungeCount || expungeCount < 2 || expungeCount > 100) return message.reply("please provide a number between 2 and 100 for the number of messages to expunge reactions from");
+
+        const fetchedExpunged = await message.channel.messages.fetch({limit: expungeCount});
+        fetchedExpunged.array().forEach(message => message.reactions.removeAll());
+        message.react('👌');
         break;
 
       case 'kick':
-        if (!member.hasPermission('KICK_MEMBERS')) return message.reply('You do not have sufficient perms to do that!'); // restricts this command to mods only
+        if (!member.hasPermission('KICK_MEMBERS')) return message.reply('you do not have sufficient perms to do that!'); // restricts this command to mods only
 
-        let kickTarget = message.mentions.members.first();
-        if (!kickTarget) return message.reply("Please mention a valid member of this server");
-        if (kickTarget.user.id === message.author.id) return message.reply("You cannot kick yourself!");
-        if (!kickTarget.kickable) return message.reply("I cannot kick this user!");
+        if (!memberTarget) return message.reply("please mention a valid member of this server");
+        if (memberTarget.user.id === message.author.id) return message.reply("you cannot kick yourself!");
+        if (!memberTarget.kickable) return message.reply("I cannot kick this user!");
 
         // joins remaining args for reason
         let kickReason = args.slice(1).join(' ');
         if (!kickReason) kickReason = "No reason provided";
 
-        await kickTarget.kick(kickReason)
-          .catch(error => message.reply(`Sorry ${message.author}, I couldn't kick because of : ${error}`));
-        message.channel.send(`${kickTarget.user.tag} has been kicked by ${message.author.tag} for the reason: ${kickReason}`);
+        await memberTarget.kick(kickReason)
+          .catch(error => message.reply(`sorry, I couldn't kick because of : ${error}`));
+
+        if (tokenData.logchannel) {
+          const kickEmbed = new Discord.MessageEmbed()
+            .setColor(0x7f0000)
+            .setAuthor(`\u200b${userTarget.tag}`, userTarget.avatarURL())
+            .setDescription(`**${userTarget} has been kicked by ${message.author} for the reason:**\n${kickReason}`)
+          client.channels.cache.get(tokenData.logchannel).send(kickEmbed);
+        }
+        message.react('👌');
         break;
 
       case 'ban':
-        if (!member.hasPermission('BAN_MEMBERS')) return message.reply('You do not have sufficient perms to do that!'); // restricts this command to mods only
+        if (!member.hasPermission('BAN_MEMBERS')) return message.reply('you do not have sufficient perms to do that!'); // restricts this command to mods only
 
-        let banTarget = message.mentions.members.first();
-        if (!banTarget) return message.reply("Please mention a valid member of this server");
-        if (banTarget.user.id === message.author.id) return message.reply("You cannot ban yourself!");
-        if (!banTarget.bannable) return message.reply("I cannot ban this user!");
+        if (!memberTarget) return message.reply("please mention a valid member of this server");
+        if (memberTarget.user.id === message.author.id) return message.reply("you cannot ban yourself!");
+        if (!memberTarget.bannable) return message.reply("I cannot ban this user!");
 
         // joins remaining args for reason
         let banReason = args.slice(1).join(' ');
         if (!banReason) banReason = "No reason provided";
 
-        await banTarget.ban(banReason)
-          .catch(error => message.reply(`Sorry ${message.author}, I couldn't ban because of : ${error}`));
-        message.channel.send(`${banTarget.user.tag} has been banned by ${message.author.tag} for the reason: ${banReason}`);
+        await memberTarget.ban(banReason)
+          .catch(error => message.reply(`sorry, I couldn't ban because of : ${error}`));
+
+        if (tokenData.logchannel) {
+          const banEmbed = new Discord.MessageEmbed()
+            .setColor(0x7f0000)
+            .setAuthor(`\u200b${userTarget.tag}`, userTarget.avatarURL())
+            .setDescription(`**${userTarget} has been banned by ${message.author} for the reason:**\n${banReason}`)
+          client.channels.cache.get(tokenData.logchannel).send(banEmbed);
+        }
+        message.react('👌');
         break;
 
       case 'addemote':
-        if (!member.hasPermission('MANAGE_EMOJIS')) return message.reply('You do not have sufficient perms to do that!'); // restricts this command to mods only
+        if (!member.hasPermission('MANAGE_EMOJIS')) return message.reply('you do not have sufficient perms to do that!'); // restricts this command to mods only
 
         let name = args.slice(1).join('_'); // discord does not allow spaces or dashes in emoji names :(
         guild.emojis.create(args[0], name)
@@ -323,7 +389,7 @@ client.on("messageDelete", async message => {
   let tokenData = {}; // probably better way to do this
   const path = `./tokens/${guild.id}.json`;
   if (fs.existsSync(path)) { // checks if the token exists
-    tokenData = await fm.readFile(`./tokens/${guild.id}.json`);
+    tokenData = await fm.readFile(path);
     tokenData = JSON.parse(tokenData);
   }
   if (tokenData.censoredusers && tokenData.censoredusers.includes(message.author.id)) return; // prevents double logging of censored messages, probably better way of doing this
@@ -345,7 +411,7 @@ client.on("messageDeleteBulk", async messages => {
   let tokenData = {}; // probably better way to do this
   const path = `./tokens/${guild.id}.json`;
   if (fs.existsSync(path)) { // checks if the token exists
-    tokenData = await fm.readFile(`./tokens/${guild.id}.json`);
+    tokenData = await fm.readFile(path);
     tokenData = JSON.parse(tokenData);
   }
 
@@ -370,7 +436,7 @@ client.on("messageUpdate", async (oldMessage, newMessage) => {
   let tokenData = {}; // probably better way to do this
   const path = `./tokens/${guild.id}.json`;
   if (fs.existsSync(path)) { // checks if the token exists
-    tokenData = await fm.readFile(`./tokens/${guild.id}.json`);
+    tokenData = await fm.readFile(path);
     tokenData = JSON.parse(tokenData);
   }
 
@@ -397,7 +463,7 @@ client.on("guildMemberUpdate", async (oldMember, newMember) => { // TODO: finish
   let tokenData = {}; // probably better way to do this
   const path = `./tokens/${guild.id}.json`;
   if (fs.existsSync(path)) { // checks if the token exists
-    tokenData = await fm.readFile(`./tokens/${guild.id}.json`);
+    tokenData = await fm.readFile(path);
     tokenData = JSON.parse(tokenData);
   }
 

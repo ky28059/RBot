@@ -1,3 +1,4 @@
 node_modules
 auth.json
-tokens/
+tokens/*
+!tokens/example.json
