@@ -39,10 +39,6 @@ client.on('message', async message => {
   const guild = message.guild;
   const member = guild.member(message.author);
 
-  const userTarget = message.mentions.users.first();
-  const memberTarget = message.mentions.members.first();
-  const channelTarget = message.mentions.channels.first();
-
   // code block reads token and then gets log channel + censored users
   let tokenData = {}; // probably better way to do this
   const path = `./tokens/${guild.id}.json`;
@@ -70,6 +66,10 @@ client.on('message', async message => {
     const args = message.content.slice(prefix.length).trim().split(/ +/g); // removes the prefix, then the spaces, then splits into array
     const command = args.shift().toLowerCase(); // removes the command from the args array
 
+    const userTarget = message.mentions.users.first() || client.users.cache.get(args[0]);
+    const memberTarget = message.mentions.members.first() || guild.members.cache.get(args[0]);
+    const channelTarget = message.mentions.channels.first();
+
     // Commands
     switch (command) {
       case 'ping':
@@ -91,7 +91,7 @@ client.on('message', async message => {
         const avatarEmbed = new Discord.MessageEmbed()
           .setColor(0x333333)
           .setTitle(avatarTarget.username)
-          .setImage(avatarTarget.avatarURL())
+          .setImage(avatarTarget.avatarURL({ size: 4096 }))
           .setFooter(`Requested by ${message.author.tag}`);
         message.channel.send(avatarEmbed);
         break;
@@ -153,7 +153,7 @@ client.on('message', async message => {
           .addFields(
             {name: '!update:', value: 'Updates the server\'s token'},
             {name: '!set [token field] [value]:', value: 'Sets token data'},
-            {name: '!token:', value: 'Gets the values of the server\'s current token'}
+            {name: '!presets:', value: 'Gets the values of the server\'s current presets'}
           )
           .setFooter(`Requested by ${message.author.tag}`);
 
@@ -200,7 +200,7 @@ client.on('message', async message => {
           message.channel.send('Token generated!');
 
         } else if (JSON.stringify(tokenDataKeys) != JSON.stringify(exTokenDataKeys)) {
-          tokenData = { ...exTokenData, ...tokenData};
+          tokenData = { ...exTokenData, ...tokenData}; // credit to Sean for this fantastically simple but amazing code
           fm.writeFile(path, JSON.stringify(tokenData));
           message.channel.send('Token updated!'); // maybe add in fields so that people know exactly which fields were updated? seems super complicated tho
 
@@ -233,18 +233,77 @@ client.on('message', async message => {
             await fm.writeFile(path, JSON.stringify(tokenData));
             message.channel.send(`Success! Prefix has been updated to \`${newPrefix}\`!`);
             break;
+
+          default:
+            return message.reply('you must specify a valid token field to modify! Valid token fields: `logchannel, prefix`');
         }
         break;
 
-      case 'token':
+      case 'toggle':
+        if (!member.hasPermission('MANAGE_MESSAGES')) return message.reply('you do not have sufficient perms to do that!'); // TODO: require a different perm for this command
+        if (!fs.existsSync(path)) return message.reply('this server does not have a valid token yet! Try doing !update!');
+        if (!args[0]) return message.reply('you must specify the logged action to toggle!');
+
+        const preset = args.shift().toLowerCase();
+
+        switch (preset) { // definitely more efficient way of doing this
+          case 'messagedelete':
+            tokenData.logmessagedelete = !tokenData.logmessagedelete;
+            await fm.writeFile(path, JSON.stringify(tokenData));
+            message.channel.send(`Success! \`Message Deletes\` have been set to ${tokenData.logmessagedelete}!`);
+            break;
+
+          case 'messagedeletebulk':
+            tokenData.logmessagedeletebulk = !tokenData.logmessagedeletebulk;
+            await fm.writeFile(path, JSON.stringify(tokenData));
+            message.channel.send(`Success! \`Bulk Message Deletes\` have been set to ${tokenData.logmessagedeletebulk}!`);
+            break;
+
+          case 'messageedit':
+            tokenData.logmessageedit = !tokenData.logmessageedit;
+            await fm.writeFile(path, JSON.stringify(tokenData));
+            message.channel.send(`Success! \`Message Updates\` have been set to ${tokenData.logmessageedit}!`);
+            break;
+
+          case 'nicknamechange':
+            tokenData.lognicknamechange = !tokenData.lognicknamechange;
+            await fm.writeFile(path, JSON.stringify(tokenData));
+            message.channel.send(`Success! \`Nickname Changes\` have been set to ${tokenData.lognicknamechange}!`);
+            break;
+
+          case 'memberjoin':
+            tokenData.logmemberjoin = !tokenData.logmemberjoin;
+            await fm.writeFile(path, JSON.stringify(tokenData));
+            message.channel.send(`Success! \`Member Joins\` have been set to ${tokenData.logmemberjoin}!`);
+            break;
+
+          case 'memberleave':
+            tokenData.logmemberleave = !tokenData.logmemberleave;
+            await fm.writeFile(path, JSON.stringify(tokenData));
+            message.channel.send(`Success! \`Member Leaves\` have been set to ${tokenData.logmemberleave}!`);
+            break;
+
+          default:
+            return message.reply('you must specify a valid logged action to toggle! Logged actions: `messagedelete`, `messagedeletebulk`, `messageedit`, `nicknamechange`, `memberjoin`, `memberleave`');
+        }
+        break;
+
+      case 'presets':
         if (!fs.existsSync(path)) return message.reply('this server does not have a valid token yet! Try doing !update!');
 
+        // TODO: make this embed look better
         const tokenEmbed = new Discord.MessageEmbed()
           .setColor(0x333333)
-          .setTitle('Token Data:')
+          .setTitle('Presets:')
           .addFields( // TODO: make a for each loop that adds available fields automatically so this command won't need to be manually updated
-            {name: 'Prefix:', value: tokenData.prefix ? tokenData.prefix : '!'},
-            {name: 'Log Channel:', value: tokenData.logchannel ? tokenData.logchannel : 'None'}
+            {name: 'Prefix:', value: tokenData.prefix || '!'},
+            {name: 'Log Channel:', value: tokenData.logchannel || 'None'},
+            {name: 'Message Deletes', value: tokenData.logmessagedelete, inline: true}, // I have no idea how to catch when tokenData is missing these fields without using ??
+            {name: 'Bulk Message Deletes', value: tokenData.logmessagedeletebulk, inline: true},
+            {name: 'Message Edits', value: tokenData.logmessageedit, inline: true},
+            {name: 'Nickname Changes', value: tokenData.lognicknamechange, inline: true},
+            {name: 'Member Joins', value: tokenData.logmemberjoin, inline: true},
+            {name: 'Member Leaves', value: tokenData.logmemberleave, inline: true}
           )
           .setFooter(`Requested by ${message.author.tag}`);
 
@@ -393,15 +452,14 @@ client.on("messageDelete", async message => {
     tokenData = JSON.parse(tokenData);
   }
   if (tokenData.censoredusers && tokenData.censoredusers.includes(message.author.id)) return; // prevents double logging of censored messages, probably better way of doing this
+  if (!(tokenData.logchannel && tokenData.logmessagedelete)) return;
 
-  if (tokenData.logchannel) {
-    const deleteEmbed = new Discord.MessageEmbed()
-      .setColor(0xb50300)
-      .setAuthor(`\u200b${message.author.tag}`, message.author.avatarURL())
-      .setDescription(`**Message by ${message.author} in ${message.channel} was deleted:**\n${message.content}`)
-      .setFooter(`${new Date()}`);
-    client.channels.cache.get(tokenData.logchannel).send(deleteEmbed);
-  }
+  const deleteEmbed = new Discord.MessageEmbed()
+    .setColor(0xb50300)
+    .setAuthor(`\u200b${message.author.tag}`, message.author.avatarURL())
+    .setDescription(`**Message by ${message.author} in ${message.channel} was deleted:**\n${message.content}`)
+    .setFooter(`${new Date()}`);
+  client.channels.cache.get(tokenData.logchannel).send(deleteEmbed);
 });
 
 client.on("messageDeleteBulk", async messages => {
@@ -414,16 +472,15 @@ client.on("messageDeleteBulk", async messages => {
     tokenData = await fm.readFile(path);
     tokenData = JSON.parse(tokenData);
   }
+  if (!(tokenData.logchannel && tokenData.logmessagedeletebulk)) return;
 
   // temporary Dyno-like bulkdelete logging system, will convert into superior system later
-  if (tokenData.logchannel) {
-    const bulkDeleteEmbed = new Discord.MessageEmbed()
-      .setColor(0xb50300)
-      .setAuthor(`\u200b${guild.name}`, guild.iconURL())
-      .setDescription(`**${messages.array().length} messages were deleted in ${messages.first().channel}**`)
-      .setFooter(`${new Date()}`);
-    client.channels.cache.get(tokenData.logchannel).send(bulkDeleteEmbed);
-  }
+  const bulkDeleteEmbed = new Discord.MessageEmbed()
+    .setColor(0xb50300)
+    .setAuthor(`\u200b${guild.name}`, guild.iconURL())
+    .setDescription(`**${messages.array().length} messages were deleted in ${messages.first().channel}**`)
+    .setFooter(`${new Date()}`);
+  client.channels.cache.get(tokenData.logchannel).send(bulkDeleteEmbed);
 });
 
 client.on("messageUpdate", async (oldMessage, newMessage) => {
@@ -439,19 +496,18 @@ client.on("messageUpdate", async (oldMessage, newMessage) => {
     tokenData = await fm.readFile(path);
     tokenData = JSON.parse(tokenData);
   }
+  if (!(tokenData.logchannel && tokenData.logmessageedit)) return;
 
-  if (tokenData.logchannel) {
-    const editEmbed = new Discord.MessageEmbed()
-      .setColor(0xed7501)
-      .setAuthor(`\u200b${oldMessage.author.tag}`, oldMessage.author.avatarURL())
-      .setDescription(`**Message by ${oldMessage.author} in ${oldMessage.channel} was edited:**`)
-      .addFields(
-        {name: 'Before:', value: `\u200b${oldMessage.content}`}, // the \u200b is to not get RangeErrors from empty messages
-        {name: 'After:', value: `\u200b${newMessage.content}`}
-      )
-      .setFooter(`${new Date()}`);
-    client.channels.cache.get(tokenData.logchannel).send(editEmbed);
-  }
+  const editEmbed = new Discord.MessageEmbed()
+    .setColor(0xed7501)
+    .setAuthor(`\u200b${oldMessage.author.tag}`, oldMessage.author.avatarURL())
+    .setDescription(`**Message by ${oldMessage.author} in ${oldMessage.channel} was edited:**`)
+    .addFields(
+      {name: 'Before:', value: `\u200b${oldMessage.content}`}, // the \u200b is to not get RangeErrors from empty messages
+      {name: 'After:', value: `\u200b${newMessage.content}`}
+    )
+    .setFooter(`${new Date()}`);
+  client.channels.cache.get(tokenData.logchannel).send(editEmbed);
 });
 
 client.on("guildMemberUpdate", async (oldMember, newMember) => { // TODO: finish this by adding role logging
@@ -466,27 +522,55 @@ client.on("guildMemberUpdate", async (oldMember, newMember) => { // TODO: finish
     tokenData = await fm.readFile(path);
     tokenData = JSON.parse(tokenData);
   }
+  if (!(tokenData.logchannel && tokenData.lognicknamechange)) return; // will have to update later if I wish to use this for more things than nickname changes
 
-  if (tokenData.logchannel) {
-    const updateEmbed = new Discord.MessageEmbed()
-      .setColor(0xf6b40c)
-      .setAuthor(`\u200b${newMember.user.tag}`, newMember.user.avatarURL())
-      .setFooter(`${new Date()}`);
+  const updateEmbed = new Discord.MessageEmbed()
+    .setColor(0xf6b40c)
+    .setAuthor(`\u200b${newMember.user.tag}`, newMember.user.avatarURL())
+    .setFooter(`${new Date()}`);
 
-    if (oldMember.nickname != newMember.nickname) {
-      updateEmbed
-        .setDescription(`**${newMember.user} changed their nickname:**`)
-        .addFields(
-          {name: 'Before:', value: oldMember.nickname ? oldMember.nickname : 'None'},
-          {name: 'After:', value: newMember.nickname ? newMember.nickname : 'None'}
-        );
-      client.channels.cache.get(tokenData.logchannel).send(updateEmbed);
-    }
+  if (oldMember.nickname != newMember.nickname) {
+    updateEmbed
+      .setDescription(`**${newMember.user} changed their nickname:**`)
+      .addFields(
+        {name: 'Before:', value: oldMember.nickname || 'None'},
+        {name: 'After:', value: newMember.nickname || 'None'}
+      );
+    client.channels.cache.get(tokenData.logchannel).send(updateEmbed);
   }
 });
 
-client.on("guildMemberRemove", (member) => {
+client.on("guildMemberAdd", async (member) => {
   const guild = member.guild;
+
+  let tokenData = {}; // probably better way to do this
+  const path = `./tokens/${guild.id}.json`;
+  if (fs.existsSync(path)) { // checks if the token exists
+    tokenData = await fm.readFile(path);
+    tokenData = JSON.parse(tokenData);
+  }
+  if (!(tokenData.logchannel && tokenData.logmemberjoin)) return;
+
+  // add potential welcome messages later
+  const joinEmbed = new Discord.MessageEmbed()
+    .setColor(0x79ff3b)
+    .setAuthor('Member joined the server', member.user.avatarURL())
+    .setDescription(`${member.user} ${member.user.tag}`)
+    .setFooter(`${new Date()}`);
+
+  client.channels.cache.get(tokenData.logchannel).send(joinEmbed);
+});
+
+client.on("guildMemberRemove", async (member) => {
+  const guild = member.guild;
+
+  let tokenData = {}; // probably better way to do this
+  const path = `./tokens/${guild.id}.json`;
+  if (fs.existsSync(path)) { // checks if the token exists
+    tokenData = await fm.readFile(path);
+    tokenData = JSON.parse(tokenData);
+  }
+  if (!(guild.systemChannel && tokenData.logmemberleave)) return;
 
   const leaveEmbed = new Discord.MessageEmbed()
     .setColor(0x333333)
@@ -494,7 +578,7 @@ client.on("guildMemberRemove", (member) => {
     .setDescription(`${member.user} ${member.user.tag}`)
     .setFooter(`${new Date()}`);
 
-  if (guild.systemChannel) guild.systemChannel.send(leaveEmbed);
+  guild.systemChannel.send(leaveEmbed);
 });
 
 client.login(auth.token);

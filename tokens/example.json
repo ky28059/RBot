@@ -1,1 +1,1 @@
-{"prefix":"","logchannel":"","censoredusers":""}
+{"prefix":"","logchannel":"","censoredusers":"", "logmessagedelete":true, "logmessagedeletebulk":true, "logmessageedit":true, "lognicknamechange":true, "logmemberjoin":true, "logmemberleave":true}
