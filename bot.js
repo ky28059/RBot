@@ -1,13 +1,35 @@
 // TODO: add in .catch()s so that the bot wont break as much
 // TODO: add in catchs on commands that require token information to check for if a token is lacking the field that command requires (currently only have checks for if a server is missing a token)
-const Discord = require('discord.js');
-const fs = require('fs');
-const auth = require('./auth.json');
-const fm = require('./fileManager.js');
-//const parser = require('./toolkit/parser.js');
-const client = new Discord.Client();
+import Discord from 'discord.js';
+import fs from 'fs';
+import {token} from './auth.js';
+import {writeFile, readFile} from './fileManager.js';
 
+import addemote from './commands/addemote.js'; // https://javascript.info/import-export
+import avatar from './commands/avatar.js';
+import ban from './commands/ban.js';
+import expunge from './commands/expunge.js';
+import gild from './commands/gild.js';
+import help from './commands/help.js';
+import kick from './commands/kick.js';
+import ping from './commands/ping.js';
+import profile from './commands/profile.js';
+import purge from './commands/purge.js';
+import say from './commands/say.js';
+
+const client = new Discord.Client();
 const talkedRecently = new Set();
+
+// code block reads server token and gets info
+async function readToken(guild) {
+  let tokenData = {}; // probably better way to do this
+  const path = `./tokens/${guild.id}.json`;
+  if (fs.existsSync(path)) { // checks if the token exists
+    tokenData = await readFile(path);
+    tokenData = JSON.parse(tokenData);
+  }
+  return tokenData;
+}
 
 // Initialize Discord Bot
 client.on('ready', () => {
@@ -18,8 +40,8 @@ client.on('ready', () => {
 client.on("guildCreate", guild => { // writes token upon joining new server
   const path = `./tokens/${guild.id}.json`;
   if (!fs.existsSync(path)) { // checks if there's an already existing token for that server
-    fm.readFile('./tokens/example.json').then(cache =>
-      fm.writeFile(path, cache)
+    readFile('./tokens/example.json').then(cache =>
+      writeFile(path, cache)
     );
   }
   console.log(`New guild joined: ${guild.name} (id: ${guild.id}). This guild has ${guild.memberCount} members!`);
@@ -29,23 +51,11 @@ client.on('message', async message => {
   if (message.author.bot) return; // Bot ignores itself and other bots
   if (talkedRecently.has(message.author.id)) return; // Spam prevention
 
-  talkedRecently.add(message.author.id);
-  setTimeout(() => {
-    // Removes the user from the set after 1 second
-    talkedRecently.delete(message.author.id);
-  }, 1000);
-
   // maybe move this code elsewhere? idk
   const guild = message.guild;
   const member = guild.member(message.author);
 
-  // code block reads token and then gets log channel + censored users
-  let tokenData = {}; // probably better way to do this
-  const path = `./tokens/${guild.id}.json`;
-  if (fs.existsSync(path)) { // checks if the token exists
-    tokenData = await fm.readFile(path);
-    tokenData = JSON.parse(tokenData);
-  }
+  const tokenData = await readToken(guild);
   const prefix = tokenData.prefix || '!'; // maybe move somewhere else?
 
   if (tokenData.censoredusers && tokenData.censoredusers.includes(message.author.id)) {
@@ -66,142 +76,52 @@ client.on('message', async message => {
     const args = message.content.slice(prefix.length).trim().split(/ +/g); // removes the prefix, then the spaces, then splits into array
     const command = args.shift().toLowerCase(); // removes the command from the args array
 
-    const userTarget = message.mentions.users.first() || client.users.cache.get(args[0]);
-    const memberTarget = message.mentions.members.first() || guild.members.cache.get(args[0]);
-    const channelTarget = message.mentions.channels.first();
+    const userTarget = message.mentions.users.first() || client.users.cache.get(args[0]) || client.users.cache.find(user => user.username === args[0]);
+    const memberTarget = message.mentions.members.first() || guild.members.cache.get(args[0]) || guild.members.cache.find(member => member.user.username === args[0]);
+    const channelTarget = message.mentions.channels.first() || client.channels.cache.get(args[0]);
+
+    const path = `./tokens/${guild.id}.json`; // needed for existssync
 
     // Commands
     switch (command) {
       case 'ping':
-        let m = await message.channel.send("Ping?");
-        m.edit(`Pong! Latency is ${m.createdTimestamp - message.createdTimestamp}ms. API Latency is ${Math.round(client.ws.ping)}ms`);
+        ping(message);
         break;
 
       case 'say':
-        if (args.length > 0) {
-          let msg = args.join(" ");
-          message.channel.send(msg);
-        } else {
-          message.channel.send('You must specify what to say!');
-        }
+        say(message, args.join(' '));
         break;
 
       case 'avatar':
-        const avatarTarget = userTarget || message.author;
-        const avatarEmbed = new Discord.MessageEmbed()
-          .setColor(0x333333)
-          .setTitle(avatarTarget.username)
-          .setImage(avatarTarget.avatarURL({ size: 4096 }))
-          .setFooter(`Requested by ${message.author.tag}`);
-        message.channel.send(avatarEmbed);
+        avatar(message, userTarget);
         break;
 
       case 'profile':
-        const profileTarget = userTarget || message.author;
-        const guildProfileTarget = guild.member(profileTarget);
-
-        const profileEmbed = new Discord.MessageEmbed()
-          .setColor(0x333333)
-          .setAuthor(`\u200b${profileTarget.tag}`, profileTarget.avatarURL())
-          .addFields(
-            {name: 'Account created on', value: `\u200b${profileTarget.createdAt}`},
-            {name: 'Server joined on', value: `\u200b${guildProfileTarget.joinedAt}`},
-          )
-          .setFooter(`Requested by ${message.author.tag}`);
-        message.channel.send(profileEmbed);
+        profile(message, guild, userTarget);
         break;
 
       case 'gild':
-        message.channel.messages.fetch({limit: 2}).then(messages => {
-          let gildTarget = messages.last();
-          gildTarget.react('727100873016344687');
-          gildTarget.react('726691291970404353');
-          gildTarget.react('726691292020736110');
-          messages.first().delete();
-        });
+        gild(message);
         break;
 
-      case 'help': // https://discordjs.guide/popular-topics/embeds.html#using-the-richembedmessageembed-constructor
-        const helpEmbed1 = new Discord.MessageEmbed()
-          .setColor(0x333333)
-          .setTitle('Non-Admin Commands:')
-          .addFields(
-            {name: '!ping:', value: 'Gets latency'},
-            {name: '!say [message]:', value: 'Makes bot say what you tell it to say'},
-            {name: '!avatar @[user]:', value: 'Gets the discord avatar of the mentioned user, defaults to get your avatar when no user is mentioned'},
-            {name: '!profile @[user]:', value: 'Gets some information about the mentioned user'},
-            {name: '!gild:', value: 'Gives some Reddit gold to the last message sent'}
-          )
-          .setFooter(`Requested by ${message.author.tag}`);
-        const helpEmbed2 = new Discord.MessageEmbed()
-          .setColor(0x333333)
-          .setTitle('Admin Commands:')
-          .addFields(
-            {name: '!purge [2-100]:', value: 'Bulk deletes the specified number of messages in the channel the command is called in'},
-            {name: '!expunge [2-100]:', value: 'Removes all reactions from the specifed number of messages in the channel the command is called in'},
-            {name: '!kick @[user] [reason]:', value: 'Kicks the specified user from the server'},
-            {name: '!ban @[user] [reason]:', value: 'Bans the specified user from the server'},
-            {name: '!censor @[user]:', value: 'Censors the specified user (autodeletes their messages and logs it in the log channel)'},
-            {name: '!uncensor @[user]:', value: 'Uncensors the specified user'},
-            {name: '!censored:', value: 'Shows which users are currently censored'},
-            {name: '!addemote [image link] [name]:', value: 'Creates an emoji with the given image and name'} // this feels awkward here
-          )
-          .setFooter(`Requested by ${message.author.tag}`);
-        const helpEmbed3 = new Discord.MessageEmbed()
-          .setColor(0x333333)
-          .setTitle('Token Commands:')
-          .addFields(
-            {name: '!update:', value: 'Updates the server\'s token'},
-            {name: '!set [token field] [value]:', value: 'Sets token data'},
-            {name: '!presets:', value: 'Gets the values of the server\'s current presets'}
-          )
-          .setFooter(`Requested by ${message.author.tag}`);
-
-        // high level reaction listening
-        const helpMessage = await message.channel.send(helpEmbed1);
-
-        const filter = (reaction, user) => {
-          return ['1️⃣', '2️⃣', '3️⃣'].includes(reaction.emoji.name) && user.id === message.author.id;
-        };
-
-        //for (let i = 0; i < 5; i++) { // this doesn't work, thanks james!!
-          await helpMessage.react('1️⃣');
-          await helpMessage.react('2️⃣');
-          await helpMessage.react('3️⃣');
-
-          // https://discordjs.guide/popular-topics/reactions.html#awaiting-reactions
-          helpMessage.awaitReactions(filter, { max: 1, time: 30000 })
-            .then(collected => {
-              switch (collected.first().emoji.name) {
-                case '1️⃣':
-                  helpMessage.edit(helpEmbed1);
-                  break;
-                case '2️⃣':
-                  helpMessage.edit(helpEmbed2);
-                  break;
-                case '3️⃣':
-                  helpMessage.edit(helpEmbed3);
-                  break;
-              }
-              //helpMessage.reactions.removeAll();
-            });
-        //}
+      case 'help':
+        help(message);
         break;
 
       case 'update':
-        const exTokenContents = await fm.readFile('./tokens/example.json');
+        const exTokenContents = await readFile('./tokens/example.json');
         const exTokenData = JSON.parse(exTokenContents); // my variable names are so horrible
 
         const tokenDataKeys = Object.keys(tokenData);
         const exTokenDataKeys = Object.keys(exTokenData);
 
         if (!fs.existsSync(path)) { // checks if there's an already existing token for that server
-          fm.writeFile(path, exTokenContents)
+          writeFile(path, exTokenContents)
           message.channel.send('Token generated!');
 
         } else if (JSON.stringify(tokenDataKeys) != JSON.stringify(exTokenDataKeys)) {
           tokenData = { ...exTokenData, ...tokenData}; // credit to Sean for this fantastically simple but amazing code
-          fm.writeFile(path, JSON.stringify(tokenData));
+          writeFile(path, JSON.stringify(tokenData));
           message.channel.send('Token updated!'); // maybe add in fields so that people know exactly which fields were updated? seems super complicated tho
 
         } else {
@@ -221,7 +141,7 @@ client.on('message', async message => {
             if (!channelTarget) return message.reply("please mention a valid channel in this server");
 
             tokenData.logchannel = channelTarget.id;
-            await fm.writeFile(path, JSON.stringify(tokenData));
+            await writeFile(path, JSON.stringify(tokenData));
             message.channel.send(`Success! Log channel has been updated to ${channelTarget}!`);
             break;
 
@@ -230,7 +150,7 @@ client.on('message', async message => {
             if (!newPrefix) return message.reply('you must specify a prefix to set!')
 
             tokenData.prefix = newPrefix;
-            await fm.writeFile(path, JSON.stringify(tokenData));
+            await writeFile(path, JSON.stringify(tokenData));
             message.channel.send(`Success! Prefix has been updated to \`${newPrefix}\`!`);
             break;
 
@@ -249,37 +169,37 @@ client.on('message', async message => {
         switch (preset) { // definitely more efficient way of doing this
           case 'messagedelete':
             tokenData.logmessagedelete = !tokenData.logmessagedelete;
-            await fm.writeFile(path, JSON.stringify(tokenData));
+            await writeFile(path, JSON.stringify(tokenData));
             message.channel.send(`Success! \`Message Deletes\` have been set to ${tokenData.logmessagedelete}!`);
             break;
 
           case 'messagedeletebulk':
             tokenData.logmessagedeletebulk = !tokenData.logmessagedeletebulk;
-            await fm.writeFile(path, JSON.stringify(tokenData));
+            await writeFile(path, JSON.stringify(tokenData));
             message.channel.send(`Success! \`Bulk Message Deletes\` have been set to ${tokenData.logmessagedeletebulk}!`);
             break;
 
           case 'messageedit':
             tokenData.logmessageedit = !tokenData.logmessageedit;
-            await fm.writeFile(path, JSON.stringify(tokenData));
+            await writeFile(path, JSON.stringify(tokenData));
             message.channel.send(`Success! \`Message Updates\` have been set to ${tokenData.logmessageedit}!`);
             break;
 
           case 'nicknamechange':
             tokenData.lognicknamechange = !tokenData.lognicknamechange;
-            await fm.writeFile(path, JSON.stringify(tokenData));
+            await writeFile(path, JSON.stringify(tokenData));
             message.channel.send(`Success! \`Nickname Changes\` have been set to ${tokenData.lognicknamechange}!`);
             break;
 
           case 'memberjoin':
             tokenData.logmemberjoin = !tokenData.logmemberjoin;
-            await fm.writeFile(path, JSON.stringify(tokenData));
+            await writeFile(path, JSON.stringify(tokenData));
             message.channel.send(`Success! \`Member Joins\` have been set to ${tokenData.logmemberjoin}!`);
             break;
 
           case 'memberleave':
             tokenData.logmemberleave = !tokenData.logmemberleave;
-            await fm.writeFile(path, JSON.stringify(tokenData));
+            await writeFile(path, JSON.stringify(tokenData));
             message.channel.send(`Success! \`Member Leaves\` have been set to ${tokenData.logmemberleave}!`);
             break;
 
@@ -320,7 +240,7 @@ client.on('message', async message => {
         if (tokenData.censoredusers.includes(memberTarget.id)) return message.reply("that user is already censored!");
 
         tokenData.censoredusers += memberTarget.id + ' ';
-        await fm.writeFile(path, JSON.stringify(tokenData));
+        await writeFile(path, JSON.stringify(tokenData));
         message.channel.send(`Now censoring ${userTarget.tag}!`);
         break;
 
@@ -332,7 +252,7 @@ client.on('message', async message => {
         if (!tokenData.censoredusers.includes(memberTarget.id)) return message.reply("that user was not censored!");
 
         tokenData.censoredusers = tokenData.censoredusers.replace(memberTarget.id + ' ', '');
-        await fm.writeFile(path, JSON.stringify(tokenData));
+        await writeFile(path, JSON.stringify(tokenData));
         message.channel.send(`Now uncensoring ${userTarget.tag}!`);
         break;
 
@@ -354,86 +274,33 @@ client.on('message', async message => {
         break;
 
       case 'purge':
-        if (!member.hasPermission('MANAGE_MESSAGES')) return message.reply('you do not have sufficient perms to do that!'); // restricts this command to mods only
-
-        // get the delete count, as an actual number.
-        const deleteCount = parseInt(args[0], 10);
-        if (!deleteCount || deleteCount < 2 || deleteCount > 100) return message.reply("please provide a number between 2 and 100 for the number of messages to delete");
-
-        const fetchedDeletes = await message.channel.messages.fetch({limit: deleteCount});
-        message.channel.bulkDelete(fetchedDeletes)
-          .catch(error => message.reply(`couldn't delete messages because of: ${error}`));
+        purge(message, guild, args[0]);
         break;
 
-      case 'expunge': // TODO: make this not super slow
-        if (!member.hasPermission('MANAGE_MESSAGES')) return message.reply('you do not have sufficient perms to do that!'); // restricts this command to mods only, maybe require different perms?
-
-        // get the delete count, as an actual number.
-        const expungeCount = parseInt(args[0], 10);
-        if (!expungeCount || expungeCount < 2 || expungeCount > 100) return message.reply("please provide a number between 2 and 100 for the number of messages to expunge reactions from");
-
-        const fetchedExpunged = await message.channel.messages.fetch({limit: expungeCount});
-        fetchedExpunged.array().forEach(message => message.reactions.removeAll());
-        message.react('👌');
+      case 'expunge':
+        expunge(message, guild, args[0]);
         break;
 
       case 'kick':
-        if (!member.hasPermission('KICK_MEMBERS')) return message.reply('you do not have sufficient perms to do that!'); // restricts this command to mods only
-
-        if (!memberTarget) return message.reply("please mention a valid member of this server");
-        if (memberTarget.user.id === message.author.id) return message.reply("you cannot kick yourself!");
-        if (!memberTarget.kickable) return message.reply("I cannot kick this user!");
-
-        // joins remaining args for reason
-        let kickReason = args.slice(1).join(' ');
-        if (!kickReason) kickReason = "No reason provided";
-
-        await memberTarget.kick(kickReason)
-          .catch(error => message.reply(`sorry, I couldn't kick because of : ${error}`));
-
-        if (tokenData.logchannel) {
-          const kickEmbed = new Discord.MessageEmbed()
-            .setColor(0x7f0000)
-            .setAuthor(`\u200b${userTarget.tag}`, userTarget.avatarURL())
-            .setDescription(`**${userTarget} has been kicked by ${message.author} for the reason:**\n${kickReason}`)
-          client.channels.cache.get(tokenData.logchannel).send(kickEmbed);
-        }
-        message.react('👌');
+        kick(message, guild, memberTarget, args.join(' '), tokenData.logchannel);
         break;
 
       case 'ban':
-        if (!member.hasPermission('BAN_MEMBERS')) return message.reply('you do not have sufficient perms to do that!'); // restricts this command to mods only
-
-        if (!memberTarget) return message.reply("please mention a valid member of this server");
-        if (memberTarget.user.id === message.author.id) return message.reply("you cannot ban yourself!");
-        if (!memberTarget.bannable) return message.reply("I cannot ban this user!");
-
-        // joins remaining args for reason
-        let banReason = args.slice(1).join(' ');
-        if (!banReason) banReason = "No reason provided";
-
-        await memberTarget.ban(banReason)
-          .catch(error => message.reply(`sorry, I couldn't ban because of : ${error}`));
-
-        if (tokenData.logchannel) {
-          const banEmbed = new Discord.MessageEmbed()
-            .setColor(0x7f0000)
-            .setAuthor(`\u200b${userTarget.tag}`, userTarget.avatarURL())
-            .setDescription(`**${userTarget} has been banned by ${message.author} for the reason:**\n${banReason}`)
-          client.channels.cache.get(tokenData.logchannel).send(banEmbed);
-        }
-        message.react('👌');
+        ban(message, guild, memberTarget, args.join(' '), tokenData.logchannel);
         break;
 
       case 'addemote':
-        if (!member.hasPermission('MANAGE_EMOJIS')) return message.reply('you do not have sufficient perms to do that!'); // restricts this command to mods only
-
         let name = args.slice(1).join('_'); // discord does not allow spaces or dashes in emoji names :(
-        guild.emojis.create(args[0], name)
-          .then(emoji => message.channel.send(`Created new emoji with name ${emoji.name}!`))
-          .catch(error => message.channel.send(`Sorry ${message.author}, I couldn't create emoji because of : ${error}`));
+        addemote(message, guild, args[0], name);
         break;
     }
+
+    // adds user to set if they have used a command recently
+    talkedRecently.add(message.author.id);
+    setTimeout(() => {
+      // Removes the user from the set after 1 second
+      talkedRecently.delete(message.author.id);
+    }, 1000);
   }
 });
 
@@ -445,12 +312,7 @@ client.on("messageDelete", async message => {
   // code block reads token and then gets log channel + censored users
   const guild = message.guild;
 
-  let tokenData = {}; // probably better way to do this
-  const path = `./tokens/${guild.id}.json`;
-  if (fs.existsSync(path)) { // checks if the token exists
-    tokenData = await fm.readFile(path);
-    tokenData = JSON.parse(tokenData);
-  }
+  const tokenData = await readToken(guild);
   if (tokenData.censoredusers && tokenData.censoredusers.includes(message.author.id)) return; // prevents double logging of censored messages, probably better way of doing this
   if (!(tokenData.logchannel && tokenData.logmessagedelete)) return;
 
@@ -466,12 +328,7 @@ client.on("messageDeleteBulk", async messages => {
   // code block reads token and then gets log channel + censored users
   const guild = messages.first().guild;
 
-  let tokenData = {}; // probably better way to do this
-  const path = `./tokens/${guild.id}.json`;
-  if (fs.existsSync(path)) { // checks if the token exists
-    tokenData = await fm.readFile(path);
-    tokenData = JSON.parse(tokenData);
-  }
+  const tokenData = await readToken(guild);
   if (!(tokenData.logchannel && tokenData.logmessagedeletebulk)) return;
 
   // temporary Dyno-like bulkdelete logging system, will convert into superior system later
@@ -490,12 +347,7 @@ client.on("messageUpdate", async (oldMessage, newMessage) => {
   // code block reads token and then gets log channel + censored users
   const guild = oldMessage.guild;
 
-  let tokenData = {}; // probably better way to do this
-  const path = `./tokens/${guild.id}.json`;
-  if (fs.existsSync(path)) { // checks if the token exists
-    tokenData = await fm.readFile(path);
-    tokenData = JSON.parse(tokenData);
-  }
+  const tokenData = await readToken(guild);
   if (!(tokenData.logchannel && tokenData.logmessageedit)) return;
 
   const editEmbed = new Discord.MessageEmbed()
@@ -516,12 +368,7 @@ client.on("guildMemberUpdate", async (oldMember, newMember) => { // TODO: finish
   // code block reads token and then gets log channel + censored users
   const guild = oldMember.guild;
 
-  let tokenData = {}; // probably better way to do this
-  const path = `./tokens/${guild.id}.json`;
-  if (fs.existsSync(path)) { // checks if the token exists
-    tokenData = await fm.readFile(path);
-    tokenData = JSON.parse(tokenData);
-  }
+  const tokenData = await readToken(guild);
   if (!(tokenData.logchannel && tokenData.lognicknamechange)) return; // will have to update later if I wish to use this for more things than nickname changes
 
   const updateEmbed = new Discord.MessageEmbed()
@@ -543,12 +390,7 @@ client.on("guildMemberUpdate", async (oldMember, newMember) => { // TODO: finish
 client.on("guildMemberAdd", async (member) => {
   const guild = member.guild;
 
-  let tokenData = {}; // probably better way to do this
-  const path = `./tokens/${guild.id}.json`;
-  if (fs.existsSync(path)) { // checks if the token exists
-    tokenData = await fm.readFile(path);
-    tokenData = JSON.parse(tokenData);
-  }
+  const tokenData = await readToken(guild);
   if (!(tokenData.logchannel && tokenData.logmemberjoin)) return;
 
   // add potential welcome messages later
@@ -564,12 +406,7 @@ client.on("guildMemberAdd", async (member) => {
 client.on("guildMemberRemove", async (member) => {
   const guild = member.guild;
 
-  let tokenData = {}; // probably better way to do this
-  const path = `./tokens/${guild.id}.json`;
-  if (fs.existsSync(path)) { // checks if the token exists
-    tokenData = await fm.readFile(path);
-    tokenData = JSON.parse(tokenData);
-  }
+  const tokenData = await readToken(guild);
   if (!(guild.systemChannel && tokenData.logmemberleave)) return;
 
   const leaveEmbed = new Discord.MessageEmbed()
@@ -581,4 +418,4 @@ client.on("guildMemberRemove", async (member) => {
   guild.systemChannel.send(leaveEmbed);
 });
 
-client.login(auth.token);
+client.login(token);

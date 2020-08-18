@@ -4,6 +4,7 @@
   "description": "Another mod bot",
   "main": "bot.js",
   "author": "Kevin Yu",
+  "type": "module",
   "dependencies": {
     "discord.js": "^12.2.0",
     "fs": "0.0.1-security",

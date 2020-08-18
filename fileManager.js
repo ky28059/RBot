@@ -1,6 +1,9 @@
 // https://github.com/Orbiit/gunn-web-app/blob/master/build.js
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 function readFile(file) {
   return new Promise((res, rej) => {
@@ -15,4 +18,5 @@ function writeFile(file, contents) {
     console.log(file + ' written')
   });
 }
-module.exports = {readFile, writeFile};
+
+export {readFile, writeFile};
