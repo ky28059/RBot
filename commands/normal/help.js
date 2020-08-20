@@ -1,4 +1,6 @@
-async function help(message) {
+import Discord from 'discord.js';
+
+export async function help(message) {
   // https://discordjs.guide/popular-topics/embeds.html#using-the-richembedmessageembed-constructor
   const helpEmbed1 = new Discord.MessageEmbed()
     .setColor(0x333333)
@@ -67,4 +69,4 @@ async function help(message) {
   //}
 }
 
-export default help;
+//export {help};

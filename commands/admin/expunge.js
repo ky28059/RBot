@@ -1,4 +1,4 @@
-async function expunge(message, guild, expungeCount) {
+export async function expunge(message, guild, expungeCount) {
   // TODO: make this not super slow
   if (!guild.member(message.author).hasPermission('MANAGE_MESSAGES')) return message.reply('you do not have sufficient perms to do that!'); // restricts this command to mods only, maybe require different perms?
 
@@ -9,4 +9,4 @@ async function expunge(message, guild, expungeCount) {
   message.react('👌');
 }
 
-export default expunge;
+//export {expunge};

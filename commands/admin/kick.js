@@ -1,4 +1,6 @@
-async function kick(message, guild, target, reason, logChannel) { // target = GuildMember
+import Discord from 'discord.js';
+
+export async function kick(message, guild, target, reason, logChannel) { // target = GuildMember
   if (!guild.member(message.author).hasPermission('KICK_MEMBERS')) return message.reply('you do not have sufficient perms to do that!'); // restricts this command to mods only
 
   if (!target) return message.reply("please mention a valid member of this server");
@@ -20,4 +22,4 @@ async function kick(message, guild, target, reason, logChannel) { // target = Gu
   message.react('👌');
 }
 
-export default kick;
+//export {kick};

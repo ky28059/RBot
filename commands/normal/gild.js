@@ -1,4 +1,4 @@
-function gild(message) {
+export function gild(message) {
   message.channel.messages.fetch({limit: 2}).then(messages => {
     let gildTarget = messages.last();
     Promise.all([
@@ -10,4 +10,4 @@ function gild(message) {
   });
 }
 
-export default gild;
+//export {gild};

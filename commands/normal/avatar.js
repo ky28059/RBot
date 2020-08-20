@@ -1,4 +1,6 @@
-function avatar(message, target) {
+import Discord from 'discord.js';
+
+export function avatar(message, target) {
   const avatarTarget = target || message.author;
   const avatarEmbed = new Discord.MessageEmbed()
     .setColor(0x333333)
@@ -8,4 +10,4 @@ function avatar(message, target) {
   message.channel.send(avatarEmbed);
 }
 
-export default avatar;
+//export {avatar};

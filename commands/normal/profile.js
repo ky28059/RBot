@@ -1,4 +1,6 @@
-function profile(message, guild, target) {
+import Discord from 'discord.js';
+
+export function profile(message, guild, target) {
   // TODO: make prettier, add functionality
   const profileTarget = target || message.author;
   const guildProfileTarget = guild.member(profileTarget);
@@ -14,4 +16,4 @@ function profile(message, guild, target) {
   message.channel.send(profileEmbed);
 }
 
-export default profile;
+//export {profile};
