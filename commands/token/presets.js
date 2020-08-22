@@ -1,5 +1,5 @@
 import Discord from 'discord.js';
-import {readToken} from '../../bot.js';
+import {readToken} from '../utils/tokenManager.js';
 
 export async function presets(message, guild) {
   const tokenData = await readToken(guild);
@@ -10,6 +10,7 @@ export async function presets(message, guild) {
     .addFields( // TODO: make a for each loop that adds available fields automatically so this command won't need to be manually updated
       {name: 'Prefix:', value: tokenData.prefix || '!'},
       {name: 'Log Channel:', value: tokenData.logchannel || 'None'},
+      {name: 'Disabled Commands:', value: tokenData.disabledcommands ? tokenData.disabledcommands.trim().split(' ').join(', ') : 'None'},
       {name: 'Message Deletes', value: tokenData.logmessagedelete, inline: true},
       {name: 'Bulk Message Deletes', value: tokenData.logmessagedeletebulk, inline: true},
       {name: 'Message Edits', value: tokenData.logmessageedit, inline: true},

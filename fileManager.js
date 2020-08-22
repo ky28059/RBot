@@ -1,4 +1,5 @@
 // https://github.com/Orbiit/gunn-web-app/blob/master/build.js
+// stuck forever in the root folder since write/readFile are relative to it :(
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';

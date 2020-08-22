@@ -1,4 +1,4 @@
-import {readToken} from '../../bot.js';
+import {readToken} from '../utils/tokenManager.js';
 import {readFile, writeFile} from '../../fileManager.js';
 import fs from 'fs';
 
@@ -6,7 +6,7 @@ export async function update(message, guild) {
   const exTokenContents = await readFile('./tokens/example.json');
   const exTokenData = JSON.parse(exTokenContents); // my variable names are so horrible
 
-  const tokenData = await readToken(guild);
+  let tokenData = await readToken(guild);
   const tokenDataKeys = Object.keys(tokenData);
   const exTokenDataKeys = Object.keys(exTokenData);
 

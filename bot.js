@@ -4,21 +4,11 @@ import Discord from 'discord.js';
 import fs from 'fs';
 import {token} from './auth.js';
 import {writeFile, readFile} from './fileManager.js';
+import {readToken} from './commands/utils/tokenManager.js';
 import * as commands from './commands/commands.js';
 
 const client = new Discord.Client();
 const talkedRecently = new Set();
-
-// code block reads server token and gets info
-export async function readToken(guild) {
-  let tokenData = {}; // probably better way to do this
-  const path = `./tokens/${guild.id}.json`;
-  if (fs.existsSync(path)) { // checks if the token exists
-    tokenData = await readFile(path);
-    tokenData = JSON.parse(tokenData);
-  }
-  return tokenData;
-}
 
 // Initialize Discord Bot
 client.on('ready', () => {
@@ -26,12 +16,25 @@ client.on('ready', () => {
   client.user.setActivity('!help', { type: "LISTENING" });
 });
 
-client.on("guildCreate", guild => { // writes token upon joining new server
+client.on("guildCreate", guild => { // does !update upon joining new server
+  const exTokenContents = await readFile('./tokens/example.json');
+  const exTokenData = JSON.parse(exTokenContents); // my variable names are so horrible
+
+  let tokenData = await readToken(guild);
+  const tokenDataKeys = Object.keys(tokenData);
+  const exTokenDataKeys = Object.keys(exTokenData);
+
   const path = `./tokens/${guild.id}.json`;
+
   if (!fs.existsSync(path)) { // checks if there's an already existing token for that server
-    readFile('./tokens/example.json').then(cache =>
-      writeFile(path, cache)
-    );
+    writeFile(path, exTokenContents)
+    console.log(`Token generated for ${guild.name}`);
+
+  } else if (JSON.stringify(tokenDataKeys) != JSON.stringify(exTokenDataKeys)) {
+    tokenData = { ...exTokenData, ...tokenData}; // credit to Sean for this fantastically simple but amazing code
+    writeFile(path, JSON.stringify(tokenData));
+    console.log(`Token updated for ${guild.name}`); // maybe add in fields so that people know exactly which fields were updated? seems super complicated tho
+
   }
   console.log(`New guild joined: ${guild.name} (id: ${guild.id}). This guild has ${guild.memberCount} members!`);
 });
@@ -54,16 +57,18 @@ client.on('message', async message => {
       .setDescription(`**Message by ${message.author} censored in ${message.channel}:**\n${message.content}`)
       .setFooter(`${new Date()}`);
     if (tokenData.logchannel) {
-      client.channels.cache.get(tokenData.logchannel).send(censoredEmbed);
+      client.channels.cache.get(tokenData.logchannel).send(censoredEmbed).catch(error => console.error(`censoredMessage in ${guild} could not be logged because of ${error}!`));
     }
     await message.delete() // TODO: fix this hilariousness of pinging the censored person and apologizing for not being able to delete their message
-      .catch(error => message.reply(`that message could not be censored because of ${error}!`));
+      .catch(error => console.error(`message in ${guild} could not be censored because of ${error}!`));
     return;
   }
 
   if (message.content.substring(0, prefix.length) == prefix) {
     const args = message.content.slice(prefix.length).trim().split(/ +/g); // removes the prefix, then the spaces, then splits into array
+
     const command = args.shift().toLowerCase(); // removes the command from the args array
+    if (tokenData.disabledcommands && tokenData.disabledcommands.includes(command)) return; //command disabling
 
     const userTarget = message.mentions.users.first() || client.users.cache.get(args[0]) || client.users.cache.find(user => user.username === args[0]);
     const memberTarget = message.mentions.members.first() || guild.members.cache.get(args[0]) || guild.members.cache.find(member => member.user.username === args[0]);
@@ -110,6 +115,14 @@ client.on('message', async message => {
         commands.toggle(message, guild, args[0]);
         break;
 
+      case 'disable':
+        commands.disable(message, guild, args[0]);
+        break;
+
+      case 'enable':
+        commands.enable(message, guild, args[0]);
+        break;
+
       case 'presets':
         if (!fs.existsSync(path)) return message.reply('this server does not have a valid token yet! Try doing !update!');
         commands.presets(message, guild);
@@ -124,7 +137,7 @@ client.on('message', async message => {
         break;
 
       case 'censored':
-        commands.censored(message, guild);
+        commands.censored(message, guild, client);
         break;
 
       case 'purge':
@@ -174,7 +187,7 @@ client.on("messageDelete", async message => {
     .setAuthor(`\u200b${message.author.tag}`, message.author.avatarURL())
     .setDescription(`**Message by ${message.author} in ${message.channel} was deleted:**\n${message.content}`)
     .setFooter(`${new Date()}`);
-  client.channels.cache.get(tokenData.logchannel).send(deleteEmbed);
+  client.channels.cache.get(tokenData.logchannel).send(deleteEmbed).catch(error => console.error(`messageDelete in ${guild} could not be logged because of ${error}!`));
 });
 
 client.on("messageDeleteBulk", async messages => {
@@ -189,7 +202,7 @@ client.on("messageDeleteBulk", async messages => {
     .setAuthor(`\u200b${guild.name}`, guild.iconURL())
     .setDescription(`**${messages.array().length} messages were deleted in ${messages.first().channel}**`)
     .setFooter(`${new Date()}`);
-  client.channels.cache.get(tokenData.logchannel).send(bulkDeleteEmbed);
+  client.channels.cache.get(tokenData.logchannel).send(bulkDeleteEmbed).catch(error => console.error(`messageDeleteBulk in ${guild} could not be logged because of ${error}!`));
 });
 
 client.on("messageUpdate", async (oldMessage, newMessage) => {
@@ -210,7 +223,7 @@ client.on("messageUpdate", async (oldMessage, newMessage) => {
       {name: 'After:', value: `\u200b${newMessage.content}`}
     )
     .setFooter(`${new Date()}`);
-  client.channels.cache.get(tokenData.logchannel).send(editEmbed);
+  client.channels.cache.get(tokenData.logchannel).send(editEmbed).catch(error => console.error(`messageUpdate in ${guild} could not be logged because of ${error}!`));
 });
 
 client.on("guildMemberUpdate", async (oldMember, newMember) => { // TODO: finish this by adding role logging
@@ -233,7 +246,7 @@ client.on("guildMemberUpdate", async (oldMember, newMember) => { // TODO: finish
         {name: 'Before:', value: oldMember.nickname || 'None'},
         {name: 'After:', value: newMember.nickname || 'None'}
       );
-    client.channels.cache.get(tokenData.logchannel).send(updateEmbed);
+    client.channels.cache.get(tokenData.logchannel).send(updateEmbed).catch(error => console.error(`guildMemberUpdate in ${guild} could not be logged because of ${error}!`));
   }
 });
 
@@ -250,7 +263,7 @@ client.on("guildMemberAdd", async (member) => {
     .setDescription(`${member.user} ${member.user.tag}`)
     .setFooter(`${new Date()}`);
 
-  client.channels.cache.get(tokenData.logchannel).send(joinEmbed);
+  client.channels.cache.get(tokenData.logchannel).send(joinEmbed).catch(error => console.error(`guildMemberAdd in ${guild} could not be logged because of ${error}!`));
 });
 
 client.on("guildMemberRemove", async (member) => {
@@ -265,7 +278,7 @@ client.on("guildMemberRemove", async (member) => {
     .setDescription(`${member.user} ${member.user.tag}`)
     .setFooter(`${new Date()}`);
 
-  guild.systemChannel.send(leaveEmbed);
+  guild.systemChannel.send(leaveEmbed).catch(error => console.error(`guildMemberRemove in ${guild} could not be logged because of ${error}!`));
 });
 
 client.login(token);

@@ -1,8 +1,8 @@
 import Discord from 'discord.js';
-import {readToken} from '../../bot.js';
+import {readToken} from '../utils/tokenManager.js';
 import fs from 'fs';
 
-export async function censored(message, guild) {
+export async function censored(message, guild, client) {
   const path = `./tokens/${guild.id}.json`;
   if (!fs.existsSync(path)) return message.reply('this server does not have a valid token yet! Try doing !update!');
 

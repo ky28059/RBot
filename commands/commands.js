@@ -16,6 +16,8 @@ export {ping} from './normal/ping.js';
 export {profile} from './normal/profile.js';
 export {say} from './normal/say.js';
 
+export {disable} from './token/disable.js';
+export {enable} from './token/enable.js';
 export {presets} from './token/presets.js';
 export {set} from './token/set.js';
 export {toggle} from './token/toggle.js';

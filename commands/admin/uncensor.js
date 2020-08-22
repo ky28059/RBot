@@ -1,4 +1,4 @@
-import {readToken} from '../../bot.js';
+import {readToken} from '../utils/tokenManager.js';
 import {writeFile} from '../../fileManager.js';
 import fs from 'fs';
 

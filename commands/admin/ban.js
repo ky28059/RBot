@@ -17,7 +17,7 @@ export async function ban(message, guild, target, reason, logChannel) { // targe
       .setColor(0x7f0000)
       .setAuthor(`\u200b${target.user.tag}`, target.user.avatarURL())
       .setDescription(`**${target.user} has been banned by ${message.author} for the reason:**\n${reason}`)
-    client.channels.cache.get(logChannel).send(banEmbed);
+    client.channels.cache.get(logChannel).send(banEmbed).catch(error => console.error(`Ban in ${guild} could not be logged because of ${error}!`));
   }
   message.react('👌');
 }

@@ -17,7 +17,7 @@ export async function kick(message, guild, target, reason, logChannel) { // targ
       .setColor(0x7f0000)
       .setAuthor(`\u200b${target.user.tag}`, target.user.avatarURL())
       .setDescription(`**${target.user} has been kicked by ${message.author} for the reason:**\n${reason}`)
-    client.channels.cache.get(logChannel).send(kickEmbed);
+    client.channels.cache.get(logChannel).send(kickEmbed).catch(error => console.error(`Kick in ${guild} could not be logged because of ${error}!`));
   }
   message.react('👌');
 }

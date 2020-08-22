@@ -17,14 +17,14 @@ export async function help(message) {
     .setColor(0x333333)
     .setTitle('Admin Commands:')
     .addFields(
-      {name: '!purge [2-100]:', value: 'Bulk deletes the specified number of messages in the channel the command is called in'},
-      {name: '!expunge [2-100]:', value: 'Removes all reactions from the specifed number of messages in the channel the command is called in'},
-      {name: '!kick @[user] [reason]:', value: 'Kicks the specified user from the server'},
-      {name: '!ban @[user] [reason]:', value: 'Bans the specified user from the server'},
-      {name: '!censor @[user]:', value: 'Censors the specified user (autodeletes their messages and logs it in the log channel)'},
-      {name: '!uncensor @[user]:', value: 'Uncensors the specified user'},
+      {name: '!purge [2-100]:', value: 'Bulk deletes the specified number of messages in the channel the command is called in\n[PERMS REQUIRED: MANAGE_MESSAGES]'},
+      {name: '!expunge [2-100]:', value: 'Removes all reactions from the specifed number of messages in the channel the command is called in\n[PERMS REQUIRED: MANAGE_MESSAGES]'},
+      {name: '!kick @[user] [reason]:', value: 'Kicks the specified user from the server\n[PERMS REQUIRED: KICK_MEMBERS]'},
+      {name: '!ban @[user] [reason]:', value: 'Bans the specified user from the server\n[PERMS REQUIRED: BAN_MEMBERS]'},
+      {name: '!censor @[user]:', value: 'Censors the specified user (autodeletes their messages and logs it in the log channel)\n[PERMS REQUIRED: MANAGE_MESSAGES]'},
+      {name: '!uncensor @[user]:', value: 'Uncensors the specified user\n[PERMS REQUIRED: MANAGE_MESSAGES]'},
       {name: '!censored:', value: 'Shows which users are currently censored'},
-      {name: '!addemote [image link] [name]:', value: 'Creates an emoji with the given image and name'} // this feels awkward here
+      {name: '!addemote [image link] [name]:', value: 'Creates an emoji with the given image and name\n[PERMS REQUIRED: MANAGE_EMOJIS]'} // this feels awkward here
     )
     .setFooter(`Requested by ${message.author.tag}`);
   const helpEmbed3 = new Discord.MessageEmbed()
@@ -32,8 +32,10 @@ export async function help(message) {
     .setTitle('Token Commands:')
     .addFields(
       {name: '!update:', value: 'Updates the server\'s token'},
-      {name: '!set [token field] [value]:', value: 'Sets token data'},
-      {name: '!toggle [logged action]:', value: 'Toggles whether RBot will log that action'},
+      {name: '!set [token field] [value]:', value: 'Sets token data\n[PERMS REQUIRED: MANAGE_MESSAGES]'},
+      {name: '!toggle [logged action]:', value: 'Toggles whether RBot will log that action\n[PERMS REQUIRED: MANAGE_MESSAGES]'},
+      {name: '!disable [command name]:', value: 'Disables the use of the given command for this server\n[PERMS REQUIRED: ADMINISTRATOR]'},
+      {name: '!enable [command name]:', value: 'Enables the use of the given command for this server\n[PERMS REQUIRED: ADMINISTRATOR]'},
       {name: '!presets:', value: 'Gets the values of the server\'s current presets'}
     )
     .setFooter(`Requested by ${message.author.tag}`);

@@ -1,6 +1,6 @@
 // https://github.com/ky28059/java-stuff/blob/master/Toolkit/Parser.java
 // not sure why I translated this since I don't actually use it
-function parse(src, parseForLeft, parseForRight, startIndex) {
+export function parse(src, parseForLeft, parseForRight, startIndex) {
   //find left and right
   const left = src.indexOf(parseForLeft, startIndex);
   if (left == -1) {
@@ -14,4 +14,3 @@ function parse(src, parseForLeft, parseForRight, startIndex) {
   const sub = src.substring(left + parseForL.length(), right);
   return sub;
 }
-module.exports = parse;
