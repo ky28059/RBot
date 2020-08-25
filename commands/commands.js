@@ -14,6 +14,7 @@ export {gild} from './normal/gild.js';
 export {help} from './normal/help.js';
 export {ping} from './normal/ping.js';
 export {profile} from './normal/profile.js';
+export {react} from './normal/react.js';
 export {say} from './normal/say.js';
 
 export {disable} from './token/disable.js';

@@ -2,7 +2,7 @@ import {readToken} from '../utils/tokenManager.js';
 import {writeFile} from '../../fileManager.js';
 import fs from 'fs';
 
-export async function uncensor(message, guild, target) {
+export async function uncensor(message, guild, target) { // target = User
   if (!guild.member(message.author).hasPermission('MANAGE_MESSAGES')) return message.reply('you do not have sufficient perms to do that!'); // restricts this command to mods only, maybe add extra required perms?
   if (!target) return message.reply("please mention a valid member of this server");
 
@@ -14,5 +14,5 @@ export async function uncensor(message, guild, target) {
 
   tokenData.censoredusers = tokenData.censoredusers.replace(target.id + ' ', '');
   await writeFile(path, JSON.stringify(tokenData));
-  message.channel.send(`Now uncensoring ${target.user.tag}!`);
+  message.channel.send(`Now uncensoring ${target.tag}!`);
 }

@@ -16,7 +16,7 @@ client.on('ready', () => {
   client.user.setActivity('!help', { type: "LISTENING" });
 });
 
-client.on("guildCreate", guild => { // does !update upon joining new server
+client.on("guildCreate", async guild => { // does !update upon joining new server
   const exTokenContents = await readFile('./tokens/example.json');
   const exTokenData = JSON.parse(exTokenContents); // my variable names are so horrible
 
@@ -41,6 +41,17 @@ client.on("guildCreate", guild => { // does !update upon joining new server
 
 client.on('message', async message => {
   if (message.author.bot) return; // Bot ignores itself and other bots
+
+  if (message.channel.type === 'dm') { // DM forwarding
+    const dmEmbed = new Discord.MessageEmbed()
+      .setColor(0x7f0000)
+      .setAuthor(message.author.tag, message.author.avatarURL())
+      .setDescription(`**${message.author} DMed RBot this message:**\n${message.content}`)
+      .setFooter(`${new Date()}`);
+    client.users.cache.get('355534246439419904').send(dmEmbed);
+    return;
+  }
+
   if (talkedRecently.has(message.author.id)) return; // Spam prevention
 
   // maybe move this code elsewhere? idk
@@ -50,10 +61,10 @@ client.on('message', async message => {
   const tokenData = await readToken(guild);
   const prefix = tokenData.prefix || '!'; // maybe move somewhere else?
 
-  if (tokenData.censoredusers && tokenData.censoredusers.includes(message.author.id)) {
+  if (tokenData.censoredusers && tokenData.censoredusers.includes(message.author.id) && !member.hasPermission('ADMINISTRATOR')) {
     const censoredEmbed = new Discord.MessageEmbed()
       .setColor(0x7f0000)
-      .setAuthor(`\u200b${message.author.tag}`, message.author.avatarURL())
+      .setAuthor(message.author.tag, message.author.avatarURL())
       .setDescription(`**Message by ${message.author} censored in ${message.channel}:**\n${message.content}`)
       .setFooter(`${new Date()}`);
     if (tokenData.logchannel) {
@@ -98,6 +109,10 @@ client.on('message', async message => {
         commands.gild(message);
         break;
 
+      case 'react':
+        commands.react(message, args);
+        break;
+
       case 'help':
         commands.help(message);
         break;
@@ -116,7 +131,7 @@ client.on('message', async message => {
         break;
 
       case 'disable':
-        commands.disable(message, guild, args[0]);
+        commands.disable(message, guild, args[0], commands);
         break;
 
       case 'enable':
@@ -129,11 +144,11 @@ client.on('message', async message => {
         break;
 
       case 'censor':
-        commands.censor(message, guild, memberTarget);
+        commands.censor(message, guild, userTarget);
         break;
 
       case 'uncensor':
-        commands.uncensor(message, guild, memberTarget);
+        commands.uncensor(message, guild, userTarget);
         break;
 
       case 'censored':

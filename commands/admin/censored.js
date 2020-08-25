@@ -18,7 +18,7 @@ export async function censored(message, guild, client) {
   } else {
     let censoredList = tokenData.censoredusers.trim().split(' ');
     censoredList.forEach(user =>
-      censoredListEmbed.addField(`\u200b${client.users.cache.get(user).tag}`, `\u200b${client.users.cache.get(user).id}`)
+      censoredListEmbed.addField(client.users.cache.get(user) ? client.users.cache.get(user).tag : 'Error getting user tag', client.users.cache.get(user) ? client.users.cache.get(user).id : 'Error getting user id')
     )
   }
   message.channel.send(censoredListEmbed);
