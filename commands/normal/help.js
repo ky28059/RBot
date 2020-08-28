@@ -10,7 +10,9 @@ export async function help(message) {
       {name: '!say [message]:', value: 'Makes bot say what you tell it to say'},
       {name: '!avatar @[user]:', value: 'Gets the discord avatar of the mentioned user, defaults to get your avatar when no user is mentioned'},
       {name: '!profile @[user]:', value: 'Gets some information about the mentioned user'},
-      {name: '!gild:', value: 'Gives some Reddit gold to the last message sent'}
+      {name: '!mcstatus [ip]:', value: 'Gets the server status (player count and version requirement) of the specified server'},
+      {name: '!react [emoji or emoji id]:', value: 'Reacts to the previous message with the specified emoji(s)'},
+      {name: '!gild:', value: 'Gives some Reddit gold to the previous message'}
     )
     .setFooter(`Requested by ${message.author.tag}`);
   const helpEmbed2 = new Discord.MessageEmbed()

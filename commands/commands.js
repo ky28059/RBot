@@ -12,6 +12,7 @@ export {uncensor} from './admin/uncensor.js';
 export {avatar} from './normal/avatar.js';
 export {gild} from './normal/gild.js';
 export {help} from './normal/help.js';
+export {mcstatus} from './normal/mcstatus.js';
 export {ping} from './normal/ping.js';
 export {profile} from './normal/profile.js';
 export {react} from './normal/react.js';

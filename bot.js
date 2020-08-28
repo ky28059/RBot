@@ -113,6 +113,10 @@ client.on('message', async message => {
         commands.react(message, args);
         break;
 
+      case 'mcstatus':
+        commands.mcstatus(message, args[0]);
+        break;
+
       case 'help':
         commands.help(message);
         break;
@@ -199,7 +203,7 @@ client.on("messageDelete", async message => {
 
   const deleteEmbed = new Discord.MessageEmbed()
     .setColor(0xb50300)
-    .setAuthor(`\u200b${message.author.tag}`, message.author.avatarURL())
+    .setAuthor(message.author.tag, message.author.avatarURL())
     .setDescription(`**Message by ${message.author} in ${message.channel} was deleted:**\n${message.content}`)
     .setFooter(`${new Date()}`);
   client.channels.cache.get(tokenData.logchannel).send(deleteEmbed).catch(error => console.error(`messageDelete in ${guild} could not be logged because of ${error}!`));
@@ -214,7 +218,7 @@ client.on("messageDeleteBulk", async messages => {
   // temporary Dyno-like bulkdelete logging system, will convert into superior system later
   const bulkDeleteEmbed = new Discord.MessageEmbed()
     .setColor(0xb50300)
-    .setAuthor(`\u200b${guild.name}`, guild.iconURL())
+    .setAuthor(guild.name, guild.iconURL())
     .setDescription(`**${messages.array().length} messages were deleted in ${messages.first().channel}**`)
     .setFooter(`${new Date()}`);
   client.channels.cache.get(tokenData.logchannel).send(bulkDeleteEmbed).catch(error => console.error(`messageDeleteBulk in ${guild} could not be logged because of ${error}!`));
@@ -231,7 +235,7 @@ client.on("messageUpdate", async (oldMessage, newMessage) => {
 
   const editEmbed = new Discord.MessageEmbed()
     .setColor(0xed7501)
-    .setAuthor(`\u200b${oldMessage.author.tag}`, oldMessage.author.avatarURL())
+    .setAuthor(oldMessage.author.tag, oldMessage.author.avatarURL())
     .setDescription(`**Message by ${oldMessage.author} in ${oldMessage.channel} was edited:** [Jump to message](${newMessage.url})`)
     .addFields(
       {name: 'Before:', value: `\u200b${oldMessage.content}`}, // the \u200b is to not get RangeErrors from empty messages
@@ -251,7 +255,7 @@ client.on("guildMemberUpdate", async (oldMember, newMember) => { // TODO: finish
 
   const updateEmbed = new Discord.MessageEmbed()
     .setColor(0xf6b40c)
-    .setAuthor(`\u200b${newMember.user.tag}`, newMember.user.avatarURL())
+    .setAuthor(newMember.user.tag, newMember.user.avatarURL())
     .setFooter(`${new Date()}`);
 
   if (oldMember.nickname != newMember.nickname) {
