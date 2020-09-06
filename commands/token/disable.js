@@ -2,7 +2,8 @@ import {readToken} from '../utils/tokenManager.js';
 import {writeFile} from '../../fileManager.js';
 import fs from 'fs';
 
-export async function disable(message, guild, command, commands) {
+export async function disable(message, command, commands) {
+  const guild = message.guild;
   if (!guild.member(message.author).hasPermission('ADMINISTRATOR')) return message.reply('you do not have sufficient perms to do that!'); // restricts this command to mods only, maybe add extra required perms?
 
   if (!command) return message.reply("please mention a command name to disable!");

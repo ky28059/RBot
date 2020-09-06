@@ -2,7 +2,8 @@ import {readToken} from '../utils/tokenManager.js';
 import {writeFile} from '../../fileManager.js';
 import fs from 'fs';
 
-export async function uncensor(message, guild, target) { // target = User
+export async function uncensor(message, target) { // target = User
+  const guild = message.guild;
   if (!guild.member(message.author).hasPermission('MANAGE_MESSAGES')) return message.reply('you do not have sufficient perms to do that!'); // restricts this command to mods only, maybe add extra required perms?
   if (!target) return message.reply("please mention a valid member of this server");
 

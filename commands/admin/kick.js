@@ -1,6 +1,7 @@
 import Discord from 'discord.js';
 
-export async function kick(message, guild, target, reason, logChannel) { // target = GuildMember
+export async function kick(message, target, reason, logChannel, client) { // target = GuildMember
+  const guild = message.guild;
   if (!guild.member(message.author).hasPermission('KICK_MEMBERS')) return message.reply('you do not have sufficient perms to do that!'); // restricts this command to mods only
 
   if (!target) return message.reply("please mention a valid member of this server");

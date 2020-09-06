@@ -2,8 +2,9 @@ import {readToken} from '../utils/tokenManager.js';
 import {writeFile} from '../../fileManager.js';
 import fs from 'fs';
 
-export async function enable(message, guild, command) {
-  if (!guild.member(message.author).hasPermission('ADMINISTRATOR')) return message.reply('you do not have sufficient perms to do that!'); // restricts this command to mods only, maybe add extra required perms?
+export async function enable(message, command) {
+  const guild = message.guild;
+  if (!guild.member(message.author).hasPermission('ADMINISTRATOR')) return message.reply('you do not have sufficient perms to do that!');
   if (!command) return message.reply("please mention a command name to reenable!");
 
   const path = `./tokens/${guild.id}.json`;

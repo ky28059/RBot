@@ -18,6 +18,7 @@ export {profile} from './normal/profile.js';
 export {react} from './normal/react.js';
 export {say} from './normal/say.js';
 
+export {autorole} from './token/autorole.js';
 export {disable} from './token/disable.js';
 export {enable} from './token/enable.js';
 export {presets} from './token/presets.js';

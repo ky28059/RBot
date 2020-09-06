@@ -34,10 +34,11 @@ export async function help(message) {
     .setTitle('Token Commands:')
     .addFields(
       {name: '!update:', value: 'Updates the server\'s token'},
-      {name: '!set [token field] [value]:', value: 'Sets token data\n[PERMS REQUIRED: MANAGE_MESSAGES]'},
-      {name: '!toggle [logged action]:', value: 'Toggles whether RBot will log that action\n[PERMS REQUIRED: MANAGE_MESSAGES]'},
+      {name: '!set [token field] [value]:', value: 'Sets token data\n[PERMS REQUIRED: MANAGE_GUILD]'},
+      {name: '!toggle [logged action]:', value: 'Toggles whether RBot will log that action\n[PERMS REQUIRED: MANAGE_GUILD]'},
       {name: '!disable [command name]:', value: 'Disables the use of the given command for this server\n[PERMS REQUIRED: ADMINISTRATOR]'},
       {name: '!enable [command name]:', value: 'Enables the use of the given command for this server\n[PERMS REQUIRED: ADMINISTRATOR]'},
+      {name: '!autorole [add/remove] @[role]:', value: 'Adds or removed a role from RBot\'s autorole functionality\n[PERMS REQUIRED: MANAGE_GUILD]'},
       {name: '!presets:', value: 'Gets the values of the server\'s current presets'}
     )
     .setFooter(`Requested by ${message.author.tag}`);

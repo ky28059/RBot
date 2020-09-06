@@ -1,4 +1,5 @@
-export function addemote(message, guild, link, name) {
+export function addemote(message, link, name) {
+  const guild = message.guild;
   if (!guild.member(message.author).hasPermission('MANAGE_EMOJIS')) return message.reply('you do not have sufficient perms to do that!'); // restricts this command to mods only
 
   guild.emojis.create(link, name)

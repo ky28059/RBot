@@ -2,7 +2,8 @@ import {readToken} from '../utils/tokenManager.js';
 import {readFile, writeFile} from '../../fileManager.js';
 import fs from 'fs';
 
-export async function update(message, guild) {
+export async function update(message) {
+  const guild = message.guild;
   const exTokenContents = await readFile('./tokens/example.json');
   const exTokenData = JSON.parse(exTokenContents); // my variable names are so horrible
 
@@ -16,7 +17,7 @@ export async function update(message, guild) {
     writeFile(path, exTokenContents)
     message.channel.send('Token generated!');
 
-  } else if (JSON.stringify(tokenDataKeys) != JSON.stringify(exTokenDataKeys)) {
+  } else if (JSON.stringify(tokenDataKeys) !== JSON.stringify(exTokenDataKeys)) {
     tokenData = { ...exTokenData, ...tokenData}; // credit to Sean for this fantastically simple but amazing code
     writeFile(path, JSON.stringify(tokenData));
     message.channel.send('Token updated!'); // maybe add in fields so that people know exactly which fields were updated? seems super complicated tho

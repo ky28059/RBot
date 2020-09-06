@@ -11,9 +11,9 @@ const client = new Discord.Client();
 const talkedRecently = new Set();
 
 // Initialize Discord Bot
-client.on('ready', () => {
+client.on('ready', async () => {
   console.log(`Logged in as ${client.user.tag}!`);
-  client.user.setActivity('!help', { type: "LISTENING" });
+  await client.user.setActivity('!help', { type: "LISTENING" });
 });
 
 client.on("guildCreate", async guild => { // does !update upon joining new server
@@ -30,7 +30,7 @@ client.on("guildCreate", async guild => { // does !update upon joining new serve
     writeFile(path, exTokenContents)
     console.log(`Token generated for ${guild.name}`);
 
-  } else if (JSON.stringify(tokenDataKeys) != JSON.stringify(exTokenDataKeys)) {
+  } else if (JSON.stringify(tokenDataKeys) !== JSON.stringify(exTokenDataKeys)) {
     tokenData = { ...exTokenData, ...tokenData}; // credit to Sean for this fantastically simple but amazing code
     writeFile(path, JSON.stringify(tokenData));
     console.log(`Token updated for ${guild.name}`); // maybe add in fields so that people know exactly which fields were updated? seems super complicated tho
@@ -48,7 +48,7 @@ client.on('message', async message => {
       .setAuthor(message.author.tag, message.author.avatarURL())
       .setDescription(`**${message.author} DMed RBot this message:**\n${message.content}`)
       .setFooter(`${new Date()}`);
-    client.users.cache.get('355534246439419904').send(dmEmbed);
+    await client.users.cache.get('355534246439419904').send(dmEmbed);
     return;
   }
 
@@ -70,20 +70,23 @@ client.on('message', async message => {
     if (tokenData.logchannel) {
       client.channels.cache.get(tokenData.logchannel).send(censoredEmbed).catch(error => console.error(`censoredMessage in ${guild} could not be logged because of ${error}!`));
     }
-    await message.delete() // TODO: fix this hilariousness of pinging the censored person and apologizing for not being able to delete their message
+    await message.delete()
       .catch(error => console.error(`message in ${guild} could not be censored because of ${error}!`));
     return;
   }
 
-  if (message.content.substring(0, prefix.length) == prefix) {
+  if (message.content.substring(0, prefix.length) === prefix) {
     const args = message.content.slice(prefix.length).trim().split(/ +/g); // removes the prefix, then the spaces, then splits into array
 
     const command = args.shift().toLowerCase(); // removes the command from the args array
     if (tokenData.disabledcommands && tokenData.disabledcommands.includes(command)) return; //command disabling
 
-    const userTarget = message.mentions.users.first() || client.users.cache.get(args[0]) || client.users.cache.find(user => user.username === args[0]);
-    const memberTarget = message.mentions.members.first() || guild.members.cache.get(args[0]) || guild.members.cache.find(member => member.user.username === args[0]);
-    const channelTarget = message.mentions.channels.first() || client.channels.cache.get(args[0]);
+    const snowflakes = args.filter(arg => Number(arg));
+
+    const userTarget = message.mentions.users.first() || client.users.cache.get(snowflakes[0]) || client.users.cache.find(user => user.username === args[0]);
+    const memberTarget = message.mentions.members.first() || guild.members.cache.get(snowflakes[0]) || guild.members.cache.find(member => member.user.username === args[0]);
+    const channelTarget = message.mentions.channels.first() || client.channels.cache.get(snowflakes[0]);
+    const roleTarget = message.mentions.roles.first() || guild.roles.cache.get(snowflakes[0]);
 
     const path = `./tokens/${guild.id}.json`; // needed for existssync
 
@@ -102,7 +105,7 @@ client.on('message', async message => {
         break;
 
       case 'profile':
-        commands.profile(message, guild, userTarget);
+        commands.profile(message, userTarget);
         break;
 
       case 'gild':
@@ -122,57 +125,61 @@ client.on('message', async message => {
         break;
 
       case 'update':
-        commands.update(message, guild);
+        commands.update(message);
         break;
 
       case 'set':
         const field = args.shift().toLowerCase();
-        commands.set(message, guild, field, args);
+        commands.set(message, field, args, client);
+        break;
+
+      case 'autorole':
+        commands.autorole(message, args[0], roleTarget);
         break;
 
       case 'toggle':
-        commands.toggle(message, guild, args[0]);
+        commands.toggle(message, args[0]);
         break;
 
       case 'disable':
-        commands.disable(message, guild, args[0], commands);
+        commands.disable(message, args[0], commands);
         break;
 
       case 'enable':
-        commands.enable(message, guild, args[0]);
+        commands.enable(message, args[0]);
         break;
 
       case 'presets':
         if (!fs.existsSync(path)) return message.reply('this server does not have a valid token yet! Try doing !update!');
-        commands.presets(message, guild);
+        commands.presets(message);
         break;
 
       case 'censor':
-        commands.censor(message, guild, userTarget);
+        commands.censor(message, userTarget);
         break;
 
       case 'uncensor':
-        commands.uncensor(message, guild, userTarget);
+        commands.uncensor(message, userTarget);
         break;
 
       case 'censored':
-        commands.censored(message, guild, client);
+        commands.censored(message, client);
         break;
 
       case 'purge':
-        commands.purge(message, guild, args[0]);
+        commands.purge(message, args[0]);
         break;
 
       case 'expunge':
-        commands.expunge(message, guild, args[0]);
+        commands.expunge(message, args[0]);
         break;
 
       case 'kick':
-        commands.kick(message, guild, memberTarget, args.join(' '), tokenData.logchannel);
+        commands.kick(message, memberTarget, args.join(' '), tokenData.logchannel, client);
         break;
 
       case 'ban':
-        commands.ban(message, guild, memberTarget, args.join(' '), tokenData.logchannel);
+        commands.ban(message, memberTarget, args.join(' '), tokenData.logchannel, client);
         break;
 
       case 'addemote':
@@ -226,7 +233,7 @@ client.on("messageDeleteBulk", async messages => {
 
 client.on("messageUpdate", async (oldMessage, newMessage) => {
   if (oldMessage.author.bot) return; // Bot ignores itself and other bots
-  if (oldMessage.content == newMessage.content) return; // fixes weird link preview glitch
+  if (oldMessage.content === newMessage.content) return; // fixes weird link preview glitch
 
   const guild = oldMessage.guild;
 
@@ -238,8 +245,8 @@ client.on("messageUpdate", async (oldMessage, newMessage) => {
     .setAuthor(oldMessage.author.tag, oldMessage.author.avatarURL())
     .setDescription(`**Message by ${oldMessage.author} in ${oldMessage.channel} was edited:** [Jump to message](${newMessage.url})`)
     .addFields(
-      {name: 'Before:', value: `\u200b${oldMessage.content}`}, // the \u200b is to not get RangeErrors from empty messages
-      {name: 'After:', value: `\u200b${newMessage.content}`}
+      {name: 'Before:', value: oldMessage.content},
+      {name: 'After:', value: newMessage.content}
     )
     .setFooter(`${new Date()}`);
   client.channels.cache.get(tokenData.logchannel).send(editEmbed).catch(error => console.error(`messageUpdate in ${guild} could not be logged because of ${error}!`));
@@ -258,7 +265,7 @@ client.on("guildMemberUpdate", async (oldMember, newMember) => { // TODO: finish
     .setAuthor(newMember.user.tag, newMember.user.avatarURL())
     .setFooter(`${new Date()}`);
 
-  if (oldMember.nickname != newMember.nickname) {
+  if (oldMember.nickname !== newMember.nickname) {
     updateEmbed
       .setDescription(`**${newMember.user} changed their nickname:**`)
       .addFields(
@@ -273,6 +280,11 @@ client.on("guildMemberAdd", async (member) => {
   const guild = member.guild;
 
   const tokenData = await readToken(guild);
+
+  if (tokenData.autoroles) {
+    const autoroles = tokenData.autoroles.trim().split(' ');
+    await member.edit({roles: member.roles.cache.array().concat(autoroles)});
+  }
   if (!(tokenData.logchannel && tokenData.logmemberjoin)) return;
 
   // add potential welcome messages later

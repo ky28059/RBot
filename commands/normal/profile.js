@@ -1,9 +1,9 @@
 import Discord from 'discord.js';
 
-export function profile(message, guild, target) {
+export function profile(message, target) {
   // TODO: make prettier, add functionality
   const profileTarget = target || message.author;
-  const guildProfileTarget = guild.member(profileTarget);
+  const guildProfileTarget = message.guild.member(profileTarget);
 
   const profileEmbed = new Discord.MessageEmbed()
     .setColor(0x333333)

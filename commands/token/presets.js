@@ -1,8 +1,8 @@
 import Discord from 'discord.js';
 import {readToken} from '../utils/tokenManager.js';
 
-export async function presets(message, guild) {
-  const tokenData = await readToken(guild);
+export async function presets(message) {
+  const tokenData = await readToken(message.guild);
   // TODO: make this embed look better
   const tokenEmbed = new Discord.MessageEmbed()
     .setColor(0x333333)
@@ -11,6 +11,7 @@ export async function presets(message, guild) {
       {name: 'Prefix:', value: tokenData.prefix || '!'},
       {name: 'Log Channel:', value: tokenData.logchannel || 'None'},
       {name: 'Disabled Commands:', value: tokenData.disabledcommands ? tokenData.disabledcommands.trim().split(' ').join(', ') : 'None'},
+      {name: 'Auto Roles:', value: tokenData.autoroles ? tokenData.autoroles.trim().split(' ').join(', ') : 'None'},
       {name: 'Message Deletes', value: tokenData.logmessagedelete, inline: true},
       {name: 'Bulk Message Deletes', value: tokenData.logmessagedeletebulk, inline: true},
       {name: 'Message Edits', value: tokenData.logmessageedit, inline: true},
