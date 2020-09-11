@@ -1,4 +1,4 @@
-import Discord from 'discord.js';
+import {log} from "../utils/logger.js";
 
 export async function ban(message, target, reason, logChannel, client) { // target = GuildMember
   const guild = message.guild;
@@ -14,13 +14,9 @@ export async function ban(message, target, reason, logChannel, client) { // targ
     .catch(error => message.reply(`sorry, I couldn't ban because of : ${error}`));
 
   if (logChannel) {
-    const banEmbed = new Discord.MessageEmbed()
-      .setColor(0x7f0000)
-      .setAuthor(`\u200b${target.user.tag}`, target.user.avatarURL())
-      .setDescription(`**${target.user} has been banned by ${message.author} for the reason:**\n${reason}`)
-    client.channels.cache.get(logChannel).send(banEmbed).catch(error => console.error(`Ban in ${guild} could not be logged because of ${error}!`));
+    await log(client, guild, 0x7f0000, target.user.tag, target.user.avatarURL(), `**${target.user} has been banned by ${message.author} for the reason:**\n${reason}`);
   }
-  message.react('👌');
+  await message.react('👌');
 }
 
 //export {ban};

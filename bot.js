@@ -6,6 +6,7 @@ import {token} from './auth.js';
 import {writeFile, readFile} from './fileManager.js';
 import {readToken} from './commands/utils/tokenManager.js';
 import * as commands from './commands/commands.js';
+import {log} from "./commands/utils/logger.js";
 
 const client = new Discord.Client();
 const talkedRecently = new Set();
@@ -61,17 +62,12 @@ client.on('message', async message => {
   const tokenData = await readToken(guild);
   const prefix = tokenData.prefix || '!'; // maybe move somewhere else?
 
+  // Handles censorship
   if (tokenData.censoredusers && tokenData.censoredusers.includes(message.author.id) && !member.hasPermission('ADMINISTRATOR')) {
-    const censoredEmbed = new Discord.MessageEmbed()
-      .setColor(0x7f0000)
-      .setAuthor(message.author.tag, message.author.avatarURL())
-      .setDescription(`**Message by ${message.author} censored in ${message.channel}:**\n${message.content}`)
-      .setFooter(`${new Date()}`);
-    if (tokenData.logchannel) {
-      client.channels.cache.get(tokenData.logchannel).send(censoredEmbed).catch(error => console.error(`censoredMessage in ${guild} could not be logged because of ${error}!`));
-    }
     await message.delete()
       .catch(error => console.error(`message in ${guild} could not be censored because of ${error}!`));
+
+    if (tokenData.logchannel) await log(client, guild, 0x7f0000, message.author.tag, message.author.avatarURL(), `**Message by ${message.author} censored in ${message.channel}:**\n${message.content}`)
     return;
   }
 
@@ -142,11 +138,11 @@ client.on('message', async message => {
         break;
 
       case 'disable':
-        commands.disable(message, args[0], commands);
+        commands.disable(message, args[0], commands, client);
         break;
 
       case 'enable':
-        commands.enable(message, args[0]);
+        commands.enable(message, args[0], client);
         break;
 
       case 'presets':
@@ -155,11 +151,11 @@ client.on('message', async message => {
         break;
 
       case 'censor':
-        commands.censor(message, userTarget);
+        commands.censor(message, userTarget, client);
         break;
 
       case 'uncensor':
-        commands.uncensor(message, userTarget);
+        commands.uncensor(message, userTarget, client);
         break;
 
       case 'censored':
@@ -203,32 +199,20 @@ client.on("messageDelete", async message => {
   if (message.author.bot) return; // Bot ignores itself and other bots
 
   const guild = message.guild;
-
   const tokenData = await readToken(guild);
   if (tokenData.censoredusers && tokenData.censoredusers.includes(message.author.id)) return; // prevents double logging of censored messages, probably better way of doing this
   if (!(tokenData.logchannel && tokenData.logmessagedelete)) return;
 
-  const deleteEmbed = new Discord.MessageEmbed()
-    .setColor(0xb50300)
-    .setAuthor(message.author.tag, message.author.avatarURL())
-    .setDescription(`**Message by ${message.author} in ${message.channel} was deleted:**\n${message.content}`)
-    .setFooter(`${new Date()}`);
-  client.channels.cache.get(tokenData.logchannel).send(deleteEmbed).catch(error => console.error(`messageDelete in ${guild} could not be logged because of ${error}!`));
+  await log(client, guild,0xb50300, message.author.tag, message.author.avatarURL(), `**Message by ${message.author} in ${message.channel} was deleted:**\n${message.content}`);
 });
 
 client.on("messageDeleteBulk", async messages => {
   const guild = messages.first().guild;
-
   const tokenData = await readToken(guild);
   if (!(tokenData.logchannel && tokenData.logmessagedeletebulk)) return;
 
   // temporary Dyno-like bulkdelete logging system, will convert into superior system later
-  const bulkDeleteEmbed = new Discord.MessageEmbed()
-    .setColor(0xb50300)
-    .setAuthor(guild.name, guild.iconURL())
-    .setDescription(`**${messages.array().length} messages were deleted in ${messages.first().channel}**`)
-    .setFooter(`${new Date()}`);
-  client.channels.cache.get(tokenData.logchannel).send(bulkDeleteEmbed).catch(error => console.error(`messageDeleteBulk in ${guild} could not be logged because of ${error}!`));
+  await log(client, guild, 0xb50300, guild.name, guild.iconURL(), `**${messages.array().length} messages were deleted in ${messages.first().channel}**`);
 });
 
 client.on("messageUpdate", async (oldMessage, newMessage) => {
@@ -236,30 +220,20 @@ client.on("messageUpdate", async (oldMessage, newMessage) => {
   if (oldMessage.content === newMessage.content) return; // fixes weird link preview glitch
 
   const guild = oldMessage.guild;
-
   const tokenData = await readToken(guild);
   if (!(tokenData.logchannel && tokenData.logmessageedit)) return;
 
-  const editEmbed = new Discord.MessageEmbed()
-    .setColor(0xed7501)
-    .setAuthor(oldMessage.author.tag, oldMessage.author.avatarURL())
-    .setDescription(`**Message by ${oldMessage.author} in ${oldMessage.channel} was edited:** [Jump to message](${newMessage.url})`)
-    .addFields(
-      {name: 'Before:', value: oldMessage.content},
-      {name: 'After:', value: newMessage.content}
-    )
-    .setFooter(`${new Date()}`);
-  client.channels.cache.get(tokenData.logchannel).send(editEmbed).catch(error => console.error(`messageUpdate in ${guild} could not be logged because of ${error}!`));
+  await log(client, guild, 0xed7501, oldMessage.author.tag, oldMessage.author.avatarURL(), `**Message by ${oldMessage.author} in ${oldMessage.channel} was edited:** [Jump to message](${newMessage.url})`, [{name: 'Before:', value: oldMessage.content}, {name: 'After:', value: newMessage.content}]);
 });
 
 client.on("guildMemberUpdate", async (oldMember, newMember) => { // TODO: finish this by adding role logging
   if (oldMember.user.bot) return;
 
   const guild = oldMember.guild;
-
   const tokenData = await readToken(guild);
   if (!(tokenData.logchannel && tokenData.lognicknamechange)) return; // will have to update later if I wish to use this for more things than nickname changes
 
+  // not sure how compatible this is with new log function
   const updateEmbed = new Discord.MessageEmbed()
     .setColor(0xf6b40c)
     .setAuthor(newMember.user.tag, newMember.user.avatarURL())
@@ -278,7 +252,6 @@ client.on("guildMemberUpdate", async (oldMember, newMember) => { // TODO: finish
 
 client.on("guildMemberAdd", async (member) => {
   const guild = member.guild;
-
   const tokenData = await readToken(guild);
 
   if (tokenData.autoroles) {
@@ -287,19 +260,12 @@ client.on("guildMemberAdd", async (member) => {
   }
   if (!(tokenData.logchannel && tokenData.logmemberjoin)) return;
 
+  await log(client, guild, 0x79ff3b, 'Member joined the server', member.user.avatarURL(), `${member.user} ${member.user.tag}`);
   // add potential welcome messages later
-  const joinEmbed = new Discord.MessageEmbed()
-    .setColor(0x79ff3b)
-    .setAuthor('Member joined the server', member.user.avatarURL())
-    .setDescription(`${member.user} ${member.user.tag}`)
-    .setFooter(`${new Date()}`);
-
-  client.channels.cache.get(tokenData.logchannel).send(joinEmbed).catch(error => console.error(`guildMemberAdd in ${guild} could not be logged because of ${error}!`));
 });
 
 client.on("guildMemberRemove", async (member) => {
   const guild = member.guild;
-
   const tokenData = await readToken(guild);
   if (!(guild.systemChannel && tokenData.logmemberleave)) return;
 
