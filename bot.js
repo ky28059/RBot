@@ -1,18 +1,50 @@
-// TODO: add in .catch()s so that the bot wont break as much
 // TODO: add in catchs on commands that require token information to check for if a token is lacking the field that command requires (currently only have checks for if a server is missing a token)
-import Discord from 'discord.js';
+import Discord, {Structures} from 'discord.js';
+import {CommandoClient} from 'discord.js-commando';
+import path from 'path';
 import fs from 'fs';
 import {token} from './auth.js';
 import {writeFile, readFile} from './fileManager.js';
 import {readToken} from './commands/utils/tokenManager.js';
-import * as commands from './commands/commands.js';
 import {log} from "./commands/utils/logger.js";
 
-const client = new Discord.Client();
-const talkedRecently = new Set();
+Structures.extend('Guild', Guild => {
+  class MusicGuild extends Guild {
+    constructor(client, data) {
+      super(client, data);
+      this.musicData = {
+        queue: [],
+        isPlaying: false,
+        volume: 1,
+        songDispatcher: null
+      };
+    }
+  }
+  return MusicGuild;
+});
 
 // Initialize Discord Bot
-client.on('ready', async () => {
+const client = new CommandoClient({
+  commandPrefix: '!',
+  owner: '355534246439419904',
+  unknownCommandResponse: false
+});
+
+client.registry
+  .registerDefaultTypes()
+  .registerGroups([
+    ['normal', 'Regular commands anyone can use'],
+    ['admin', 'Moderator commands'],
+    ['token', 'Server preset commands'],
+    ['music', 'Music bot commands']
+  ])
+  .registerDefaultGroups()
+  .registerDefaultCommands()
+  .registerCommandsIn(path.join(__dirname, 'commands'));
+
+const talkedRecently = new Set();
+
+client.once('ready', async () => {
   console.log(`Logged in as ${client.user.tag}!`);
   await client.user.setActivity('!help', { type: "LISTENING" });
 });
@@ -85,104 +117,6 @@ client.on('message', async message => {
     const roleTarget = message.mentions.roles.first() || guild.roles.cache.get(snowflakes[0]);
 
     const path = `./tokens/${guild.id}.json`; // needed for existssync
-
-    // Commands
-    switch (command) {
-      case 'ping':
-        commands.ping(message, client);
-        break;
-
-      case 'say':
-        commands.say(message, args.join(' '));
-        break;
-
-      case 'avatar':
-        commands.avatar(message, userTarget);
-        break;
-
-      case 'profile':
-        commands.profile(message, userTarget);
-        break;
-
-      case 'gild':
-        commands.gild(message);
-        break;
-
-      case 'react':
-        commands.react(message, args);
-        break;
-
-      case 'mcstatus':
-        commands.mcstatus(message, args[0]);
-        break;
-
-      case 'help':
-        commands.help(message);
-        break;
-
-      case 'update':
-        commands.update(message);
-        break;
-
-      case 'set':
-        const field = args.shift().toLowerCase();
-        commands.set(message, field, args, client);
-        break;
-
-      case 'autorole':
-        commands.autorole(message, args[0], roleTarget);
-        break;
-
-      case 'toggle':
-        commands.toggle(message, args[0]);
-        break;
-
-      case 'disable':
-        commands.disable(message, args[0], commands, client);
-        break;
-
-      case 'enable':
-        commands.enable(message, args[0], client);
-        break;
-
-      case 'presets':
-        if (!fs.existsSync(path)) return message.reply('this server does not have a valid token yet! Try doing !update!');
-        commands.presets(message);
-        break;
-
-      case 'censor':
-        commands.censor(message, userTarget, client);
-        break;
-
-      case 'uncensor':
-        commands.uncensor(message, userTarget, client);
-        break;
-
-      case 'censored':
-        commands.censored(message, client);
-        break;
-
-      case 'purge':
-        commands.purge(message, args[0]);
-        break;
-
-      case 'expunge':
-        commands.expunge(message, args[0]);
-        break;
-
-      case 'kick':
-        commands.kick(message, memberTarget, args.join(' '), tokenData.logchannel, client);
-        break;
-
-      case 'ban':
-        commands.ban(message, memberTarget, args.join(' '), tokenData.logchannel, client);
-        break;
-
-      case 'addemote':
-        let name = args.slice(1).join('_'); // discord does not allow spaces or dashes in emoji names :(
-        commands.addemote(message, guild, args[0], name);
-        break;
-    }
 
     // adds user to set if they have used a command recently
     talkedRecently.add(message.author.id);
@@ -277,5 +211,8 @@ client.on("guildMemberRemove", async (member) => {
 
   guild.systemChannel.send(leaveEmbed).catch(error => console.error(`guildMemberRemove in ${guild} could not be logged because of ${error}!`));
 });
+
+// Error handling
+client.on('error', console.error);
 
 client.login(token);

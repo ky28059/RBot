@@ -1,10 +1,10 @@
-import Discord from "discord.js";
+import {MessageEmbed} from "discord.js";
 import {readToken} from "./tokenManager.js";
 
 export async function log(client, guild, color, author, authorIcon, desc, fields) {
     const tokenData = await readToken(guild);
 
-    const logEmbed = new Discord.MessageEmbed();
+    const logEmbed = new MessageEmbed();
     if (color) logEmbed.setColor(color);
     if (author && authorIcon) {
         logEmbed.setAuthor(author, authorIcon);

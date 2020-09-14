@@ -1,4 +1,5 @@
 import {log} from "../utils/logger.js";
+import Command from "discord.js-commando";
 
 export async function ban(message, target, reason, logChannel, client) { // target = GuildMember
   const guild = message.guild;
@@ -19,4 +20,25 @@ export async function ban(message, target, reason, logChannel, client) { // targ
   await message.react('👌');
 }
 
-//export {ban};
+export class BanCommand extends Command {
+  constructor(client) {
+    super(client, {
+      name: 'ban',
+      memberName: 'ban',
+      group: 'admin',
+      description: 'Replies with the text you provide.',
+      args: [
+        {
+          key: 'reason',
+          prompt: 'What text would you like the bot to say?',
+          type: 'string',
+        },
+      ],
+      guildOnly: true,
+    });
+  }
+
+  run(message, { content }) {
+    return message.say(content);
+  }
+}

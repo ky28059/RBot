@@ -1,8 +1,23 @@
-export function say(message, content) {
-  // feels like a waste of a file
-  if (!content) return message.reply('you must specify what to say!');
+import Command from 'discord.js-commando';
 
-  message.channel.send(content);
+export class SayCommand extends Command {
+  constructor(client) {
+    super(client, {
+      name: 'say',
+      memberName: 'say',
+      group: 'normal',
+      description: 'Replies with the text you provide.',
+      args: [
+        {
+          key: 'content',
+          prompt: 'What text would you like the bot to say?',
+          type: 'string',
+        },
+      ],
+    });
+  }
+
+  run(message, { content }) {
+    return message.say(content);
+  }
 }
-
-//export {say};
