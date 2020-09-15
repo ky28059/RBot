@@ -1,12 +1,13 @@
 // TODO: add in catchs on commands that require token information to check for if a token is lacking the field that command requires (currently only have checks for if a server is missing a token)
-import Discord, {Structures} from 'discord.js';
-import {CommandoClient} from 'discord.js-commando';
-import path from 'path';
-import fs from 'fs';
-import {token} from './auth.js';
-import {writeFile, readFile} from './fileManager.js';
-import {readToken} from './commands/utils/tokenManager.js';
-import {log} from "./commands/utils/logger.js";
+const { CommandoClient } = require('discord.js-commando');
+const { Structures, MessageEmbed } = require('discord.js');
+const path = require('path');
+const fs = require('fs');
+const {token} = require('./auth.js');
+const {writeFile, readFile} = require('./fileManager.js');
+const {readToken} = require('./commands/utils/tokenManager.js');
+const {log} = require("./commands/utils/logger.js");
+
 
 Structures.extend('Guild', Guild => {
   class MusicGuild extends Guild {
@@ -76,7 +77,7 @@ client.on('message', async message => {
   if (message.author.bot) return; // Bot ignores itself and other bots
 
   if (message.channel.type === 'dm') { // DM forwarding
-    const dmEmbed = new Discord.MessageEmbed()
+    const dmEmbed = new MessageEmbed()
       .setColor(0x7f0000)
       .setAuthor(message.author.tag, message.author.avatarURL())
       .setDescription(`**${message.author} DMed RBot this message:**\n${message.content}`)
@@ -112,7 +113,6 @@ client.on('message', async message => {
     const snowflakes = args.filter(arg => Number(arg));
 
     const userTarget = message.mentions.users.first() || client.users.cache.get(snowflakes[0]) || client.users.cache.find(user => user.username === args[0]);
-    const memberTarget = message.mentions.members.first() || guild.members.cache.get(snowflakes[0]) || guild.members.cache.find(member => member.user.username === args[0]);
     const channelTarget = message.mentions.channels.first() || client.channels.cache.get(snowflakes[0]);
     const roleTarget = message.mentions.roles.first() || guild.roles.cache.get(snowflakes[0]);
 
@@ -168,7 +168,7 @@ client.on("guildMemberUpdate", async (oldMember, newMember) => { // TODO: finish
   if (!(tokenData.logchannel && tokenData.lognicknamechange)) return; // will have to update later if I wish to use this for more things than nickname changes
 
   // not sure how compatible this is with new log function
-  const updateEmbed = new Discord.MessageEmbed()
+  const updateEmbed = new MessageEmbed()
     .setColor(0xf6b40c)
     .setAuthor(newMember.user.tag, newMember.user.avatarURL())
     .setFooter(`${new Date()}`);
@@ -203,7 +203,7 @@ client.on("guildMemberRemove", async (member) => {
   const tokenData = await readToken(guild);
   if (!(guild.systemChannel && tokenData.logmemberleave)) return;
 
-  const leaveEmbed = new Discord.MessageEmbed()
+  const leaveEmbed = new MessageEmbed()
     .setColor(0x333333)
     .setAuthor('Member left the server', member.user.avatarURL())
     .setDescription(`${member.user} ${member.user.tag}`)

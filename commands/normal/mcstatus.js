@@ -1,16 +1,15 @@
-import {MessageEmbed} from 'discord.js';
-import fetch from 'node-fetch';
-import {parse} from '../utils/stringParser.js';
+const {MessageEmbed} = require('discord.js');
+const fetch = require('node-fetch');
+const {parse}  = require('../utils/stringParser.js');
+const { Command } = require('discord.js-commando');
 
-import Command from 'discord.js-commando';
-
-export class MCStatusCommand extends Command {
+module.exports =  class MCStatusCommand extends Command {
   constructor(client) {
     super(client, {
       name: 'mcstatus',
       memberName: 'mcstatus',
       group: 'normal',
-      description: 'Replies with the text you provide.',
+      description: 'Gets the server status (player count and version requirement) of the specified Minecraft server.',
       args: [
         {
           key: 'server',

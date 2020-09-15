@@ -1,7 +1,7 @@
-import {readFile} from '../../fileManager.js';
-import fs from 'fs';
+const {readFile} = require('../../fileManager.js');
+const fs = require('fs');
 
-export async function readToken(guild) {
+module.exports = async function readToken(guild) {
   let tokenData = {}; // probably better way to do this
   const path = `./tokens/${guild.id}.json`;
   if (fs.existsSync(path)) { // checks if the token exists

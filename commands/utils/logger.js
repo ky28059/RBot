@@ -1,7 +1,7 @@
-import {MessageEmbed} from "discord.js";
-import {readToken} from "./tokenManager.js";
+const {MessageEmbed} = require("discord.js");
+const {readToken} = require("./tokenManager.js");
 
-export async function log(client, guild, color, author, authorIcon, desc, fields) {
+module.exports = async function log(client, guild, color, author, authorIcon, desc, fields) {
     const tokenData = await readToken(guild);
 
     const logEmbed = new MessageEmbed();

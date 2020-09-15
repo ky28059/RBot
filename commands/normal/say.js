@@ -1,12 +1,12 @@
-import Command from 'discord.js-commando';
+const {Command} = require('discord.js-commando');
 
-export class SayCommand extends Command {
+module.exports = class SayCommand extends Command {
   constructor(client) {
     super(client, {
       name: 'say',
       memberName: 'say',
       group: 'normal',
-      description: 'Replies with the text you provide.',
+      description: 'Makes the bot say what you tell it to say.',
       args: [
         {
           key: 'content',
