@@ -1,4 +1,11 @@
+# Misc. gitignored stuff
 node_modules
+.idea/
+.DS_Store
+
+# Auth keys
 auth.js
+
+# Tokens
 tokens/*
 !tokens/example.json

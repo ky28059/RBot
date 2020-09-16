@@ -1,11 +1,13 @@
-export async function purge(message, deleteCount) {
-  if (!message.guild.member(message.author).hasPermission('MANAGE_MESSAGES')) return message.reply('you do not have sufficient perms to do that!'); // restricts this command to mods only
+export default {
+  name: 'purge',
+  guildOnly: true,
+  permReqs: 'MANAGE_MESSAGES',
+  async execute(message, args) {
+    const deleteCount = args[0];
+    if (!deleteCount || deleteCount < 2 || deleteCount > 100) return message.reply("please provide a number between 2 and 100 for the number of messages to delete");
 
-  if (!deleteCount || deleteCount < 2 || deleteCount > 100) return message.reply("please provide a number between 2 and 100 for the number of messages to delete");
-
-  const fetched = await message.channel.messages.fetch({limit: deleteCount});
-  message.channel.bulkDelete(fetched)
-    .catch(error => message.reply(`couldn't delete messages because of: ${error}`));
+    const fetched = await message.channel.messages.fetch({limit: deleteCount});
+    message.channel.bulkDelete(fetched)
+        .catch(error => message.reply(`couldn't delete messages because of: ${error}`));
+  }
 }
-
-//export {purge};
