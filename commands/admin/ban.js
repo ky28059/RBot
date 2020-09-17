@@ -4,6 +4,7 @@ export default {
   name: 'ban',
   guildOnly: true,
   permReqs: 'BAN_MEMBERS',
+  clientPermReqs: 'BAN_MEMBERS',
   async execute(message, args, userTarget, memberTarget, channelTarget, roleTarget, client) { // target = GuildMember
     const guild = message.guild;
 

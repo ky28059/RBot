@@ -4,6 +4,7 @@ export default {
   name: 'kick',
   guildOnly: true,
   permReqs: 'KICK_MEMBERS',
+  clientPermReqs: 'KICK_MEMBERS',
   async execute(message, args, userTarget, memberTarget, channelTarget, roleTarget, client) {
     const guild = message.guild;
 

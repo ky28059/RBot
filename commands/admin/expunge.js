@@ -2,6 +2,7 @@ export default {
   name: 'expunge',
   guildOnly: true,
   permReqs: 'MANAGE_MESSAGES',
+  clientPermReqs: 'MANAGE_MESSAGES',
   async execute(message, args) {
     // TODO: make this not super slow
     const expungeCount = args[0];

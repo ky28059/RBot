@@ -5,6 +5,7 @@ export default {
     name: 'autorole',
     guildOnly: true,
     permReqs: 'MANAGE_GUILD',
+    clientPermReqs: 'MANAGE_ROLES',
     async execute(message, args, userTarget, memberTarget, channelTarget, roleTarget, client) {
         const guild = message.guild;
         const action = args[0];

@@ -2,6 +2,7 @@ import {MessageEmbed} from 'discord.js';
 
 export default {
   name: 'avatar',
+  aliases: ['icon', 'pfp'],
   execute(message, args, userTarget) {
     const avatarTarget = userTarget || message.author;
     const avatarEmbed = new MessageEmbed()

@@ -79,11 +79,14 @@ client.on('message', async message => {
         commands.help(message);
         break;
       */
-    if (!client.commands.has(commandName)) return;
-    const command = client.commands.get(commandName);
+    const command = client.commands.get(commandName)
+        || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
+
+    if (!command) return;
 
     if (command.guildOnly && message.channel.type === 'dm') return message.reply('I can\'t execute that command inside DMs!');
     if (command.permReqs && !member.hasPermission(command.permReqs)) return message.reply(`you do not have sufficient perms to do that! Perms required for this command: ${command.permReqs}`);
+    if (command.clientPermReqs && !guild.member(client.user).hasPermission(command.clientPermReqs)) return message.reply(`I do not have sufficient perms to do that! Perms I need for this command: ${command.clientPermReqs}`);
 
     try {
       await command.execute(message, args, userTarget, memberTarget, channelTarget, roleTarget, client);

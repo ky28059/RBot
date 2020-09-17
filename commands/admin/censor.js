@@ -7,6 +7,7 @@ export default {
   name: 'censor',
   guildOnly: true,
   permReqs: 'KICK_MEMBERS',
+  clientPermReqs: 'MANAGE_MESSAGES',
   async execute(message, args, userTarget, memberTarget, channelTarget, roleTarget, client) {
     const guild = message.guild;
 

@@ -1,5 +1,6 @@
 export default {
   name: 'react',
+  clientPermReqs: 'ADD_REACTIONS',
   async execute(message, args) {
     message.channel.messages.fetch({limit: 2}).then(messages => {
       let target = messages.last();

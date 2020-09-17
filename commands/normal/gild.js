@@ -1,6 +1,8 @@
 // consider using !react for this
 export default {
   name: 'gild',
+  aliases: ['award'],
+  clientPermReqs: 'ADD_REACTIONS',
   execute(message) {
     message.channel.messages.fetch({limit: 2}).then(messages => {
       let gildTarget = messages.last();

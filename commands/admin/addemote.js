@@ -1,7 +1,9 @@
 export default {
   name: 'addemote',
+  aliases: ['createemote'],
   guildOnly: true,
   permReqs: 'MANAGE_EMOJIS',
+  clientPermReqs: 'MANAGE_EMOJIS',
   execute(message, args) {
     const guild = message.guild;
     const name = args.slice(1).join('_');
