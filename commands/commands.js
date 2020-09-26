@@ -11,7 +11,7 @@ export * as uncensor from './admin/uncensor.js';
 // TODO: get a better category name for non-admin commands than "normal"
 export * as avatar from './normal/avatar.js';
 export * as gild from './normal/gild.js';
-//export * as help from './normal/help.js';
+export * as help from './normal/help.js';
 export * as mcstatus from './normal/mcstatus.js';
 export * as ping from './normal/ping.js';
 export * as profile from './normal/profile.js';
