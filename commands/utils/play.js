@@ -1,4 +1,5 @@
 import ytdlDiscord from "ytdl-core-discord";
+import { canModifyQueue } from './canModifyQueue.js';
 //import scdl from "soundcloud-downloader";
 
 export async function play(song, message) {
@@ -36,7 +37,7 @@ export async function play(song, message) {
     } catch (error) {
         if (queue) {
             queue.songs.shift();
-            module.exports.play(queue.songs[0], message);
+            play(queue.songs[0], message);
         }
 
         console.error(error);
@@ -55,17 +56,17 @@ export async function play(song, message) {
                 // so it can repeat endlessly
                 let lastSong = queue.songs.shift();
                 queue.songs.push(lastSong);
-                module.exports.play(queue.songs[0], message);
+                play(queue.songs[0], message);
             } else {
                 // Recursively play the next song
                 queue.songs.shift();
-                module.exports.play(queue.songs[0], message);
+                play(queue.songs[0], message);
             }
         })
         .on("error", (err) => {
             console.error(err);
             queue.songs.shift();
-            module.exports.play(queue.songs[0], message);
+            play(queue.songs[0], message);
         });
     dispatcher.setVolumeLogarithmic(queue.volume / 100);
 
@@ -180,20 +181,10 @@ export async function play(song, message) {
 
     collector.on("end", () => {
         playingMessage.reactions.removeAll().catch(console.error);
+        /*
         if (PRUNING && playingMessage && !playingMessage.deleted) {
             playingMessage.delete({ timeout: 3000 }).catch(console.error);
         }
+        */
     });
 };
-
-function canModifyQueue(member) {
-    const { channel } = member.voice;
-    const botChannel = member.guild.me.voice.channel;
-
-    if (channel !== botChannel) {
-        member.send("You need to join the voice channel first!").catch(console.error);
-        return false;
-    }
-
-    return true;
-}

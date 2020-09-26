@@ -8,7 +8,13 @@ export * as kick from './admin/kick.js';
 export * as purge from './admin/purge.js';
 export * as uncensor from './admin/uncensor.js';
 
+export * as die from './music/die.js';
+export * as loop from './music/loop.js';
 export * as play from './music/play.js';
+export * as queue from './music/queue.js';
+export * as remove from './music/remove.js';
+export * as shuffle from './music/shuffle.js';
+export * as skip from './music/skip.js';
 
 // TODO: get a better category name for non-admin commands than "normal"
 export * as avatar from './normal/avatar.js';
