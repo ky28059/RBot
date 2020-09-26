@@ -6,10 +6,15 @@
   "author": "Kevin Yu",
   "type": "module",
   "dependencies": {
+    "@discordjs/opus": "^0.3.2",
     "discord.js": "^12.2.0",
+    "ffmpeg-static": "^4.2.7",
     "fs": "0.0.1-security",
     "node-fetch": "^2.6.1",
-    "path": "^0.12.7"
+    "path": "^0.12.7",
+    "simple-youtube-api": "^5.2.1",
+    "ytdl-core": "^3.3.0",
+    "ytdl-core-discord": "^1.2.3"
   },
   "scripts": {
     "run": "node bot.js"
