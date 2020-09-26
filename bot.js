@@ -16,6 +16,7 @@ for (const command of commandNames) {
   client.commands.set(commands[command].default.name, commands[command].default);
 }
 
+client.queue = new Map(); // For music commands
 const talkedRecently = new Set();
 
 // Initialize Discord Bot
@@ -190,6 +191,7 @@ client.on("guildMemberRemove", async (member) => {
 });
 
 // Error handling
+client.on("warn", info => console.log(info));
 client.on("error", error => console.error(error));
 
 client.login(token);

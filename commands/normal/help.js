@@ -1,10 +1,10 @@
-import Discord from 'discord.js';
+import {MessageEmbed} from 'discord.js';
 
 export default {
   name: 'help',
   async execute(message) {
     // https://discordjs.guide/popular-topics/embeds.html#using-the-richembedmessageembed-constructor
-    const helpEmbed1 = new Discord.MessageEmbed()
+    const helpEmbed1 = new MessageEmbed()
       .setColor(0x333333)
       .setTitle('Non-Admin Commands:')
       .addFields(
@@ -17,7 +17,7 @@ export default {
         {name: '!gild:', value: 'Gives some Reddit gold to the previous message'}
       )
       .setFooter(`Requested by ${message.author.tag}`);
-    const helpEmbed2 = new Discord.MessageEmbed()
+    const helpEmbed2 = new MessageEmbed()
       .setColor(0x333333)
       .setTitle('Admin Commands:')
       .addFields(
@@ -31,7 +31,7 @@ export default {
         {name: '!addemote [image link] [name]:', value: 'Creates an emoji with the given image and name\n[PERMS REQUIRED: MANAGE_EMOJIS]'} // this feels awkward here
       )
       .setFooter(`Requested by ${message.author.tag}`);
-    const helpEmbed3 = new Discord.MessageEmbed()
+    const helpEmbed3 = new MessageEmbed()
       .setColor(0x333333)
       .setTitle('Token Commands:')
       .addFields(
