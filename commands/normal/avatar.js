@@ -3,8 +3,8 @@ import {MessageEmbed} from 'discord.js';
 export default {
   name: 'avatar',
   aliases: ['icon', 'pfp'],
-  execute(message, args, userTarget) {
-    const avatarTarget = userTarget || message.author;
+  execute(message, parsed) {
+    const avatarTarget = parsed.userTarget || message.author;
     const avatarEmbed = new MessageEmbed()
         .setColor(0x333333)
         .setTitle(avatarTarget.username)

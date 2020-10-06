@@ -5,8 +5,8 @@ import {parse} from '../utils/stringParser.js';
 export default {
   name: 'mcstatus',
   aliases: ['status'],
-  async execute(message, args) {
-    const server = args[0];
+  async execute(message, parsed) {
+    const server = parsed.first;
     if (!server) return message.reply('you must specify an IP to get the status of!');
 
     let source = '';

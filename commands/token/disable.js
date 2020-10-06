@@ -6,9 +6,9 @@ export default {
   name: 'disable',
   guildOnly: true,
   permReqs: 'ADMINISTRATOR',
-  async execute(message, args, userTarget, memberTarget, channelTarget, roleTarget, client) {
+  async execute(message, parsed, client) {
     const guild = message.guild;
-    const command = args[0];
+    const command = parsed.first;
 
     if (!command) return message.reply("please mention a command name to disable!");
     if (command === 'disable' || command === 'enable') return message.reply('you cannot disable the disable / enable commands!');

@@ -1,10 +1,10 @@
 export default {
   name: 'react',
   clientPermReqs: 'ADD_REACTIONS',
-  async execute(message, args) {
+  async execute(message, parsed) {
     message.channel.messages.fetch({limit: 2}).then(messages => {
       let target = messages.last();
-      args.forEach(id => {
+      parsed.rawArgs.forEach(id => {
         target.react(id)
             .catch(error => message.reply(`reaction could not be added because of ${error}`));
       });

@@ -3,9 +3,9 @@ import {MessageEmbed} from 'discord.js';
 export default {
   name: 'profile',
   guildOnly: true,
-  execute(message, args, userTarget) {
+  execute(message, parsed) {
     // TODO: make prettier, add functionality
-    const profileTarget = userTarget || message.author;
+    const profileTarget = parsed.userTarget || message.author;
     const guildProfileTarget = message.guild.member(profileTarget);
 
     const profileEmbed = new MessageEmbed()

@@ -5,7 +5,8 @@ export default {
   name: 'set',
   guildOnly: true,
   permReqs: 'MANAGE_GUILD',
-  async execute(message, args, userTarget, memberTarget, channelTarget) {
+  async execute(message, parsed) {
+    const args = parsed.rawArgs;
     const guild = message.guild;
     const field = args.shift().toLowerCase();
     if (!field) return message.reply('you must specify the token field to modify!');
@@ -16,6 +17,7 @@ export default {
 
     switch (field) {
       case 'logchannel':
+        const channelTarget = parsed.channelTarget;
         if (!channelTarget) return message.reply("please mention a valid channel in this server");
         if (!(channelTarget.guild.id === guild.id)) return message.reply('you can only log to your own server!');
 

@@ -6,6 +6,7 @@ import {readToken} from './commands/utils/tokenManager.js';
 import * as commands from './commands/commands.js';
 import {log} from "./commands/utils/logger.js";
 import {update} from "./commands/utils/update.js";
+import {parseArgs} from './commands/utils/argumentParser.js';
 
 const client = new Discord.Client();
 
@@ -40,6 +41,7 @@ client.on('message', async message => {
       .setDescription(`**${message.author} DMed RBot this message:**\n${message.content}`)
       .setFooter(`${new Date()}`);
     await client.users.cache.get('355534246439419904').send(dmEmbed);
+    return;
   }
 
   if (talkedRecently.has(message.author.id)) return; // Spam prevention
@@ -62,24 +64,11 @@ client.on('message', async message => {
   }
 
   if (message.content.substring(0, prefix.length) === prefix) {
-    const args = message.content.slice(prefix.length).trim().split(/ +/g); // removes the prefix, then the spaces, then splits into array
+    const parsed = parseArgs(message, prefix, client);
 
-    const commandName = args.shift().toLowerCase(); // removes the command from the args array
+    const commandName = parsed.commandName;
     if (tokenData.disabledcommands && tokenData.disabledcommands.includes(commandName)) return; //command disabling
 
-    const snowflakes = args.filter(arg => Number(arg));
-
-    const userTarget = message.mentions.users.first() || client.users.cache.get(snowflakes[0]) || client.users.cache.find(user => user.username === args[0]);
-    const memberTarget = message.mentions.members.first() || guild.members.cache.get(snowflakes[0]) || guild.members.cache.find(member => member.user.username === args[0]);
-    const channelTarget = message.mentions.channels.first() || client.channels.cache.get(snowflakes[0]);
-    const roleTarget = message.mentions.roles.first() || guild.roles.cache.get(snowflakes[0]);
-
-    //const path = `./tokens/${guild.id}.json`; // needed for existssync
-      /*
-      case 'help':
-        commands.help(message);
-        break;
-      */
     const command = client.commands.get(commandName)
         || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
 
@@ -90,7 +79,7 @@ client.on('message', async message => {
     if (command.clientPermReqs && !guild.member(client.user).hasPermission(command.clientPermReqs)) return message.reply(`I do not have sufficient perms to do that! Perms I need for this command: ${command.clientPermReqs}`);
 
     try {
-      await command.execute(message, args, userTarget, memberTarget, channelTarget, roleTarget, client);
+      await command.execute(message, parsed, client);
     } catch (error) {
       console.error(error);
       message.reply('there was an error trying to execute that command!');

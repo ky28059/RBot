@@ -6,9 +6,9 @@ export default {
   name: 'toggle',
   guildOnly: true,
   permReqs: 'MANAGE_GUILD',
-  async execute(message, args) {
+  async execute(message, parsed) {
     const guild = message.guild;
-    const preset = args[0];
+    const preset = parsed.first;
     if (!preset) return message.reply('you must specify the logged action to toggle!');
 
     const path = `./tokens/${guild.id}.json`; // path and whatnot super finnicky rn
