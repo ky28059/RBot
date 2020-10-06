@@ -17,6 +17,7 @@ export default {
     switch (field) {
       case 'logchannel':
         if (!channelTarget) return message.reply("please mention a valid channel in this server");
+        if (!(channelTarget.guild.id === guild.id)) return message.reply('you can only log to your own server!');
 
         tokenData.logchannel = channelTarget.id;
         updated = channelTarget;
