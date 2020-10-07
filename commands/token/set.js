@@ -6,7 +6,7 @@ export default {
   guildOnly: true,
   permReqs: 'MANAGE_GUILD',
   async execute(message, parsed) {
-    const args = parsed.rawArgs;
+    const args = parsed.raw;
     const guild = message.guild;
     const field = args.shift().toLowerCase();
     if (!field) return message.reply('you must specify the token field to modify!');

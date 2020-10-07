@@ -11,7 +11,7 @@ export default {
     aliases: ["p"],
     //description: "Plays audio from YouTube or Soundcloud",
     async execute(message, parsed) {
-        const args = parsed.rawArgs;
+        const args = parsed.raw;
         const { channel } = message.member.voice;
 
         const serverQueue = message.client.queue.get(message.guild.id);

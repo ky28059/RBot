@@ -18,7 +18,7 @@ export function parseArgs(message, prefix, client) {
     parsed.channelTarget = channelTarget;
     parsed.roleTarget = roleTarget;
 
-    parsed.rawArgs = args;
+    parsed.raw = args;
     parsed.joined = args.join(' ');
     parsed.first = args[0];
 

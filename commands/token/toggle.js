@@ -8,14 +8,14 @@ export default {
   permReqs: 'MANAGE_GUILD',
   async execute(message, parsed) {
     const guild = message.guild;
-    const preset = parsed.first;
-    if (!preset) return message.reply('you must specify the logged action to toggle!');
+    const presets = parsed.raw;
+    if (!presets) return message.reply('you must specify the logged actions to toggle!');
 
     const path = `./tokens/${guild.id}.json`; // path and whatnot super finnicky rn
     if (!fs.existsSync(path)) return message.reply('this server does not have a valid token yet! Try doing !update!');
 
     const tokenData = await readToken(guild);
-    let newPreset;
+    let newPresets = [];
 
     /* This is a better and more dynamic way of doing things. However, it requires node 14, while my vm runs node 13
 
@@ -24,43 +24,44 @@ export default {
     tokenData[`log${preset}`] = !tokenData[`log${preset}`];
     */
 
+    for (let preset of presets) {
+      switch (preset) {
+        case 'messagedelete':
+          tokenData.logmessagedelete = !tokenData.logmessagedelete;
+          newPresets.push(tokenData.logmessagedelete);
+          break;
 
-    switch (preset) {
-      case 'messagedelete':
-        tokenData.logmessagedelete = !tokenData.logmessagedelete;
-        newPreset = tokenData.logmessagedelete;
-        break;
+        case 'messagedeletebulk':
+          tokenData.logmessagedeletebulk = !tokenData.logmessagedeletebulk;
+          newPresets.push(tokenData.logmessagedeletebulk);
+          break;
 
-      case 'messagedeletebulk':
-        tokenData.logmessagedeletebulk = !tokenData.logmessagedeletebulk;
-        newPreset = tokenData.logmessagedeletebulk;
-        break;
+        case 'messageedit':
+          tokenData.logmessageedit = !tokenData.logmessageedit;
+          newPresets.push(tokenData.logmessageedit);
+          break;
 
-      case 'messageedit':
-        tokenData.logmessageedit = !tokenData.logmessageedit;
-        newPreset = tokenData.logmessageedit;
-        break;
+        case 'nicknamechange':
+          tokenData.lognicknamechange = !tokenData.lognicknamechange;
+          newPresets.push(tokenData.lognicknamechange);
+          break;
 
-      case 'nicknamechange':
-        tokenData.lognicknamechange = !tokenData.lognicknamechange;
-        newPreset = tokenData.lognicknamechange;
-        break;
+        case 'memberjoin':
+          tokenData.logmemberjoin = !tokenData.logmemberjoin;
+          newPresets.push(tokenData.logmemberjoin);
+          break;
 
-      case 'memberjoin':
-        tokenData.logmemberjoin = !tokenData.logmemberjoin;
-        newPreset = tokenData.logmemberjoin;
-        break;
+        case 'memberleave':
+          tokenData.logmemberleave = !tokenData.logmemberleave;
+          newPresets.push(tokenData.logmemberleave);
+          break;
 
-      case 'memberleave':
-        tokenData.logmemberleave = !tokenData.logmemberleave;
-        newPreset = tokenData.logmemberleave;
-        break;
-
-      default:
-        return message.reply('you must specify a valid logged action to toggle! Logged actions: `messagedelete`, `messagedeletebulk`, `messageedit`, `nicknamechange`, `memberjoin`, `memberleave`');
+        default:
+          return message.reply(`${preset} is not a valid logged action to toggle! Logged actions: \`messagedelete\`, \`messagedeletebulk\`, \`messageedit\`, \`nicknamechange\`, \`memberjoin\`, \`memberleave\``);
+      }
     }
 
     await writeFile(path, JSON.stringify(tokenData));
-    message.channel.send(`Success! \`${preset}\`s have been set to ${newPreset}!`);
+    message.channel.send(`Success! \`[${presets.join(', ')}]\`s have been set to \`[${newPresets.join(', ')}]!\``);
   }
 }
