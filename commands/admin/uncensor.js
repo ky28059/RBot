@@ -7,8 +7,9 @@ export default {
   name: 'uncensor',
   guildOnly: true,
   permReqs: 'KICK_MEMBERS',
-  async execute(message, args, userTarget, memberTarget, channelTarget, roleTarget, client) {
+  async execute(message, parsed, client) {
     const guild = message.guild;
+    const userTarget = parsed.userTarget;
     if (!userTarget) return message.reply("please mention a valid member of this server");
 
     const path = `./tokens/${guild.id}.json`;

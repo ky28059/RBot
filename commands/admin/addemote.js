@@ -4,8 +4,9 @@ export default {
   guildOnly: true,
   permReqs: 'MANAGE_EMOJIS',
   clientPermReqs: 'MANAGE_EMOJIS',
-  execute(message, args) {
+  execute(message, parsed) {
     const guild = message.guild;
+    let args = parsed.raw;
     const name = args.slice(1).join('_');
     guild.emojis.create(args[0], name)
         .then(emoji => message.channel.send(`Created new emoji with name ${emoji.name}!`))

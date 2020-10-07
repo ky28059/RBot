@@ -5,7 +5,7 @@ import fs from 'fs';
 export default {
   name: 'censored',
   guildOnly: true,
-  async execute(message, args, userTarget, memberTarget, channelTarget, roleTarget, client) {
+  async execute(message, parsed, client) {
     const guild = message.guild;
     const path = `./tokens/${guild.id}.json`;
     if (!fs.existsSync(path)) return message.reply('this server does not have a valid token yet! Try doing !update!');

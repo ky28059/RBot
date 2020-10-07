@@ -8,8 +8,9 @@ export default {
   guildOnly: true,
   permReqs: 'KICK_MEMBERS',
   clientPermReqs: 'MANAGE_MESSAGES',
-  async execute(message, args, userTarget, memberTarget, channelTarget, roleTarget, client) {
+  async execute(message, parsed, client) {
     const guild = message.guild;
+    const userTarget = parsed.userTarget;
 
     if (!userTarget) return message.reply("please mention a valid member of this server");
     if (userTarget.id === message.author.id) return message.reply("you cannot censor yourself!");
