@@ -1,6 +1,7 @@
 // https://javascript.info/import-export
 export * as addemote from './admin/addemote.js';
 export * as ban from './admin/ban.js';
+export * as blacklist from './admin/blacklist.js';
 export * as censor from './admin/censor.js';
 export * as censored from './admin/censored.js';
 export * as expunge from './admin/expunge.js';

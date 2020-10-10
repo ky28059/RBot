@@ -155,7 +155,13 @@ client.on("guildMemberAdd", async (member) => {
   const guild = member.guild;
   const tokenData = await readToken(guild);
 
-  if (tokenData.autoroles) {
+  if (tokenData.blacklist.includes(member.id)) { // Enforces blacklist
+    await member.ban('Blacklisted user');
+    await log(client, guild, 0x7f0000, member.user.tag, member.user.avatarURL(), `**User ${member.user} has been banned on join (blacklist)**`);
+    return;
+  }
+
+  if (tokenData.autoroles) { // Adds autoroles
     const autoroles = tokenData.autoroles.trim().split(' ');
     await member.edit({roles: member.roles.cache.array().concat(autoroles)});
   }

@@ -22,6 +22,10 @@ export default {
           name: 'Auto Roles:',
           value: tokenData.autoroles ? tokenData.autoroles.trim().split(' ').join(', ') : 'None'
         },
+        {
+          name: 'Blacklist:',
+          value: tokenData.blacklist ? tokenData.blacklist.trim().split(' ').join(', ') : 'No one'
+        },
         {name: 'Message Deletes', value: tokenData.logmessagedelete, inline: true},
         {name: 'Bulk Message Deletes', value: tokenData.logmessagedeletebulk, inline: true},
         {name: 'Message Edits', value: tokenData.logmessageedit, inline: true},
