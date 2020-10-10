@@ -31,7 +31,16 @@
  
  2. Create a file named "auth.js" (js because importing from json in Node 14 is weird) in the root folder that exports both your discord bot token ([obtained here](https://discord.com/developers/applications)) and Youtube API key ([follow instructions here](https://developers.google.com/youtube/v3/getting-started)). The resulting file should look something like this:
  ```js
- export const token = "discord_token";
- export const youtubeAPIKey = 'youtube_API_key';
+ export const token = 'discord_token_here';
+ export const youtubeAPIKey = 'youtube_API_key_here';
  ```
 After doing those two things, you should be able to `node bot.js` in the commandline and run the bot!
+
+### Creating your own discord bot:
+ Below is a list of some resources I found very helpful for beginners who want to create their own discord bots.
+ 
+ | Resource Name | Description |
+ | ----------- | ----------- |
+ | [Official discord.js guide](https://discordjs.guide/) | A neat guide that starts from the basics and covers almost everything you need to know for an efficient, functioning bot |
+ | [discord.js documentation](https://discord.js.org/#/docs/main/stable/general/welcome) | Semi-self explanatory, the documentation for discord.js |
+ | https://github.com/eritislami/evobot/ | A neat MIT licensed example of a music bot |
