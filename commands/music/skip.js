@@ -3,7 +3,8 @@ import { canModifyQueue } from "../utils/canModifyQueue.js";
 export default {
     name: "skip",
     aliases: ["s"],
-    //description: "Skip the currently playing song",
+    description: 'Skip the currently playing song.',
+    usage: 'skip',
     execute(message) {
         const queue = message.client.queue.get(message.guild.id);
         if (!queue)

@@ -5,6 +5,8 @@ import {log} from "../utils/logger.js";
 export default {
     name: 'blacklist',
     aliases: ['hackban'],
+    description: 'Blacklist a user from this server (ban them upon joining).',
+    usage: 'blacklist @[user]',
     guildOnly: true,
     permReqs: 'BAN_MEMBERS',
     clientPermReqs: 'BAN_MEMBERS',

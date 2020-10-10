@@ -3,7 +3,8 @@ import { MessageEmbed, splitMessage, escapeMarkdown } from "discord.js";
 export default {
     name: "queue",
     aliases: ["q"],
-    //description: "Show the music queue and now playing.",
+    description: 'Display the current music queue.',
+    usage: 'queue',
     execute(message) {
         const queue = message.client.queue.get(message.guild.id);
         if (!queue) return message.reply("There is nothing playing.").catch(console.error);

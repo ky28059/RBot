@@ -3,7 +3,6 @@ export * as addemote from './admin/addemote.js';
 export * as ban from './admin/ban.js';
 export * as blacklist from './admin/blacklist.js';
 export * as censor from './admin/censor.js';
-export * as censored from './admin/censored.js';
 export * as expunge from './admin/expunge.js';
 export * as kick from './admin/kick.js';
 export * as purge from './admin/purge.js';

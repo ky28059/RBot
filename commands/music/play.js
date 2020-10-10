@@ -7,9 +7,9 @@ const youtube = new YouTubeAPI(youtubeAPIKey);
 
 export default {
     name: "play",
-    //cooldown: 3,
     aliases: ["p"],
-    //description: "Plays audio from YouTube or Soundcloud",
+    description: 'Play music from youtube.',
+    usage: 'play [song or playlist link]',
     async execute(message, parsed) {
         const args = parsed.raw;
         const { channel } = message.member.voice;

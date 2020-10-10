@@ -3,7 +3,8 @@ import { canModifyQueue } from "../utils/canModifyQueue.js";
 export default {
     name: "loop",
     aliases: ['l'],
-    //description: "Toggle music loop",
+    description: 'Toggle whether the bot will loop the queue.',
+    usage: 'loop',
     execute(message) {
         const queue = message.client.queue.get(message.guild.id);
         if (!queue) return message.reply("There is nothing playing.").catch(console.error);

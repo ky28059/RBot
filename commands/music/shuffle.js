@@ -2,7 +2,8 @@ import { canModifyQueue } from "../utils/canModifyQueue.js";
 
 export default {
     name: "shuffle",
-    //description: "Shuffle queue",
+    description: 'Shuffle the queue.',
+    usage: 'shuffle',
     execute(message) {
         const queue = message.client.queue.get(message.guild.id);
         if (!queue) return message.channel.send("There is no queue.").catch(console.error);
