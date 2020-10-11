@@ -12,30 +12,16 @@ const client = new Discord.Client();
 client.commands = new Discord.Collection();
 
 async function loadCommands() {
-    const adminCommands = fs.readdirSync('./commands/admin').filter(file => file.endsWith('.js'));
-    const musicCommands = fs.readdirSync('./commands/music').filter(file => file.endsWith('.js'));
-    const normalCommands = fs.readdirSync('./commands/normal').filter(file => file.endsWith('.js'));
-    const tokenCommands = fs.readdirSync('./commands/token').filter(file => file.endsWith('.js'));
+    const dirnames = ['admin', 'music', 'normal', 'token'];
 
-    for (const file of adminCommands) {
-        let command = await import(`./commands/admin/${file}`);
-        command = command.default;
-        client.commands.set(command.name, command);
-    }
-    for (const file of musicCommands) {
-        let command = await import(`./commands/music/${file}`);
-        command = command.default;
-        client.commands.set(command.name, command);
-    }
-    for (const file of normalCommands) {
-        let command = await import(`./commands/normal/${file}`);
-        command = command.default;
-        client.commands.set(command.name, command);
-    }
-    for (const file of tokenCommands) {
-        let command = await import(`./commands/token/${file}`);
-        command = command.default;
-        client.commands.set(command.name, command);
+    for (let dir of dirnames) {
+        const commands = fs.readdirSync(`./commands/${dir}`).filter(file => file.endsWith('.js'));
+
+        for (let file of commands) {
+            let command = await import(`./commands/${dir}/${file}`);
+            command = command.default;
+            client.commands.set(command.name, command);
+        }
     }
 }
 
