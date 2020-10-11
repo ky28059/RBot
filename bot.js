@@ -1,9 +1,7 @@
-// TODO: add in .catch()s so that the bot wont break as much
-// TODO: add in catchs on commands that require token information to check for if a token is lacking the field that command requires (currently only have checks for if a server is missing a token)
 import Discord, {MessageEmbed} from 'discord.js';
+import fs from 'fs';
 import {token} from './auth.js';
 import {readToken} from './commands/utils/tokenManager.js';
-import * as commands from './commands/commands.js';
 import {log} from "./commands/utils/logger.js";
 import {update} from "./commands/utils/update.js";
 import {parseArgs} from './commands/utils/argumentParser.js';
@@ -12,9 +10,33 @@ const client = new Discord.Client();
 
 // Dynamic command handling
 client.commands = new Discord.Collection();
-const commandNames = Object.keys(commands);
-for (const command of commandNames) {
-    client.commands.set(commands[command].default.name, commands[command].default);
+
+async function loadCommands() {
+    const adminCommands = fs.readdirSync('./commands/admin').filter(file => file.endsWith('.js'));
+    const musicCommands = fs.readdirSync('./commands/music').filter(file => file.endsWith('.js'));
+    const normalCommands = fs.readdirSync('./commands/normal').filter(file => file.endsWith('.js'));
+    const tokenCommands = fs.readdirSync('./commands/token').filter(file => file.endsWith('.js'));
+
+    for (const file of adminCommands) {
+        let command = await import(`./commands/admin/${file}`);
+        command = command.default;
+        client.commands.set(command.name, command);
+    }
+    for (const file of musicCommands) {
+        let command = await import(`./commands/music/${file}`);
+        command = command.default;
+        client.commands.set(command.name, command);
+    }
+    for (const file of normalCommands) {
+        let command = await import(`./commands/normal/${file}`);
+        command = command.default;
+        client.commands.set(command.name, command);
+    }
+    for (const file of tokenCommands) {
+        let command = await import(`./commands/token/${file}`);
+        command = command.default;
+        client.commands.set(command.name, command);
+    }
 }
 
 client.queue = new Map(); // For music commands
@@ -22,6 +44,7 @@ const talkedRecently = new Set();
 
 // Initialize Discord Bot
 client.once('ready', async () => {
+    await loadCommands();
     console.log(`Logged in as ${client.user.tag}!`);
     await client.user.setActivity('!help', {type: "LISTENING"});
 });
