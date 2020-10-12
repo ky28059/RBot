@@ -11,8 +11,8 @@ const client = new Discord.Client();
 // Dynamic command handling
 client.commands = new Discord.Collection();
 
-async function loadCommands() {
-    const dirnames = ['admin', 'music', 'normal', 'token'];
+client.loadCommands = async function() {
+    const dirnames = ['admin', 'music', 'normal', 'owner', 'token'];
 
     for (let dir of dirnames) {
         const commands = fs.readdirSync(`./commands/${dir}`).filter(file => file.endsWith('.js'));
@@ -23,14 +23,16 @@ async function loadCommands() {
             client.commands.set(command.name, command);
         }
     }
+    console.log('Commands loaded!');
 }
 
+client.ownerID = '355534246439419904'; // For owner only commands
 client.queue = new Map(); // For music commands
 const talkedRecently = new Set();
 
 // Initialize Discord Bot
 client.once('ready', async () => {
-    await loadCommands();
+    await client.loadCommands();
     console.log(`Logged in as ${client.user.tag}!`);
     await client.user.setActivity('!help', {type: "LISTENING"});
 });
@@ -49,7 +51,7 @@ client.on('message', async message => {
             .setAuthor(message.author.tag, message.author.avatarURL())
             .setDescription(`**${message.author} DMed RBot this message:**\n${message.content}`)
             .setFooter(`${new Date()}`);
-        await client.users.cache.get('355534246439419904').send(dmEmbed);
+        await client.users.cache.get(client.ownerID).send(dmEmbed);
         return;
     }
 
