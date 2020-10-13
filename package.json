@@ -17,6 +17,6 @@
     "ytdl-core-discord": "^1.2.3"
   },
   "scripts": {
-    "run": "node bot.js"
+    "run": "node index.js"
   }
 }
