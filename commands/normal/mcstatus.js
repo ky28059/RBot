@@ -15,7 +15,7 @@ export default {
         await fetch(`https://mcsrvstat.us/server/${server}`)
             .then(res => res.text())
             .then(body => source = body)
-            .catch(error => console.error(error));
+            .catch(error => message.reply(`error fetching server: ${error}`));
 
         const players = parse(source, '<td>Players</td>\n			<td>', ' - <a href="#" id="show_players"') || parse(source, '<td>Players</td>\n			<td>', '</td>', 0);
         const version = parse(source, '<td>Version</td>\n			<td>', '</td>', 0);

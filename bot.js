@@ -5,6 +5,7 @@ import {readToken} from './commands/utils/tokenManager.js';
 import {log} from "./commands/utils/logger.js";
 import {update} from "./commands/utils/update.js";
 import {parseArgs} from './commands/utils/argumentParser.js';
+import {truncateMessage} from './commands/utils/messageTruncator.js';
 
 const client = new Discord.Client();
 
@@ -116,7 +117,8 @@ client.on("messageDelete", async message => {
     if (tokenData.censoredusers && tokenData.censoredusers.includes(message.author.id)) return; // prevents double logging of censored messages, probably better way of doing this
     if (!(tokenData.logchannel && tokenData.logmessagedelete)) return;
 
-    await log(client, guild, 0xb50300, message.author.tag, message.author.avatarURL(), `**Message by ${message.author} in ${message.channel} was deleted:**\n${message.content}`);
+    let desc = truncateMessage(`**Message by ${message.author} in ${message.channel} was deleted:**\n${message.content}`, -48) // Unlike messages, embed descriptions have a character limit of 2048
+    await log(client, guild, 0xb50300, message.author.tag, message.author.avatarURL(), desc);
 });
 
 client.on("messageDeleteBulk", async messages => {
@@ -137,10 +139,12 @@ client.on("messageUpdate", async (oldMessage, newMessage) => {
     const tokenData = await readToken(guild);
     if (!(tokenData.logchannel && tokenData.logmessageedit)) return;
 
-    await log(client, guild, 0xed7501, oldMessage.author.tag, oldMessage.author.avatarURL(), `**Message by ${oldMessage.author} in ${oldMessage.channel} was edited:** [Jump to message](${newMessage.url})`, [{
-        name: 'Before:',
-        value: oldMessage.content
-    }, {name: 'After:', value: newMessage.content}]);
+    let desc = `**Message by ${oldMessage.author} in ${oldMessage.channel} was edited:** [Jump to message](${newMessage.url})`;
+    let truncatedBefore = truncateMessage(oldMessage.content, 976); // Unlike messages, embed fields have a character limit of 1024
+    let truncatedAfter = truncateMessage(newMessage.content, 976);
+    let fields = [{name: 'Before:', value: truncatedBefore}, {name: 'After:', value: truncatedAfter}];
+
+    await log(client, guild, 0xed7501, oldMessage.author.tag, oldMessage.author.avatarURL(), desc, fields);
 });
 
 client.on("guildMemberUpdate", async (oldMember, newMember) => { // TODO: finish this by adding role logging
