@@ -1,7 +1,7 @@
 export default {
     name: 'roll',
     aliases: ['rng', 'dice'],
-    description: 'rolls an x sided dice.',
+    description: 'Rolls an x sided die.',
     usage: 'roll [sides]',
     execute(message, parsed, client) {
         let sides = parsed.first;

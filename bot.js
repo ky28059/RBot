@@ -21,6 +21,7 @@ client.loadCommands = async function() {
         for (let file of commands) {
             let command = await import(`./commands/${dir}/${file}`);
             command = command.default;
+            command.commandGroup = dir; // Dynamic commandgroups
             client.commands.set(command.name, command);
         }
     }

@@ -2,7 +2,7 @@ import {MessageEmbed} from 'discord.js';
 
 export default {
     name: 'help',
-    description: 'Get info about a command.',
+    description: 'Gets info about a command.',
     usage: 'help [command name]',
     async execute(message, parsed, client) {
         /*
@@ -125,9 +125,11 @@ export default {
             .setColor(0x333333)
             .setTitle(`${command.name}`);
 
+        if (command.description) helpEmbed.setDescription(`${command.description}`);
+        if (command.commandGroup) helpEmbed.addField('**Command Group:**', `${command.commandGroup}`);
         if (command.aliases) helpEmbed.addField('**Aliases:**', `${command.aliases.join(', ')}`);
-        if (command.description) helpEmbed.addField('**Description:**', `${command.description}`);
         if (command.usage) helpEmbed.addField('**Usage:**', `${command.usage}`);
+        if (command.permReqs) helpEmbed.addField('**Permissions Required:**', `${command.permReqs}`); // This will need updating if permReqs becomes an array
 
         message.channel.send(helpEmbed);
     }

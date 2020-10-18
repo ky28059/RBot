@@ -8,7 +8,7 @@ const youtube = new YouTubeAPI(youtubeAPIKey);
 export default {
     name: "play",
     aliases: ["p"],
-    description: 'Play music from youtube.',
+    description: 'Plays music from youtube.',
     usage: 'play [song or playlist link]',
     async execute(message, parsed) {
         const args = parsed.raw;

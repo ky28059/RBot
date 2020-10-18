@@ -5,7 +5,7 @@ import {log} from "../utils/logger.js";
 
 export default {
     name: 'enable',
-    description: 'Enable a disabled command.',
+    description: 'Enables a disabled command.',
     usage: 'enable [command name]',
     guildOnly: true,
     permReqs: 'ADMINISTRATOR',

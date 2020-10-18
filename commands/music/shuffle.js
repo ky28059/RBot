@@ -2,7 +2,7 @@ import { canModifyQueue } from "../utils/canModifyQueue.js";
 
 export default {
     name: "shuffle",
-    description: 'Shuffle the queue.',
+    description: 'Shuffles the queue.',
     usage: 'shuffle',
     execute(message) {
         const queue = message.client.queue.get(message.guild.id);
