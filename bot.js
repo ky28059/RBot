@@ -20,7 +20,7 @@ client.loadCommands = async function() {
 
         for (let file of commands) {
             let command = await import(`./commands/${dir}/${file}`);
-            command = command.default;
+            command = command.default; // Required because of default exports
             command.commandGroup = dir; // Dynamic commandgroups
             client.commands.set(command.name, command);
         }
@@ -30,7 +30,7 @@ client.loadCommands = async function() {
 
 client.ownerID = '355534246439419904'; // For owner only commands
 client.queue = new Map(); // For music commands
-const talkedRecently = new Set();
+const talkedRecently = new Set(); // For global cooldowns; consider switching to command specific cooldowns?
 
 // Initialize Discord Bot
 client.once('ready', async () => {

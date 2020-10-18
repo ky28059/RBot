@@ -128,7 +128,13 @@ export default {
         if (command.description) helpEmbed.setDescription(`${command.description}`);
         if (command.commandGroup) helpEmbed.addField('**Command Group:**', `${command.commandGroup}`);
         if (command.aliases) helpEmbed.addField('**Aliases:**', `${command.aliases.join(', ')}`);
-        if (command.usage) helpEmbed.addField('**Usage:**', `${command.usage}`);
+        if (command.usage) {
+            if (command.usage.length) {
+                helpEmbed.addField('**Usages:**', `${command.usage.join('\n')}`);
+            } else {
+                helpEmbed.addField('**Usage:**', `${command.usage}`);
+            }
+        }
         if (command.permReqs) helpEmbed.addField('**Permissions Required:**', `${command.permReqs}`); // This will need updating if permReqs becomes an array
 
         message.channel.send(helpEmbed);
