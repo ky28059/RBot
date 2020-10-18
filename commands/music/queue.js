@@ -3,7 +3,7 @@ import { MessageEmbed, splitMessage, escapeMarkdown } from "discord.js";
 export default {
     name: "queue",
     aliases: ["q"],
-    description: 'Display the current music queue.',
+    description: 'Displays the current music queue.',
     usage: 'queue',
     execute(message) {
         const queue = message.client.queue.get(message.guild.id);

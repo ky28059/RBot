@@ -3,7 +3,7 @@ import {writeFile} from '../../fileManager.js';
 
 export default {
     name: 'set',
-    description: 'Set new token data for this server.',
+    description: 'Sets new token data for this server.',
     usage: 'set [field] [value]',
     guildOnly: true,
     permReqs: 'MANAGE_GUILD',

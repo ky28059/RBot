@@ -4,7 +4,7 @@ import {log} from "../utils/logger.js";
 
 export default {
     name: 'disable',
-    description: 'Disable a command.',
+    description: 'Disables a command.',
     usage: 'disable [command name]',
     guildOnly: true,
     permReqs: 'ADMINISTRATOR',

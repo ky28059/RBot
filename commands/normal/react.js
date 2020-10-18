@@ -1,6 +1,6 @@
 export default {
     name: 'react',
-    description: 'React to the previous message with the specified emoji(s).',
+    description: 'Reacts to the previous message with the specified emoji(s).',
     usage: 'react [emoji / emoji-id]',
     clientPermReqs: 'ADD_REACTIONS',
     async execute(message, parsed) {

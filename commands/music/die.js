@@ -2,7 +2,7 @@ import { canModifyQueue } from "../utils/canModifyQueue.js";
 
 export default {
     name: "die",
-    description: 'Kill the music.',
+    description: 'Kills the music.',
     usage: 'die',
     execute(message) {
         const queue = message.client.queue.get(message.guild.id);

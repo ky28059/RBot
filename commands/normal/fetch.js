@@ -5,7 +5,7 @@ import {truncateMessage} from '../utils/messageTruncator.js';
 export default {
     name: 'fetch',
     aliases: ['grab'],
-    description: 'Fetch plaintext HTML from a website link.',
+    description: 'Fetches plaintext HTML from a website link.',
     usage: 'fetch [website]',
     async execute(message, parsed) {
         const url = parsed.first;

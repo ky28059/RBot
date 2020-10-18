@@ -3,7 +3,7 @@ import { canModifyQueue } from "../utils/canModifyQueue.js";
 export default {
     name: "loop",
     aliases: ['l'],
-    description: 'Toggle whether the bot will loop the queue.',
+    description: 'Toggles whether the bot will loop the queue.',
     usage: 'loop',
     execute(message) {
         const queue = message.client.queue.get(message.guild.id);

@@ -2,7 +2,7 @@ import { canModifyQueue } from "../utils/canModifyQueue.js";
 
 export default {
     name: "remove",
-    description: 'Remove a song from the queue.',
+    description: 'Removes a song from the queue.',
     usage: 'remove [song number]',
     execute(message, parsed) {
         const args = parsed.raw;
