@@ -54,6 +54,8 @@ client.on('message', async message => {
             .setDescription(`**${message.author} DMed RBot this message:**\n${message.content}`)
             .setFooter(`${new Date()}`);
         await client.users.cache.get(client.ownerID).send(dmEmbed);
+        // Much of the bot relies on the token infrastructure of readToken and guilds
+        // TODO: wrap many things in if statements so that dms still have limited command capacity
         return;
     }
 

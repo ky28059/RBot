@@ -5,6 +5,7 @@ export default {
     aliases: ['icon', 'pfp'],
     description: 'Fetches the discord avatar of the specified user.',
     usage: 'avatar @[user]',
+    examples: 'avatar @RBot',
     execute(message, parsed) {
         const avatarTarget = parsed.userTarget || message.author;
         const avatarEmbed = new MessageEmbed()

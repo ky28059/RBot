@@ -5,6 +5,7 @@ export default {
     name: 'set',
     description: 'Sets new token data for this server.',
     usage: 'set [field] [value]',
+    examples: ['set logchannel #logs', 'set prefix r'],
     guildOnly: true,
     permReqs: 'MANAGE_GUILD',
     async execute(message, parsed) {

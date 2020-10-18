@@ -2,6 +2,7 @@ export default {
     name: 'purge',
     description: 'Bulk deletes the specified amount of messages in the channel.',
     usage: 'purge [1-99]',
+    examples: 'purge 80',
     guildOnly: true,
     permReqs: 'MANAGE_MESSAGES',
     clientPermReqs: 'MANAGE_MESSAGES',

@@ -7,6 +7,7 @@ export default {
     name: 'enable',
     description: 'Enables a disabled command.',
     usage: 'enable [command name]',
+    examples: 'enable censor',
     guildOnly: true,
     permReqs: 'ADMINISTRATOR',
     async execute(message, parsed, client) {

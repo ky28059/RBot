@@ -5,6 +5,7 @@ export default {
     name: 'presets',
     description: 'Displays this server\'s current settings (log channel, disabled commands, etc.).',
     usage: 'presets',
+    examples: 'presets',
     guildOnly: true,
     permReqs: 'MANAGE_GUILD',
     async execute(message) {

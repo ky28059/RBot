@@ -7,6 +7,7 @@ export default {
     name: 'uncensor',
     description: 'Uncensor a user.',
     usage: 'uncensor @[user]',
+    examples: 'uncensor @example',
     guildOnly: true,
     permReqs: 'KICK_MEMBERS',
     async execute(message, parsed, client) {

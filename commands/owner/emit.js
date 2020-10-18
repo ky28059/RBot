@@ -2,6 +2,7 @@ export default {
     name: 'emit',
     description: 'Emits an event to be detected by the client (for testing purposes).',
     usage: 'emit [event]',
+    examples: 'emit leave',
     async execute(message, parsed, client) {
         if (!(message.author.id === client.ownerID)) return message.reply('you must be the bot owner to use this command!');
 

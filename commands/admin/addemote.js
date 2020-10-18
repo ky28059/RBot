@@ -3,6 +3,7 @@ export default {
     aliases: ['createemote'],
     description: 'Add an emote to this server.',
     usage: 'addemote [image link] [name]',
+    examples: 'addemote https://example.com/image.png example',
     guildOnly: true,
     permReqs: 'MANAGE_EMOJIS',
     clientPermReqs: 'MANAGE_EMOJIS',

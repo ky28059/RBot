@@ -5,6 +5,7 @@ export default {
     name: 'autorole',
     description: 'Adds / removes roles from the autorole (to be added to new members upon join).',
     usage: 'autorole [add / remove] @[role]',
+    examples: ['autorole add @verified', 'autorole remove @moderator'],
     guildOnly: true,
     permReqs: 'MANAGE_GUILD',
     clientPermReqs: 'MANAGE_ROLES',

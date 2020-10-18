@@ -2,6 +2,7 @@ export default {
     name: 'expunge',
     description: 'Removes all reactions from the specified amount of messages in the channel.',
     usage: 'expunge [1-99]',
+    examples: 'expunge 80',
     guildOnly: true,
     permReqs: 'MANAGE_MESSAGES',
     clientPermReqs: 'MANAGE_MESSAGES',

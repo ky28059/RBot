@@ -3,6 +3,7 @@ export default {
     aliases: ['rng', 'dice'],
     description: 'Rolls y x sided die, defaults to 1 die and 6 sides when numbers are not given.',
     usage: ['roll [sides] [dice]', 'roll [dnd notation]'],
+    examples: ['roll 5', 'roll 5 2', 'roll 3d8'],
     execute(message, parsed, client) {
         let args = parsed.raw;
         let sides = args[0];

@@ -7,6 +7,7 @@ export default {
     aliases: ['grab'],
     description: 'Fetches plaintext HTML from a website link.',
     usage: 'fetch [website]',
+    examples: 'fetch https://google.com',
     async execute(message, parsed) {
         const url = parsed.first;
         if (!url) return message.reply('you must specify an IP to get the status of!');

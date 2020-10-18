@@ -4,6 +4,7 @@ export default {
     name: 'ban',
     description: 'Ban a user from this server.',
     usage: 'ban @[user] [reason]',
+    examples: 'ban @example NSFW imagery',
     guildOnly: true,
     permReqs: 'BAN_MEMBERS',
     clientPermReqs: 'BAN_MEMBERS',

@@ -7,6 +7,7 @@ export default {
     aliases: ['hackban'],
     description: 'Blacklist a user from this server (ban them upon joining).',
     usage: 'blacklist @[user]',
+    examples: 'blacklist @example',
     guildOnly: true,
     permReqs: 'BAN_MEMBERS',
     clientPermReqs: 'BAN_MEMBERS',

@@ -4,6 +4,7 @@ export default {
     aliases: ['award'],
     description: 'Gives some reddit gold to the previous message.',
     usage: 'gild',
+    examples: 'gild',
     clientPermReqs: 'ADD_REACTIONS',
     execute(message) {
         message.channel.messages.fetch({limit: 2}).then(messages => {

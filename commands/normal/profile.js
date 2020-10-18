@@ -4,6 +4,7 @@ export default {
     name: 'profile',
     description: 'Fetches information about the specified user.',
     usage: 'profile @[user]',
+    examples: 'profile @RBot',
     guildOnly: true,
     execute(message, parsed) {
         // TODO: make prettier, add functionality

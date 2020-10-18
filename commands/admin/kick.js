@@ -4,6 +4,7 @@ export default {
     name: 'kick',
     description: 'Kick a user from this server.',
     usage: 'kick @[user] [reason]',
+    examples: 'kick @example Spamming in #general',
     guildOnly: true,
     permReqs: 'KICK_MEMBERS',
     clientPermReqs: 'KICK_MEMBERS',

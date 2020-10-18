@@ -7,6 +7,7 @@ export default {
     aliases: ['status'],
     description: 'Gets server info of the specified Minecraft server.',
     usage: 'mcstatus [server ip]',
+    examples: 'mcstatus hypixel.net',
     async execute(message, parsed) {
         const server = parsed.first;
         if (!server) return message.reply('you must specify an IP to get the status of!');

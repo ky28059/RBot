@@ -4,6 +4,7 @@ export default {
     name: "die",
     description: 'Kills the music.',
     usage: 'die',
+    examples: 'die',
     execute(message) {
         const queue = message.client.queue.get(message.guild.id);
 

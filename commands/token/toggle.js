@@ -4,8 +4,9 @@ import fs from 'fs';
 
 export default {
     name: 'toggle',
-    description: 'Toggles whether the spefic action will be logged.',
-    usage: 'toggle [action]',
+    description: 'Toggles whether the specific action will be logged.',
+    usage: 'toggle [action or actions]',
+    examples: ['toggle messagedelete', 'toggle messagedelete memberjoin memberleave'],
     guildOnly: true,
     permReqs: 'MANAGE_GUILD',
     async execute(message, parsed) {

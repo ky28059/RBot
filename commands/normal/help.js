@@ -1,9 +1,11 @@
 import {MessageEmbed} from 'discord.js';
+import {readToken} from '../utils/tokenManager.js';
 
 export default {
     name: 'help',
     description: 'Gets info about a command.',
     usage: 'help [command name]',
+    examples: 'help censor',
     async execute(message, parsed, client) {
         /*
         // https://discordjs.guide/popular-topics/embeds.html#using-the-richembedmessageembed-constructor
@@ -113,6 +115,8 @@ export default {
         */
         const commands = client.commands;
         const name = parsed.first;
+        const tokenData = await readToken(message.guild);
+        const prefix = tokenData.prefix || '!'; // Might as well read token since commands are disabled in dms
 
         if (!name) return message.reply('please specify a command to get information about!');
         const command = commands.get(name.toLowerCase()) || commands.find(c => c.aliases && c.aliases.includes(name));
@@ -128,14 +132,28 @@ export default {
         if (command.description) helpEmbed.setDescription(`${command.description}`);
         if (command.commandGroup) helpEmbed.addField('**Command Group:**', `${command.commandGroup}`);
         if (command.aliases) helpEmbed.addField('**Aliases:**', `${command.aliases.join(', ')}`);
+        // Better way of doing the following 3 fields?
         if (command.usage) {
-            if (command.usage.length) {
-                helpEmbed.addField('**Usages:**', `${command.usage.join('\n')}`);
+            if (Array.isArray(command.usage)) {
+                helpEmbed.addField('**Usages:**', `${command.usage.map(usage => usage = prefix + usage).join('\n')}`);
             } else {
-                helpEmbed.addField('**Usage:**', `${command.usage}`);
+                helpEmbed.addField('**Usage:**', `${prefix}${command.usage}`);
             }
         }
-        if (command.permReqs) helpEmbed.addField('**Permissions Required:**', `${command.permReqs}`); // This will need updating if permReqs becomes an array
+        if (command.examples) {
+            if (Array.isArray(command.examples)) {
+                helpEmbed.addField('**Examples:**', `${command.examples.map(example => example = prefix + example).join('\n')}`);
+            } else {
+                helpEmbed.addField('**Example:**', `${prefix}${command.examples}`);
+            }
+        }
+        if (command.permReqs) {
+            if (Array.isArray(command.permReqs)) {
+                helpEmbed.addField('**Permissions Required:**', `${command.permReqs.join(', ')}`);
+            } else {
+                helpEmbed.addField('**Permissions Required:**', `${command.permReqs}`);
+            }
+        }
 
         message.channel.send(helpEmbed);
     }

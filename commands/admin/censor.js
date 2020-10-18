@@ -7,6 +7,7 @@ export default {
     name: 'censor',
     description: 'Censor a user (delete their messages when sent).',
     usage: 'censor @[user]',
+    examples: 'censor @example',
     guildOnly: true,
     permReqs: 'KICK_MEMBERS',
     clientPermReqs: 'MANAGE_MESSAGES',
