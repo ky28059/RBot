@@ -7,7 +7,6 @@ import {token} from './auth.js';
 
 // Utils
 import {load} from './utils/sequelize.js';
-import {readToken} from './commands/utils/tokenManager.js';
 import {log} from "./commands/utils/logger.js";
 import {update} from "./utils/update.js";
 import {parseArgs} from './commands/utils/argumentParser.js';
@@ -22,7 +21,7 @@ client.Tags = load(); // Sequelize
 client.commands = new Discord.Collection();
 
 client.loadCommands = async function() {
-    const dirnames = ['admin', 'music', 'normal', 'owner', 'token'];
+    const dirnames = ['admin', 'music', 'normal', 'owner', 'presets'];
 
     for (let dir of dirnames) {
         const commands = fs.readdirSync(`./commands/${dir}`).filter(file => file.endsWith('.js'));
@@ -65,7 +64,6 @@ client.on('message', async message => {
             .setDescription(`**${message.author} DMed RBot this message:**\n${message.content}`)
             .setFooter(`${new Date()}`);
         await client.users.cache.get(client.ownerID).send(dmEmbed);
-        // Much of the bot relies on the token infrastructure of readToken and guilds
         // TODO: wrap many things in if statements so that dms still have limited command capacity
         return;
     }

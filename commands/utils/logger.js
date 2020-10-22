@@ -1,9 +1,8 @@
 import {MessageEmbed} from "discord.js";
-import {readToken} from "./tokenManager.js";
 
 export async function log(client, guild, color, author, authorIcon, desc, fields) {
-    const tokenData = await readToken(guild);
-    if (!tokenData.logchannel) return;
+    const tag = await client.Tags.findOne({ where: { guildID: guild.id } });
+    if (!tag.logchannel) return;
 
     const logEmbed = new MessageEmbed();
     if (color) logEmbed.setColor(color);
@@ -16,6 +15,6 @@ export async function log(client, guild, color, author, authorIcon, desc, fields
     if (fields) logEmbed.addFields(fields);
     logEmbed.setFooter(`${new Date()}`);
 
-    client.channels.cache.get(tokenData.logchannel).send(logEmbed).catch(error => console.error(`Error while logging action in ${guild}: ${error}!`));
+    client.channels.cache.get(tag.logchannel).send(logEmbed).catch(error => console.error(`Error while logging action in ${guild}: ${error}!`));
 }
 
