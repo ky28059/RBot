@@ -8,24 +8,24 @@
 # Additional Info
  
 ### Folder Structure:
- The main file that runs the bot, index.js, can be located in the root folder. The source code for the bot itself is in bot.js though; index.js is just the sharding manager. 
+ The main file that runs the bot, index.js, can be located in the root folder. However, the source code for the bot itself is in bot.js; index.js is just the sharding manager. 
 
+ Utilities specifically used by bot.js are in /utils.
+ 
  The commands that RBot uses can be located in /commands, and are organized into 4 groups:
  
  - /commands/admin: Basic moderator commands; purge, kick, ban, etc.
  
  - /commands/normal: Random fun commands anyone can use; avatar, say, gild, etc.
  
- - /commands/token: More advanced server settings stuff; modlog, command disabling, etc.
+ - /commands/presets: More advanced server settings stuff; modlog, command disabling, etc.
  
  - /commands/music: Music bot commands; play, loop, die, etc.
  
  - /commands/owner: Owner only commands, usually for testing; emit, reload, etc.
  
  - /commands/utils: Aren't actually commands, but instead helper functions other commands rely on.
- 
- /tokens is the directory where RBot stores server preferences (in the form of json tokens) in.
- 
+  
 ### Running RBot on your machine:
  While most files RBot uses are committed directly to Github, there are a few things you need to do before being able to run RBot on your own.
  

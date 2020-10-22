@@ -1,6 +1,3 @@
-import {readToken} from '../utils/tokenManager.js';
-import {writeFile} from '../../fileManager.js';
-import fs from 'fs';
 import {log} from "../utils/logger.js";
 
 export default {
@@ -15,18 +12,17 @@ export default {
         const commands = parsed.raw;
         if (!commands) return message.reply("please mention commands to reenable!");
 
-        const path = `./tokens/${guild.id}.json`;
-        const tokenData = await readToken(guild);
+        const tag = await client.Tags.findOne({ where: { guildID: guild.id } });
 
         for (let command of commands) {
             if (!client.commands.has(command)) return message.reply(`the command ${command} does not exist!`);
-            if (!tokenData.disabledcommands.includes(command)) return message.reply(`the command ${command} was not disabled!`);
+            if (!tag.disabled_commands.includes(command)) return message.reply(`the command ${command} was not disabled!`);
 
-            tokenData.disabledcommands = tokenData.disabledcommands.replace(command + ' ', '');
+            tag.disabled_commands = tag.disabled_commands.replace(`${command} `, '');
         }
 
+        await tag.save();
         await log(client, guild, 0xf6b40c, message.author.tag, message.author.avatarURL(), `**Commands [${commands.join(', ')}] were reenabled by ${message.author} in ${message.channel}**\n[Jump to message](${message.url})`);
-        await writeFile(path, JSON.stringify(tokenData));
         message.channel.send(`Reenabling \`[${commands.join(', ')}]\`!`);
     }
 }
