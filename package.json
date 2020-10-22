@@ -12,7 +12,9 @@
     "fs": "0.0.1-security",
     "node-fetch": "^2.6.1",
     "path": "^0.12.7",
+    "sequelize": "^6.3.5",
     "simple-youtube-api": "^5.2.1",
+    "sqlite3": "^5.0.0",
     "ytdl-core": "^3.3.0",
     "ytdl-core-discord": "^1.2.3"
   },

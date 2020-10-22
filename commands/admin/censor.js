@@ -19,15 +19,11 @@ export default {
         if (userTarget.id === message.author.id) return message.reply("you cannot censor yourself!");
         if (userTarget.bot) return message.reply("bots cannot be censored!"); // should bots be allowed to be censored?
 
-        const path = `./tokens/${guild.id}.json`;
-        if (!fs.existsSync(path)) return message.reply('this server does not have a valid token yet! Try doing !update!');
+        const tag = await client.Tags.findOne({ where: { guildID: guild.id } });
+        if (tag.censored_users && tag.censored_users.includes(userTarget.id)) return message.reply("that user is already censored!");
 
-        const tokenData = await readToken(guild);
-        if (tokenData.censoredusers.includes(userTarget.id)) return message.reply("that user is already censored!");
-
-        tokenData.censoredusers += userTarget.id + ' ';
+        await client.Tags.update({ censored_users: `${tag.censored_users}${userTarget.id} ` }, { where: { guildID: guild.id } });
         await log(client, guild, 0x7f0000, userTarget.tag, userTarget.avatarURL(), `**${userTarget} was censored by ${message.author} in ${message.channel}**\n[Jump to message](${message.url})`);
-        await writeFile(path, JSON.stringify(tokenData));
         message.channel.send(`Now censoring ${userTarget.tag}!`);
     }
 }

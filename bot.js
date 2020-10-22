@@ -1,13 +1,22 @@
+// Libraries
 import Discord, {MessageEmbed} from 'discord.js';
 import fs from 'fs';
+
+// Auth
 import {token} from './auth.js';
+
+// Utils
+import {load} from './utils/sequelize.js';
 import {readToken} from './commands/utils/tokenManager.js';
 import {log} from "./commands/utils/logger.js";
-import {update} from "./commands/utils/update.js";
+import {update} from "./utils/update.js";
 import {parseArgs} from './commands/utils/argumentParser.js';
 import {truncateMessage} from './commands/utils/messageTruncator.js';
 
+
 const client = new Discord.Client();
+
+client.Tags = load(); // Sequelize
 
 // Dynamic command handling
 client.commands = new Discord.Collection();
@@ -32,9 +41,11 @@ client.ownerID = '355534246439419904'; // For owner only commands
 client.queue = new Map(); // For music commands
 const talkedRecently = new Set(); // For global cooldowns; consider switching to command specific cooldowns?
 
-// Initialize Discord Bot
+
+// Run initial stuff
 client.once('ready', async () => {
-    await client.loadCommands();
+    await client.loadCommands(); // Load commands
+    client.Tags.sync(); // Sync database
     console.log(`Logged in as ${client.user.tag}!`);
     await client.user.setActivity('!help', {type: "LISTENING"});
 });
@@ -65,12 +76,12 @@ client.on('message', async message => {
     const guild = message.guild;
     const member = guild.member(message.author);
 
-    await update(guild); // Does !update upon each message, because screw you unupdated token issues!
-    const tokenData = await readToken(guild);
-    const prefix = tokenData.prefix || '!'; // maybe move somewhere else?
+    await update(guild, client.Tags);
+    const tag = await client.Tags.findOne({ where: { guildID: guild.id } });
+    const prefix = tag.prefix; // maybe move somewhere else?
 
     // Handles censorship
-    if (tokenData.censoredusers && tokenData.censoredusers.includes(message.author.id) && !member.hasPermission('ADMINISTRATOR')) {
+    if (tag.censored_users && tag.censored_users.includes(message.author.id) && !member.hasPermission('ADMINISTRATOR')) {
         await message.delete()
             .catch(error => console.error(`message in ${guild} could not be censored because of ${error}!`));
 
@@ -82,7 +93,7 @@ client.on('message', async message => {
         const parsed = parseArgs(message, prefix, client);
 
         const commandName = parsed.commandName;
-        if (tokenData.disabledcommands && tokenData.disabledcommands.includes(commandName)) return; //command disabling
+        if (tag.disabled_commands && tag.disabled_commands.includes(commandName)) return; //command disabling
 
         const command = client.commands.get(commandName)
             || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));

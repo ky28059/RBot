@@ -1,5 +1,4 @@
 import {MessageEmbed} from 'discord.js';
-import {readToken} from '../utils/tokenManager.js';
 
 export default {
     name: 'presets',
@@ -8,38 +7,44 @@ export default {
     examples: 'presets',
     guildOnly: true,
     permReqs: 'MANAGE_GUILD',
-    async execute(message) {
-        const tokenData = await readToken(message.guild);
+    async execute(message, parsed, client) {
+        const guild = message.guild;
+        const tag = await client.Tags.findOne({ where: { guildID: guild.id } });
+
+        const disabledCommands = tag.disabled_commands;
+        const autoroles = tag.autoroles;
+        const censoredUsers = tag.censored_users;
+        const blacklist = tag.blacklist;
 
         // TODO: make this embed look better
         const tokenEmbed = new MessageEmbed()
             .setColor(0x333333)
             .setTitle('Presets:')
             .addFields( // TODO: make a for each loop that adds available fields automatically so this command won't need to be manually updated
-                {name: 'Prefix:', value: tokenData.prefix || '!'},
-                {name: 'Log Channel:', value: tokenData.logchannel || 'None'},
+                {name: 'Prefix:', value: tag.prefix || '!'},
+                {name: 'Log Channel:', value: tag.logchannel || 'None'},
                 {
                     name: 'Disabled Commands:',
-                    value: tokenData.disabledcommands ? tokenData.disabledcommands.trim().split(' ').join(', ') : 'None'
+                    value: disabledCommands ? disabledCommands.trim().split(' ').join(', ') : 'None'
                 },
                 {
                     name: 'Auto Roles:',
-                    value: tokenData.autoroles ? tokenData.autoroles.trim().split(' ').join(', ') : 'None'
+                    value: autoroles ? autoroles.trim().split(' ').join(', ') : 'None'
                 },
                 {
                     name: 'Censored Users:',
-                    value: tokenData.censoredusers ? tokenData.censoredusers.trim().split(' ').join(', ') : 'No one'
+                    value: censoredUsers ? censoredUsers.trim().split(' ').join(', ') : 'No one'
                 },
                 {
                     name: 'Blacklist:',
-                    value: tokenData.blacklist ? tokenData.blacklist.trim().split(' ').join(', ') : 'No one'
+                    value: blacklist ? blacklist.trim().split(' ').join(', ') : 'No one'
                 },
-                {name: 'Message Deletes', value: tokenData.logmessagedelete, inline: true},
-                {name: 'Bulk Message Deletes', value: tokenData.logmessagedeletebulk, inline: true},
-                {name: 'Message Edits', value: tokenData.logmessageedit, inline: true},
-                {name: 'Nickname Changes', value: tokenData.lognicknamechange, inline: true},
-                {name: 'Member Joins', value: tokenData.logmemberjoin, inline: true},
-                {name: 'Member Leaves', value: tokenData.logmemberleave, inline: true}
+                {name: 'Message Deletes', value: tag.log_message_delete, inline: true},
+                {name: 'Bulk Message Deletes', value: tag.log_message_delete_bulk, inline: true},
+                {name: 'Message Edits', value: tag.log_message_edit, inline: true},
+                {name: 'Nickname Changes', value: tag.log_nickname_change, inline: true},
+                {name: 'Member Joins', value: tag.log_member_join, inline: true},
+                {name: 'Member Leaves', value: tag.log_member_leave, inline: true}
             )
             .setFooter(`Requested by ${message.author.tag}`);
 
