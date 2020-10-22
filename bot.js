@@ -64,34 +64,37 @@ client.on('message', async message => {
             .setDescription(`**${message.author} DMed RBot this message:**\n${message.content}`)
             .setFooter(`${new Date()}`);
         await client.users.cache.get(client.ownerID).send(dmEmbed);
-        // TODO: wrap many things in if statements so that dms still have limited command capacity
-        return;
     }
 
-    if (talkedRecently.has(message.author.id)) return; // Spam prevention
+    if (talkedRecently.has(message.author.id)) return; // Global spam prevention
 
-    // maybe move this code elsewhere? idk
-    const guild = message.guild;
-    const member = guild.member(message.author);
+    let prefix = '!';
 
-    await update(guild, client.Tags);
-    const tag = await client.Tags.findOne({ where: { guildID: guild.id } });
-    const prefix = tag.prefix; // maybe move somewhere else?
+    if (message.guild) {
+        // Server specific Tag reliant things (censorship, custom prefix)
 
-    // Handles censorship
-    if (tag.censored_users && tag.censored_users.includes(message.author.id) && !member.hasPermission('ADMINISTRATOR')) {
-        await message.delete()
-            .catch(error => console.error(`message in ${guild} could not be censored because of ${error}!`));
+        const guild = message.guild;
+        const member = guild.member(message.author);
 
-        await log(client, guild, 0x7f0000, message.author.tag, message.author.avatarURL(), `**Message by ${message.author} censored in ${message.channel}:**\n${message.content}`)
-        return;
+        await update(guild, client.Tags);
+        const tag = await client.Tags.findOne({ where: { guildID: guild.id } });
+        prefix = tag.prefix;
+
+        // Handles censorship
+        if (tag.censored_users && tag.censored_users.includes(message.author.id) && !member.hasPermission('ADMINISTRATOR')) {
+            await message.delete()
+                .catch(error => console.error(`message in ${guild} could not be censored because of ${error}!`));
+
+            await log(client, guild, 0x7f0000, message.author.tag, message.author.avatarURL(), `**Message by ${message.author} censored in ${message.channel}:**\n${message.content}`)
+            return;
+        }
     }
 
     if (message.content.substring(0, prefix.length) === prefix) {
         const parsed = parseArgs(message, prefix, client);
 
         const commandName = parsed.commandName;
-        if (tag.disabled_commands && tag.disabled_commands.includes(commandName)) return; //command disabling
+        if (message.guild && tag.disabled_commands && tag.disabled_commands.includes(commandName)) return; //command disabling
 
         const command = client.commands.get(commandName)
             || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));

@@ -5,6 +5,7 @@ export default {
     description: 'Shuffles the queue.',
     usage: 'shuffle',
     examples: 'shuffle',
+    guildOnly: true,
     execute(message) {
         const queue = message.client.queue.get(message.guild.id);
         if (!queue) return message.channel.send("There is no queue.").catch(console.error);

@@ -6,6 +6,7 @@ export default {
     description: 'Skips the currently playing song.',
     usage: 'skip',
     examples: 'skip',
+    guildOnly: true,
     execute(message) {
         const queue = message.client.queue.get(message.guild.id);
         if (!queue)

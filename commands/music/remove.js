@@ -5,6 +5,7 @@ export default {
     description: 'Removes a song from the queue.',
     usage: 'remove [song number]',
     examples: 'remove 5',
+    guildOnly: true,
     execute(message, parsed) {
         const args = parsed.raw;
         const queue = message.client.queue.get(message.guild.id);

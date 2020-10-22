@@ -6,7 +6,5 @@ node_modules
 # Auth keys
 auth.js
 
-# Tokens
-tokens/*
-!tokens/example.json
+# Server Presets
 database.sqlite

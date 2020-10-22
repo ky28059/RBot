@@ -5,6 +5,7 @@ export default {
     description: 'Kills the music.',
     usage: 'die',
     examples: 'die',
+    guildOnly: true,
     execute(message) {
         const queue = message.client.queue.get(message.guild.id);
 

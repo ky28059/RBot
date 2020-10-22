@@ -11,6 +11,7 @@ export default {
     description: 'Plays music from youtube.',
     usage: 'play [video name or link]', // Just realized that playlist functionality is broken since I didn't copy !playlist yet
     examples: ['play Never Gonna Give You Up', 'play https://www.youtube.com/watch?v=dQw4w9WgXcQ'],
+    guildOnly: true,
     async execute(message, parsed) {
         const args = parsed.raw;
         const { channel } = message.member.voice;
