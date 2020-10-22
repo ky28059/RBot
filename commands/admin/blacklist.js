@@ -1,5 +1,3 @@
-import {readToken} from '../utils/tokenManager.js';
-import {writeFile} from '../../fileManager.js';
 import {log} from "../utils/logger.js";
 
 export default {
@@ -18,14 +16,12 @@ export default {
         if (!userTarget) return message.reply("please mention a valid user id");
         if (userTarget.id === message.author.id) return message.reply("you cannot blacklist yourself!");
 
-        const path = `./tokens/${guild.id}.json`;
+        const tag = await client.Tags.findOne({ where: { guildID: guild.id } });
+        if (tag.blacklist.includes(userTarget.id)) return message.reply("that user is already blacklisted!");
 
-        const tokenData = await readToken(guild);
-        if (tokenData.blacklist.includes(userTarget.id)) return message.reply("that user is already blacklisted!");
-
-        tokenData.blacklist += userTarget.id + ' ';
+        tag.blacklist += `${userTarget.id} `;
+        await tag.save();
         await log(client, guild, 0x7f0000, userTarget.tag, userTarget.avatarURL(), `**${userTarget} has been added to this server's blacklist by ${message.author}**\n[Jump to message](${message.url})`);
-        await writeFile(path, JSON.stringify(tokenData));
         message.channel.send(`${userTarget.tag} has been added to this server's blacklist!`);
     }
 }

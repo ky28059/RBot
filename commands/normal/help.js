@@ -1,5 +1,4 @@
 import {MessageEmbed} from 'discord.js';
-import {readToken} from '../utils/tokenManager.js';
 
 export default {
     name: 'help',
@@ -115,10 +114,15 @@ export default {
         */
         const commands = client.commands;
         const name = parsed.first;
-        const tokenData = await readToken(message.guild);
-        const prefix = tokenData.prefix || '!'; // Might as well read token since commands are disabled in dms
-
         if (!name) return message.reply('please specify a command to get information about!');
+
+        let prefix = '!';
+        const guild = message.guild;
+        if (guild) {
+            const tag = await client.Tags.findOne({ where: { guildID: guild.id } });
+            prefix = tag.prefix;
+        }
+
         const command = commands.get(name.toLowerCase()) || commands.find(c => c.aliases && c.aliases.includes(name));
 
         if (!command) {

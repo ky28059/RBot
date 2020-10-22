@@ -1,6 +1,3 @@
-import {readToken} from '../utils/tokenManager.js';
-import {writeFile} from '../../fileManager.js';
-import fs from 'fs';
 import {log} from "../utils/logger.js";
 
 export default {
@@ -22,7 +19,8 @@ export default {
         const tag = await client.Tags.findOne({ where: { guildID: guild.id } });
         if (tag.censored_users && tag.censored_users.includes(userTarget.id)) return message.reply("that user is already censored!");
 
-        await client.Tags.update({ censored_users: `${tag.censored_users}${userTarget.id} ` }, { where: { guildID: guild.id } });
+        tag.censored_users += `${userTarget.id} `;
+        await tag.save();
         await log(client, guild, 0x7f0000, userTarget.tag, userTarget.avatarURL(), `**${userTarget} was censored by ${message.author} in ${message.channel}**\n[Jump to message](${message.url})`);
         message.channel.send(`Now censoring ${userTarget.tag}!`);
     }

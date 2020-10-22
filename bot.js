@@ -127,9 +127,10 @@ client.on("messageDelete", async message => {
     if (message.author.bot) return; // Bot ignores itself and other bots
 
     const guild = message.guild;
-    const tokenData = await readToken(guild);
-    if (tokenData.censoredusers && tokenData.censoredusers.includes(message.author.id)) return; // prevents double logging of censored messages, probably better way of doing this
-    if (!(tokenData.logchannel && tokenData.logmessagedelete)) return;
+    const tag = await client.Tags.findOne({ where: { guildID: guild.id } });
+
+    if (tag.censored_users && tag.censored_users.includes(message.author.id)) return; // prevents double logging of censored messages, probably better way of doing this
+    if (!(tag.logchannel && tag.log_message_delete)) return;
 
     let desc = truncateMessage(`**Message by ${message.author} in ${message.channel} was deleted:**\n${message.content}`, -48) // Unlike messages, embed descriptions have a character limit of 2048
     await log(client, guild, 0xb50300, message.author.tag, message.author.avatarURL(), desc);
@@ -137,8 +138,8 @@ client.on("messageDelete", async message => {
 
 client.on("messageDeleteBulk", async messages => {
     const guild = messages.first().guild;
-    const tokenData = await readToken(guild);
-    if (!(tokenData.logchannel && tokenData.logmessagedeletebulk)) return;
+    const tag = await client.Tags.findOne({ where: { guildID: guild.id } });
+    if (!(tag.logchannel && tag.log_message_delete_bulk)) return;
 
     // temporary Dyno-like bulkdelete logging system, will convert into superior system later
     await log(client, guild, 0xb50300, guild.name, guild.iconURL(), `**${messages.array().length} messages were deleted in ${messages.first().channel}**`);
@@ -150,8 +151,8 @@ client.on("messageUpdate", async (oldMessage, newMessage) => {
     if (oldMessage.content === newMessage.content) return; // fixes weird link preview glitch
 
     const guild = oldMessage.guild;
-    const tokenData = await readToken(guild);
-    if (!(tokenData.logchannel && tokenData.logmessageedit)) return;
+    const tag = await client.Tags.findOne({ where: { guildID: guild.id } });
+    if (!(tag.logchannel && tag.log_message_edit)) return;
 
     let desc = `**Message by ${oldMessage.author} in ${oldMessage.channel} was edited:** [Jump to message](${newMessage.url})`;
     let truncatedBefore = truncateMessage(oldMessage.content, 976); // Unlike messages, embed fields have a character limit of 1024
@@ -165,8 +166,8 @@ client.on("guildMemberUpdate", async (oldMember, newMember) => { // TODO: finish
     if (oldMember.user.bot) return;
 
     const guild = oldMember.guild;
-    const tokenData = await readToken(guild);
-    if (!(tokenData.logchannel && tokenData.lognicknamechange)) return; // will have to update later if I wish to use this for more things than nickname changes
+    const tag = await client.Tags.findOne({ where: { guildID: guild.id } });
+    if (!(tag.logchannel && tag.log_nickname_change)) return; // will have to update later if I wish to use this for more things than nickname changes
 
     // not sure how compatible this is with new log function
     const updateEmbed = new MessageEmbed()
@@ -181,25 +182,25 @@ client.on("guildMemberUpdate", async (oldMember, newMember) => { // TODO: finish
                 {name: 'Before:', value: oldMember.nickname || 'None'},
                 {name: 'After:', value: newMember.nickname || 'None'}
             );
-        client.channels.cache.get(tokenData.logchannel).send(updateEmbed).catch(error => console.error(`guildMemberUpdate in ${guild} could not be logged because of ${error}!`));
+        client.channels.cache.get(tag.logchannel).send(updateEmbed).catch(error => console.error(`guildMemberUpdate in ${guild} could not be logged because of ${error}!`));
     }
 });
 
 client.on("guildMemberAdd", async (member) => {
     const guild = member.guild;
-    const tokenData = await readToken(guild);
+    const tag = await client.Tags.findOne({ where: { guildID: guild.id } });
 
-    if (tokenData.blacklist.includes(member.id)) { // Enforces blacklist
+    if (tag.blacklist.includes(member.id)) { // Enforces blacklist
         await member.ban('Blacklisted user');
         await log(client, guild, 0x7f0000, member.user.tag, member.user.avatarURL(), `**User ${member.user} has been banned on join (blacklist)**`);
         return;
     }
 
-    if (tokenData.autoroles) { // Adds autoroles
-        const autoroles = tokenData.autoroles.trim().split(' ');
+    if (tag.autoroles) { // Adds autoroles
+        const autoroles = tag.autoroles.trim().split(' ');
         await member.edit({roles: member.roles.cache.array().concat(autoroles)});
     }
-    if (!(tokenData.logchannel && tokenData.logmemberjoin)) return;
+    if (!(tag.logchannel && tag.log_member_join)) return;
 
     await log(client, guild, 0x79ff3b, 'Member joined the server', member.user.avatarURL(), `${member.user} ${member.user.tag}`);
     // add potential welcome messages later
@@ -207,8 +208,8 @@ client.on("guildMemberAdd", async (member) => {
 
 client.on("guildMemberRemove", async (member) => {
     const guild = member.guild;
-    const tokenData = await readToken(guild);
-    if (!(guild.systemChannel && tokenData.logmemberleave)) return;
+    const tag = await client.Tags.findOne({ where: { guildID: guild.id } });
+    if (!(guild.systemChannel && tag.log_member_leave)) return;
 
     const leaveEmbed = new MessageEmbed()
         .setColor(0x333333)

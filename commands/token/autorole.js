@@ -1,6 +1,3 @@
-import {readToken} from '../utils/tokenManager.js';
-import {writeFile} from '../../fileManager.js';
-
 export default {
     name: 'autorole',
     description: 'Adds / removes roles from the autorole (to be added to new members upon join).',
@@ -9,7 +6,7 @@ export default {
     guildOnly: true,
     permReqs: 'MANAGE_GUILD',
     clientPermReqs: 'MANAGE_ROLES',
-    async execute(message, args, parsed, client) {
+    async execute(message, parsed, client) {
         const roleTarget = parsed.roleTarget;
         const guild = message.guild;
         const action = parsed.first;
@@ -18,25 +15,24 @@ export default {
         if (!roleTarget.editable) return message.reply('that role is too high up in the hierarchy! Please adjust it so that my highest role is above that role!');
         if (!action) return message.reply('you must specify what to do with that role!');
 
-        const path = `./tokens/${guild.id}.json`;
-        const tokenData = await readToken(guild);
+        const tag = await client.Tags.findOne({ where: { guildID: guild.id } });
 
         switch (action) {
             case 'add':
-                if (tokenData.autoroles && tokenData.autoroles.includes(roleTarget.id)) return message.reply("that role has already been added to autorole!");
-                tokenData.autoroles += roleTarget.id + ' ';
+                if (tag.autoroles && tag.autoroles.includes(roleTarget.id)) return message.reply("that role has already been added to autorole!");
+                tag.autoroles += roleTarget.id + ' ';
                 break;
 
             case 'remove':
-                if (tokenData.autoroles && !tokenData.autoroles.includes(roleTarget.id)) return message.reply("that role has not been added to autorole!");
-                tokenData.autoroles = tokenData.autoroles.replace(roleTarget.id + ' ', '');
+                if (tag.autoroles && !tag.autoroles.includes(roleTarget.id)) return message.reply("that role has not been added to autorole!");
+                tag.autoroles = tag.autoroles.replace(`${roleTarget.id} `, '');
                 break;
 
             default:
                 return message.reply(`${action} is not a valid action!`);
         }
         // TODO: log this
-        await writeFile(path, JSON.stringify(tokenData));
+        await tag.save();
         message.channel.send(`Success! Autorole has been updated!`);
     }
 }

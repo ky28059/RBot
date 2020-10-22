@@ -1,6 +1,3 @@
-import {readToken} from '../utils/tokenManager.js';
-import {writeFile} from '../../fileManager.js';
-
 export default {
     name: 'set',
     description: 'Sets new token data for this server.',
@@ -8,15 +5,14 @@ export default {
     examples: ['set logchannel #logs', 'set prefix r'],
     guildOnly: true,
     permReqs: 'MANAGE_GUILD',
-    async execute(message, parsed) {
+    async execute(message, parsed, client) {
         const args = parsed.raw;
         const guild = message.guild;
         const field = args.shift().toLowerCase();
         if (!field) return message.reply('you must specify the token field to modify!');
 
-        const path = `./tokens/${guild.id}.json`;
-        const tokenData = await readToken(guild);
-        let updated;
+        const tag = await client.Tags.findOne({ where: { guildID: guild.id } });
+        let updated; // better way of doing this, there is probably
 
         switch (field) {
             case 'logchannel':
@@ -24,7 +20,7 @@ export default {
                 if (!channelTarget) return message.reply("please mention a valid channel in this server");
                 if (!(channelTarget.guild.id === guild.id)) return message.reply('you can only log to your own server!');
 
-                tokenData.logchannel = channelTarget.id;
+                tag.logchannel = channelTarget.id;
                 updated = channelTarget;
                 break;
 
@@ -32,14 +28,14 @@ export default {
                 const prefix = args.join(" ");
                 if (!prefix) return message.reply('you must specify a prefix to set!')
 
-                tokenData.prefix = prefix;
+                tag.prefix = prefix;
                 updated = prefix;
                 break;
 
             default:
                 return message.reply('you must specify a valid token field to modify! Valid token fields: `logchannel, prefix`');
         }
-        await writeFile(path, JSON.stringify(tokenData));
+        await tag.save();
         message.channel.send(`Success! ${field} has been updated to ${updated}!`);
     }
 }
