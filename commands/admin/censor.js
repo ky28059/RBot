@@ -1,3 +1,4 @@
+import {isInField, addToField} from '../utils/tokenFieldManager.js';
 import {log} from "../utils/logger.js";
 
 export default {
@@ -17,10 +18,9 @@ export default {
         if (userTarget.bot) return message.reply("bots cannot be censored!"); // should bots be allowed to be censored?
 
         const tag = await client.Tags.findOne({ where: { guildID: guild.id } });
-        if (tag.censored_users && tag.censored_users.includes(userTarget.id)) return message.reply("that user is already censored!");
+        if (isInField(tag, 'censored_users', userTarget.id)) return message.reply("that user is already censored!");
 
-        tag.censored_users += `${userTarget.id} `;
-        await tag.save();
+        await addToField(tag, 'censored_users', userTarget.id);
         await log(client, guild, 0x7f0000, userTarget.tag, userTarget.avatarURL(), `**${userTarget} was censored by ${message.author} in ${message.channel}**\n[Jump to message](${message.url})`);
         message.channel.send(`Now censoring ${userTarget.tag}!`);
     }

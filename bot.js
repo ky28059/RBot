@@ -10,11 +10,12 @@ import {load} from './utils/sequelize.js';
 import {log} from "./commands/utils/logger.js";
 import {update} from "./utils/update.js";
 import {parseArgs} from './utils/argumentParser.js';
+import {isInField} from './commands/utils/tokenFieldManager.js';
 import {truncateMessage} from './commands/utils/messageTruncator.js';
 
 
 const client = new Discord.Client({
-        ws: { intents: ["GUILDS", "GUILD_MESSAGES", "GUILD_MEMBERS"] }
+    ws: { intents: ["GUILDS", "GUILD_MESSAGES", "GUILD_MEMBERS"] }
 });
 
 client.Tags = load(); // Sequelize
@@ -85,7 +86,10 @@ client.on('message', async message => {
         prefix = tag.prefix;
 
         // Handles censorship
-        if (tag.censored_users && tag.censored_users.includes(message.author.id) && !member.hasPermission('ADMINISTRATOR')) {
+        if (tag.censored_users
+            && isInField(tag, 'censored_users', message.author.id)
+            && !member.hasPermission('ADMINISTRATOR')
+        ) {
             await message.delete()
                 .catch(error => console.error(`message in ${guild} could not be censored because of ${error}!`));
 
@@ -98,7 +102,10 @@ client.on('message', async message => {
         const parsed = parseArgs(message, prefix, client);
 
         const commandName = parsed.commandName;
-        if (message.guild && tag.disabled_commands && tag.disabled_commands.includes(commandName)) return message.reply('that command is disabled!'); //command disabling
+        if (message.guild
+            && tag.disabled_commands
+            && isInField(tag, 'disabled_commands', commandName)
+        ) return message.reply('that command is disabled!'); // Handles command disabling
 
         const command = client.commands.get(commandName)
             || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
@@ -134,7 +141,7 @@ client.on("messageDelete", async message => {
     const guild = message.guild;
     const tag = await client.Tags.findOne({ where: { guildID: guild.id } });
 
-    if (tag.censored_users && tag.censored_users.includes(message.author.id)) return; // prevents double logging of censored messages, probably better way of doing this
+    if (tag.censored_users && isInField(tag, 'censored_users', message.author.id)) return; // prevents double logging of censored messages, probably better way of doing this
     if (!(tag.logchannel && tag.log_message_delete)) return;
 
     let desc = truncateMessage(`**Message by ${message.author} in ${message.channel} was deleted:**\n${message.content}`, -48) // Unlike messages, embed descriptions have a character limit of 2048
