@@ -18,6 +18,7 @@ export default {
             case 'logchannel':
                 const channelTarget = parsed.channelTarget;
                 if (!channelTarget) return message.reply("please mention a valid channel in this server");
+                if (channelTarget.type !== 'text') return message.reply('I can only log to guild text channels!');
                 if (!(channelTarget.guild.id === guild.id)) return message.reply('you can only log to your own server!');
 
                 tag.logchannel = channelTarget.id;

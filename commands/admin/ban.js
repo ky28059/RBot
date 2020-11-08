@@ -10,7 +10,7 @@ export default {
     clientPermReqs: 'BAN_MEMBERS',
     async execute(message, parsed, client) { // target = GuildMember
         const guild = message.guild;
-        const membertarget = parsed.memberTarget;
+        const memberTarget = parsed.memberTarget;
 
         if (!memberTarget) return message.reply("please mention a valid member of this server");
         if (memberTarget.user.id === message.author.id) return message.reply("you cannot ban yourself!");

@@ -9,11 +9,13 @@ import {token} from './auth.js';
 import {load} from './utils/sequelize.js';
 import {log} from "./commands/utils/logger.js";
 import {update} from "./utils/update.js";
-import {parseArgs} from './commands/utils/argumentParser.js';
+import {parseArgs} from './utils/argumentParser.js';
 import {truncateMessage} from './commands/utils/messageTruncator.js';
 
 
-const client = new Discord.Client();
+const client = new Discord.Client({
+        ws: { intents: ["GUILDS", "GUILD_MESSAGES", "GUILD_MEMBERS"] }
+});
 
 client.Tags = load(); // Sequelize
 
@@ -69,15 +71,17 @@ client.on('message', async message => {
     if (talkedRecently.has(message.author.id)) return; // Global spam prevention
 
     let prefix = '!';
+    let tag;
+    let member;
+    let guild;
 
     if (message.guild) {
         // Server specific Tag reliant things (censorship, custom prefix)
-
-        const guild = message.guild;
-        const member = guild.member(message.author);
+        guild = message.guild;
+        member = guild.member(message.author);
 
         await update(guild, client.Tags);
-        const tag = await client.Tags.findOne({ where: { guildID: guild.id } });
+        tag = await client.Tags.findOne({ where: { guildID: guild.id } });
         prefix = tag.prefix;
 
         // Handles censorship
@@ -94,7 +98,7 @@ client.on('message', async message => {
         const parsed = parseArgs(message, prefix, client);
 
         const commandName = parsed.commandName;
-        if (message.guild && tag.disabled_commands && tag.disabled_commands.includes(commandName)) return; //command disabling
+        if (message.guild && tag.disabled_commands && tag.disabled_commands.includes(commandName)) return message.reply('that command is disabled!'); //command disabling
 
         const command = client.commands.get(commandName)
             || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));

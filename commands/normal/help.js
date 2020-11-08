@@ -114,19 +114,30 @@ export default {
         */
         const commands = client.commands;
         const name = parsed.first;
-        if (!name) return message.reply('please specify a command to get information about!');
 
+        // If there were no arguments given
+        if (!name) {
+            // Return a list of all commands
+            const commandListEmbed = new MessageEmbed()
+                .setColor(0x333333)
+                .setTitle('Command List');
+            commandListEmbed.setDescription(
+                client.commands.array().map(command => command.name).join(', ')
+            );
+
+            return message.channel.send(commandListEmbed);
+        }
+
+        // If there were arguments given
+        const command = commands.get(name.toLowerCase()) || commands.find(c => c.aliases && c.aliases.includes(name));
+        if (!command) return message.reply('that was not a valid command!');
+
+        // If there were arguments given and the argument was a valid command
         let prefix = '!';
         const guild = message.guild;
         if (guild) {
             const tag = await client.Tags.findOne({ where: { guildID: guild.id } });
             prefix = tag.prefix;
-        }
-
-        const command = commands.get(name.toLowerCase()) || commands.find(c => c.aliases && c.aliases.includes(name));
-
-        if (!command) {
-            return message.reply('that\'s not a valid command!');
         }
 
         const helpEmbed = new MessageEmbed()
