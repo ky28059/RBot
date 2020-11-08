@@ -1,3 +1,4 @@
+import {isInField, removeFromField} from '../utils/tokenFieldManager.js';
 import {log} from "../utils/logger.js";
 
 export default {
@@ -13,16 +14,24 @@ export default {
         if (!commands) return message.reply("please mention commands to reenable!");
 
         const tag = await client.Tags.findOne({ where: { guildID: guild.id } });
+        let enables = [];
 
         for (let command of commands) {
-            if (!client.commands.has(command)) return message.reply(`the command ${command} does not exist!`);
-            if (!tag.disabled_commands.includes(command)) return message.reply(`the command ${command} was not disabled!`);
+            const cmd = client.commands.get(command.toLowerCase())
+                || client.commands.find(c => c.aliases && c.aliases.includes(command));
+            if (!cmd) return message.reply(`the command ${command} does not exist!`);
+            if (!isInField(tag, 'disabled_commands', command)) return message.reply(`the command ${command} was not disabled!`);
 
-            tag.disabled_commands = tag.disabled_commands.replace(`${command} `, '');
+            // Add command and aliases to the disables array
+            enables.push(cmd.name);
+            if (cmd.aliases) cmd.aliases.forEach(alias => {
+                enables.push(alias)
+            });
         }
 
-        await tag.save();
-        await log(client, guild, 0xf6b40c, message.author.tag, message.author.avatarURL(), `**Commands [${commands.join(', ')}] were reenabled by ${message.author} in ${message.channel}**\n[Jump to message](${message.url})`);
-        message.channel.send(`Reenabling \`[${commands.join(', ')}]\`!`);
+        await removeFromField(tag, 'disabled_commands', enables);
+        await log(client, guild, 0xf6b40c, message.author.tag, message.author.avatarURL(),
+            `**Commands [${enables.join(', ')}] were reenabled by ${message.author} in ${message.channel}**\n[Jump to message](${message.url})`);
+        message.channel.send(`Reenabling \`[${enables.join(', ')}]\`!`);
     }
 }

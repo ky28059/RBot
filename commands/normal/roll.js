@@ -10,10 +10,12 @@ export default {
         let dice = args[1];
 
         // Support dnd notation like "3d8"
-        let dndNotation = sides.split('d');
-        if (dndNotation.length > 1) {
-            dice = dndNotation[0];
-            sides = dndNotation[1];
+        if (sides) {
+            let dndNotation = sides.split('d');
+            if (dndNotation.length > 1) {
+                dice = dndNotation[0];
+                sides = dndNotation[1];
+            }
         }
         if (!dice || !Number(dice)) dice = 1;
         if (!sides || !Number(sides)) sides = 6;
