@@ -3,9 +3,8 @@ export default {
     description: 'Emits an event to be detected by the client (for testing purposes).',
     usage: 'emit [event]',
     examples: 'emit leave',
+    ownerOnly: true,
     async execute(message, parsed, client) {
-        if (!(message.author.id === client.ownerID)) return message.reply('you must be the bot owner to use this command!');
-
         const event = parsed.raw.shift().toLowerCase();
 
         switch (event) {

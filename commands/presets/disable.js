@@ -26,9 +26,7 @@ export default {
 
             // Add command and aliases to the disables array
             disables.push(cmd.name);
-            if (cmd.aliases) cmd.aliases.forEach(alias => {
-                disables.push(alias)
-            });
+            if (cmd.aliases) disables = disables.concat(cmd.aliases);
         }
 
         await addToField(tag, 'disabled_commands', disables);

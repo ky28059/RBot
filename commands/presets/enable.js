@@ -24,9 +24,7 @@ export default {
 
             // Add command and aliases to the disables array
             enables.push(cmd.name);
-            if (cmd.aliases) cmd.aliases.forEach(alias => {
-                enables.push(alias)
-            });
+            if (cmd.aliases) enables = enables.concat(cmd.aliases);
         }
 
         await removeFromField(tag, 'disabled_commands', enables);

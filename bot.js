@@ -15,7 +15,7 @@ import {truncateMessage} from './commands/utils/messageTruncator.js';
 
 
 const client = new Discord.Client({
-    ws: { intents: ["GUILDS", "GUILD_MESSAGES", "GUILD_MEMBERS"] }
+    ws: { intents: ["GUILDS", "GUILD_MESSAGES", "GUILD_MEMBERS", "GUILD_MESSAGE_REACTIONS"] }
 });
 
 client.Tags = load(); // Sequelize
@@ -112,9 +112,14 @@ client.on('message', async message => {
 
         if (!command) return;
 
-        if (command.guildOnly && message.channel.type === 'dm') return message.reply('I can\'t execute that command inside DMs!');
-        if (command.permReqs && !member.hasPermission(command.permReqs)) return message.reply(`you do not have sufficient perms to do that! Perms required for this command: ${command.permReqs}`);
-        if (command.clientPermReqs && !guild.member(client.user).hasPermission(command.clientPermReqs)) return message.reply(`I do not have sufficient perms to do that! Perms I need for this command: ${command.clientPermReqs}`);
+        if (command.guildOnly && message.channel.type === 'dm')
+            return message.reply('I can\'t execute that command inside DMs!');
+        if (command.permReqs && !member.hasPermission(command.permReqs))
+            return message.reply(`you do not have sufficient perms to do that! Perms required for this command: ${command.permReqs}`);
+        if (command.clientPermReqs && !guild.member(client.user).hasPermission(command.clientPermReqs))
+            return message.reply(`I do not have sufficient perms to do that! Perms I need for this command: ${command.clientPermReqs}`);
+        if (command.ownerOnly && message.author.id !== client.ownerID)
+            return message.reply('you must be the bot owner to use this command!');
 
         try {
             await command.execute(message, parsed, client);
