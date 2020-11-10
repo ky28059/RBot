@@ -8,14 +8,13 @@ import {token} from './auth.js';
 // Utils
 import {load} from './utils/sequelize.js';
 import {log} from "./commands/utils/logger.js";
-import {update} from "./utils/update.js";
 import {parseArgs} from './utils/argumentParser.js';
-import {isInField} from './commands/utils/tokenFieldManager.js';
+import {update, isInField} from './utils/tokenManager.js';
 import {truncateMessage} from './commands/utils/messageTruncator.js';
 
 
 const client = new Discord.Client({
-    ws: { intents: ["GUILDS", "GUILD_MESSAGES", "GUILD_MEMBERS", "GUILD_MESSAGE_REACTIONS"] }
+    ws: { intents: ["GUILDS", "GUILD_MESSAGES", "GUILD_MEMBERS", "GUILD_MESSAGE_REACTIONS", "DIRECT_MESSAGES"] }
 });
 
 client.Tags = load(); // Sequelize
@@ -53,7 +52,7 @@ client.once('ready', async () => {
 });
 
 client.on("guildCreate", async guild => {
-    await update(guild);
+    await update(guild, client);
     console.log(`New guild joined: ${guild.name} (id: ${guild.id}). This guild has ${guild.memberCount} members!`);
 });
 
@@ -81,7 +80,7 @@ client.on('message', async message => {
         guild = message.guild;
         member = guild.member(message.author);
 
-        await update(guild, client.Tags);
+        await update(guild, client);
         tag = await client.Tags.findOne({ where: { guildID: guild.id } });
         prefix = tag.prefix;
 
@@ -136,6 +135,7 @@ client.on('message', async message => {
         }, 1000);
     }
 });
+
 
 // Bot logs the following events:
 

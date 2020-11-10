@@ -15,6 +15,7 @@ export async function log(client, guild, color, author, authorIcon, desc, fields
     if (fields) logEmbed.addFields(fields);
     logEmbed.setFooter(`${new Date()}`);
 
-    client.channels.cache.get(tag.logchannel).send(logEmbed).catch(error => console.error(`Error while logging action in ${guild}: ${error}!`));
+    client.channels.cache.get(tag.logchannel).send(logEmbed)
+        .catch(error => console.error(`Error while logging action in ${guild}: ${error}!`));
 }
 

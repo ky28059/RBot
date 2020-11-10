@@ -1,4 +1,4 @@
-import {isInField, removeFromField} from '../utils/tokenFieldManager.js';
+import {isInField, removeFromField} from '../../utils/tokenManager.js';
 import {log} from "../utils/logger.js";
 
 export default {
