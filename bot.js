@@ -85,8 +85,10 @@ client.on('message', async message => {
         prefix = tag.prefix;
 
         // Handles censorship
-        if (tag.censored_users
-            && isInField(tag, 'censored_users', message.author.id)
+        if (
+            (tag.censored_users || tag.censored_words)
+            && (isInField(tag, 'censored_users', message.author.id)
+                || isInField(tag, 'censored_words', message.content.split(' ')))
             && !member.hasPermission('ADMINISTRATOR')
         ) {
             await message.delete()

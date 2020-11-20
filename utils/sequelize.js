@@ -8,7 +8,7 @@ export function load() {
         storage: 'database.sqlite',
     });
 
-    return sequelize.define('tags', {
+    return sequelize.define('guilds', {
         guildID: {
             type: Sequelize.STRING,
             unique: true,
@@ -27,6 +27,10 @@ export function load() {
             defaultValue: '',
         },
         censored_users: {
+            type: Sequelize.STRING,
+            defaultValue: '',
+        },
+        censored_words: {
             type: Sequelize.STRING,
             defaultValue: '',
         },

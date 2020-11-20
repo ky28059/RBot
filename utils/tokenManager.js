@@ -44,7 +44,14 @@ export function isInField(tag, field, query) {
         return console.error('Attempted to run string field function on non string field!');
 
     const keys = tag[field].split(' ');
-    return keys.includes(query);
+
+    if (Array.isArray(query)) {
+        // If query is an array, filter query to see if any words are included in key
+        return query.filter(q => keys.includes(q)).length ? true : false;
+    } else {
+        // Else, check if query is included in key
+        return keys.includes(query);
+    }
 }
 
 export async function addToField(tag, field, additions) {

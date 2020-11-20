@@ -3,6 +3,7 @@ export default {
     description: 'Clear this server\'s token.',
     usage: 'clear',
     examples: 'clear',
+    guildOnly: true,
     permReqs: 'ADMINISTRATOR',
     async execute(message, parsed, client) {
         const guild = message.guild;
