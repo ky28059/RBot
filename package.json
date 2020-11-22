@@ -6,8 +6,8 @@
   "author": "Kevin Yu",
   "type": "module",
   "dependencies": {
-    "@discordjs/opus": "^0.3.2",
-    "discord.js": "^12.2.0",
+    "@discordjs/opus": "^0.3.3",
+    "discord.js": "^12.4.1",
     "ffmpeg-static": "^4.2.7",
     "fs": "0.0.1-security",
     "node-fetch": "^2.6.1",
@@ -15,8 +15,8 @@
     "sequelize": "^6.3.5",
     "simple-youtube-api": "^5.2.1",
     "sqlite3": "^5.0.0",
-    "ytdl-core": "^3.3.0",
-    "ytdl-core-discord": "^1.2.3"
+    "ytdl-core": "^3.4.2",
+    "ytdl-core-discord": "^1.2.4"
   },
   "scripts": {
     "run": "node index.js"

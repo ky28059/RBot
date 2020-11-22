@@ -1,13 +1,6 @@
-import Sequelize from 'sequelize';
+// Guild presets
 
-export function load() {
-    const sequelize = new Sequelize('database', 'user', 'password', {
-        host: 'localhost',
-        dialect: 'sqlite',
-        logging: false,
-        storage: 'database.sqlite',
-    });
-
+export default function load(sequelize, Sequelize) {
     return sequelize.define('guilds', {
         guildID: {
             type: Sequelize.STRING,

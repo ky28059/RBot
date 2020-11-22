@@ -10,7 +10,7 @@ export default {
         const presets = parsed.raw;
         if (!presets) return message.reply('you must specify the logged actions to toggle!');
 
-        const tag = await client.Tags.findOne({ where: { guildID: guild.id } });
+        const tag = await client.GuildTags.findOne({ where: { guildID: guild.id } });
         let newPresets = [];
 
         for (let preset of presets) { // Weird glitch where running !toggle without any arguments sets [] to []?

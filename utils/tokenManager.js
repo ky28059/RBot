@@ -6,11 +6,11 @@
 
 // Updating tags
 export async function update(guild, client) {
-    const tag = await client.Tags.findOne({ where: { guildID: guild.id } });
+    const tag = await client.GuildTags.findOne({ where: { guildID: guild.id } });
 
     if (!tag) {
         // If the tag doesn't exist
-        const tag = await client.Tags.create({
+        const tag = await client.GuildTags.create({
             guildID: guild.id,
         });
         return console.log(`Tag ${tag.guildID} added.`);

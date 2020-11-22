@@ -1,7 +1,7 @@
 import {MessageEmbed} from "discord.js";
 
 export async function log(client, guild, color, author, authorIcon, desc, fields) {
-    const tag = await client.Tags.findOne({ where: { guildID: guild.id } });
+    const tag = await client.GuildTags.findOne({ where: { guildID: guild.id } });
     if (!tag.logchannel) return;
 
     const logEmbed = new MessageEmbed();

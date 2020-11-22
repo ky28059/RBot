@@ -1,27 +1,37 @@
 // Libraries
 import Discord, {MessageEmbed} from 'discord.js';
+import Sequelize from 'sequelize';
 import fs from 'fs';
 
 // Auth
 import {token} from './auth.js';
 
 // Utils
-import {load} from './utils/sequelize.js';
 import {log} from "./commands/utils/logger.js";
 import {parseArgs} from './utils/argumentParser.js';
 import {update, isInField} from './utils/tokenManager.js';
 import {truncateMessage} from './commands/utils/messageTruncator.js';
+
+// Models
+import loadGuilds from './models/Guild.js';
 
 
 const client = new Discord.Client({
     ws: { intents: ["GUILDS", "GUILD_MESSAGES", "GUILD_MEMBERS", "GUILD_MESSAGE_REACTIONS", "DIRECT_MESSAGES"] }
 });
 
-client.Tags = load(); // Sequelize
+// Models
+const sequelize = new Sequelize('database', 'user', 'password', {
+    host: 'localhost',
+    dialect: 'sqlite',
+    logging: false,
+    storage: 'database.sqlite',
+});
+client.GuildTags = loadGuilds(sequelize, Sequelize);
+
 
 // Dynamic command handling
 client.commands = new Discord.Collection();
-
 client.loadCommands = async function() {
     const dirnames = ['admin', 'music', 'normal', 'owner', 'presets'];
 
@@ -38,6 +48,7 @@ client.loadCommands = async function() {
     console.log('Commands loaded!');
 }
 
+
 client.ownerID = '355534246439419904'; // For owner only commands
 client.queue = new Map(); // For music commands
 const talkedRecently = new Set(); // For global cooldowns; consider switching to command specific cooldowns?
@@ -46,7 +57,7 @@ const talkedRecently = new Set(); // For global cooldowns; consider switching to
 // Run initial stuff
 client.once('ready', async () => {
     await client.loadCommands(); // Load commands
-    client.Tags.sync(); // Sync database
+    client.GuildTags.sync(); // Sync database
     console.log(`Logged in as ${client.user.tag}!`);
     await client.user.setActivity('!help', {type: "LISTENING"});
 });
@@ -81,7 +92,7 @@ client.on('message', async message => {
         member = guild.member(message.author);
 
         await update(guild, client);
-        tag = await client.Tags.findOne({ where: { guildID: guild.id } });
+        tag = await client.GuildTags.findOne({ where: { guildID: guild.id } });
         prefix = tag.prefix;
 
         // Handles censorship
@@ -146,7 +157,7 @@ client.on("messageDelete", async message => {
     if (message.author.bot) return; // Bot ignores itself and other bots
 
     const guild = message.guild;
-    const tag = await client.Tags.findOne({ where: { guildID: guild.id } });
+    const tag = await client.GuildTags.findOne({ where: { guildID: guild.id } });
 
     if (tag.censored_users && isInField(tag, 'censored_users', message.author.id)) return; // prevents double logging of censored messages, probably better way of doing this
     if (!(tag.logchannel && tag.log_message_delete)) return;
@@ -157,7 +168,7 @@ client.on("messageDelete", async message => {
 
 client.on("messageDeleteBulk", async messages => {
     const guild = messages.first().guild;
-    const tag = await client.Tags.findOne({ where: { guildID: guild.id } });
+    const tag = await client.GuildTags.findOne({ where: { guildID: guild.id } });
     if (!(tag.logchannel && tag.log_message_delete_bulk)) return;
 
     // temporary Dyno-like bulkdelete logging system, will convert into superior system later
@@ -170,7 +181,7 @@ client.on("messageUpdate", async (oldMessage, newMessage) => {
     if (oldMessage.content === newMessage.content) return; // fixes weird link preview glitch
 
     const guild = oldMessage.guild;
-    const tag = await client.Tags.findOne({ where: { guildID: guild.id } });
+    const tag = await client.GuildTags.findOne({ where: { guildID: guild.id } });
     if (!(tag.logchannel && tag.log_message_edit)) return;
 
     let desc = `**Message by ${oldMessage.author} in ${oldMessage.channel} was edited:** [Jump to message](${newMessage.url})`;
@@ -185,7 +196,7 @@ client.on("guildMemberUpdate", async (oldMember, newMember) => { // TODO: finish
     if (oldMember.user.bot) return;
 
     const guild = oldMember.guild;
-    const tag = await client.Tags.findOne({ where: { guildID: guild.id } });
+    const tag = await client.GuildTags.findOne({ where: { guildID: guild.id } });
     if (!(tag.logchannel && tag.log_nickname_change)) return; // will have to update later if I wish to use this for more things than nickname changes
 
     // not sure how compatible this is with new log function
@@ -207,7 +218,7 @@ client.on("guildMemberUpdate", async (oldMember, newMember) => { // TODO: finish
 
 client.on("guildMemberAdd", async (member) => {
     const guild = member.guild;
-    const tag = await client.Tags.findOne({ where: { guildID: guild.id } });
+    const tag = await client.GuildTags.findOne({ where: { guildID: guild.id } });
 
     if (tag.blacklist.includes(member.id)) { // Enforces blacklist
         await member.ban('Blacklisted user');
@@ -227,7 +238,7 @@ client.on("guildMemberAdd", async (member) => {
 
 client.on("guildMemberRemove", async (member) => {
     const guild = member.guild;
-    const tag = await client.Tags.findOne({ where: { guildID: guild.id } });
+    const tag = await client.GuildTags.findOne({ where: { guildID: guild.id } });
     if (!(guild.systemChannel && tag.log_member_leave)) return;
 
     const leaveEmbed = new MessageEmbed()

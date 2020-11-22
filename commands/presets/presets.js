@@ -9,7 +9,7 @@ export default {
     permReqs: 'MANAGE_GUILD',
     async execute(message, parsed, client) {
         const guild = message.guild;
-        const tag = await client.Tags.findOne({ where: { guildID: guild.id } });
+        const tag = await client.GuildTags.findOne({ where: { guildID: guild.id } });
 
         const disabledCommands = tag.disabled_commands;
         const autoroles = tag.autoroles;

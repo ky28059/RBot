@@ -19,7 +19,7 @@ export default {
         if (userTarget.id === message.author.id) return message.reply("you cannot blacklist yourself!");
         if (!action) return message.reply('you must specify an action to perform with that user!');
 
-        const tag = await client.Tags.findOne({ where: { guildID: guild.id } });
+        const tag = await client.GuildTags.findOne({ where: { guildID: guild.id } });
         let messageArg;
 
         switch (action) {

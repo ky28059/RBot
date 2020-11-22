@@ -11,7 +11,7 @@ export default {
         const field = args.shift().toLowerCase();
         if (!field) return message.reply('you must specify the token field to modify!');
 
-        const tag = await client.Tags.findOne({ where: { guildID: guild.id } });
+        const tag = await client.GuildTags.findOne({ where: { guildID: guild.id } });
         let updated; // better way of doing this, there is probably
 
         switch (field) {

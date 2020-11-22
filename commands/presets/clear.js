@@ -23,7 +23,7 @@ export default {
                     case '👍':
                         confirmMessage.edit('Confirmed! Resetting fields...');
 
-                        client.Tags.findOne({ where: { guildID: guild.id } }).then(tag => {
+                        client.GuildTags.findOne({ where: { guildID: guild.id } }).then(tag => {
                             // Destroy the old token
                             tag.destroy();
                         })/* .then(() => {
