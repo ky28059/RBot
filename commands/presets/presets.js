@@ -13,6 +13,7 @@ export default {
         const disabledCommands = tag.disabled_commands;
         const autoroles = tag.autoroles;
         const censoredUsers = tag.censored_users;
+        const censoredWords = tag.censored_words;
         const blacklist = tag.blacklist;
 
         // TODO: make this embed look better
@@ -33,6 +34,10 @@ export default {
                 {
                     name: 'Censored Users:',
                     value: censoredUsers ? censoredUsers.trim().split(' ').join(', ') : 'No one'
+                },
+                {
+                    name: 'Censored Words:',
+                    value: censoredWords ? censoredWords.trim().split(' ').join(', ') : 'Nothing'
                 },
                 {
                     name: 'Blacklist:',

@@ -8,16 +8,31 @@ export default {
     examples: 'uncensor @example',
     guildOnly: true,
     permReqs: 'KICK_MEMBERS',
-    async execute(message, parsed, client) {
+    async execute(message, parsed, client, tag) {
         const guild = message.guild;
         const userTarget = parsed.userTarget;
-        if (!userTarget) return message.reply("please mention a valid member of this server");
 
-        const tag = await client.Tags.findOne({ where: { guildID: guild.id } });
-        if (!isInField(tag, 'censored_users', userTarget.id)) return message.reply("that user was not censored!");
+        // Uncensorship of users
+        if (userTarget) {
+            if (!isInField(tag, 'censored_users', userTarget.id)) return message.reply("that user is already censored!");
 
-        await removeFromField(tag, 'censored_users', userTarget.id);
-        await log(client, guild, 0x7f0000, userTarget.tag, userTarget.avatarURL(), `**${userTarget} was uncensored by ${message.author} in ${message.channel}**\n[Jump to message](${message.url})`);
-        message.channel.send(`Now uncensoring ${userTarget.tag}!`);
+            await removeFromField(tag, 'censored_users', userTarget.id);
+            await log(client, guild, 0x7f0000, userTarget.tag, userTarget.avatarURL(), `**${userTarget} was uncensored by ${message.author} in ${message.channel}**\n[Jump to message](${message.url})`);
+            return message.channel.send(`Now uncensoring ${userTarget.tag}!`);
+        }
+
+        // Uncensorship of words
+        if (parsed.first) {
+            let uncensored = [];
+
+            for (let uncensorPhrase of parsed.raw) {
+                if (!isInField(tag, 'censored_words', uncensorPhrase)) return message.reply('that phrase was not censored!');
+                uncensored.push(uncensorPhrase);
+            }
+            await removeFromField(tag, 'censored_words', uncensored);
+            return message.channel.send(`Now uncensoring the mention of \`[${uncensored.join(', ')}]\`!`);
+        }
+
+        return message.reply('please specify what to uncensor!');
     }
 }

@@ -33,7 +33,7 @@ export default {
                 censored.push(censorPhrase);
             }
             await addToField(tag, 'censored_words', censored);
-            return message.channel.send(`Now censoring the mention of [${censored.join(', ')}]!`);
+            return message.channel.send(`Now censoring the mention of \`[${censored.join(', ')}]\`!`);
         }
 
         return message.reply('please specify what to censor!');

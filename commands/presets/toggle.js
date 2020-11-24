@@ -13,8 +13,8 @@ export default {
         let newPresets = [];
 
         for (let preset of presets) { // Weird glitch where running !toggle without any arguments sets [] to []?
-            // If all is given as an argument
             if (preset === 'all') {
+                // If all is given as an argument
                 for (let f in tag.dataValues) {
                     // Only run this on log fields
                     if (f.includes('log_')) {
