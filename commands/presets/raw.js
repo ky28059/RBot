@@ -7,9 +7,8 @@ export default {
     examples: 'raw',
     guildOnly: true,
     permReqs: 'MANAGE_GUILD',
-    async execute(message, parsed, client) {
+    async execute(message, parsed, client, tag) {
         const guild = message.guild;
-        const tag = await client.GuildTags.findOne({ where: { guildID: guild.id } });
 
         const tokenEmbed = new MessageEmbed()
             .setColor(0x333333)

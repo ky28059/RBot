@@ -134,7 +134,7 @@ client.on('message', async message => {
             return message.reply('you must be the bot owner to use this command!');
 
         try {
-            await command.execute(message, parsed, client);
+            await command.execute(message, parsed, client, tag);
         } catch (error) {
             console.error(error);
             message.reply('there was an error trying to execute that command!');

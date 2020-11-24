@@ -10,7 +10,7 @@ export default {
     guildOnly: true,
     permReqs: 'BAN_MEMBERS',
     clientPermReqs: 'BAN_MEMBERS',
-    async execute(message, parsed, client) {
+    async execute(message, parsed, client, tag) {
         const guild = message.guild;
         const action = parsed.first;
         const userTarget = parsed.userTarget;
@@ -19,7 +19,6 @@ export default {
         if (userTarget.id === message.author.id) return message.reply("you cannot blacklist yourself!");
         if (!action) return message.reply('you must specify an action to perform with that user!');
 
-        const tag = await client.GuildTags.findOne({ where: { guildID: guild.id } });
         let messageArg;
 
         switch (action) {

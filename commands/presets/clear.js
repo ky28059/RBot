@@ -5,7 +5,7 @@ export default {
     examples: 'clear',
     guildOnly: true,
     permReqs: 'ADMINISTRATOR',
-    async execute(message, parsed, client) {
+    async execute(message, parsed, client, tag) {
         const guild = message.guild;
 
         // Make users confirm token flush before proceding
@@ -23,10 +23,9 @@ export default {
                     case '👍':
                         confirmMessage.edit('Confirmed! Resetting fields...');
 
-                        client.GuildTags.findOne({ where: { guildID: guild.id } }).then(tag => {
-                            // Destroy the old token
-                            tag.destroy();
-                        })/* .then(() => {
+                        // Destroy the old token
+                        tag.destroy();
+                        /* .then(() => {
                             // Regenerate the token
                             client.Tags.create({ guildID: guild.id });
                         }); */

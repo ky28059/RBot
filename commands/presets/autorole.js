@@ -9,7 +9,7 @@ export default {
     guildOnly: true,
     permReqs: 'MANAGE_GUILD',
     clientPermReqs: 'MANAGE_ROLES',
-    async execute(message, parsed, client) {
+    async execute(message, parsed, client, tag) {
         const roleTarget = parsed.roleTarget;
         const guild = message.guild;
         const action = parsed.first;
@@ -18,7 +18,6 @@ export default {
         if (!roleTarget.editable) return message.reply('that role is too high up in the hierarchy! Please adjust it so that my highest role is above that role!');
         if (!action) return message.reply('you must specify an action to perform with that role!');
 
-        const tag = await client.GuildTags.findOne({ where: { guildID: guild.id } });
         let messageArg;
 
         switch (action) {

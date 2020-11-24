@@ -8,12 +8,11 @@ export default {
     examples: 'disable censor',
     guildOnly: true,
     permReqs: 'ADMINISTRATOR',
-    async execute(message, parsed, client) {
+    async execute(message, parsed, client, tag) {
         const guild = message.guild;
         const commands = parsed.raw;
         if (!commands) return message.reply("please mention commands to disable!");
 
-        const tag = await client.GuildTags.findOne({ where: { guildID: guild.id } });
         let disables = [];
 
         for (let command of commands) {

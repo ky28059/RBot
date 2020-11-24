@@ -5,13 +5,12 @@ export default {
     examples: ['set logchannel #logs', 'set prefix r'],
     guildOnly: true,
     permReqs: 'MANAGE_GUILD',
-    async execute(message, parsed, client) {
+    async execute(message, parsed, client, tag) {
         const args = parsed.raw;
         const guild = message.guild;
         const field = args.shift().toLowerCase();
         if (!field) return message.reply('you must specify the token field to modify!');
 
-        const tag = await client.GuildTags.findOne({ where: { guildID: guild.id } });
         let updated; // better way of doing this, there is probably
 
         switch (field) {

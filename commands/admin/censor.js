@@ -9,10 +9,9 @@ export default {
     guildOnly: true,
     permReqs: 'KICK_MEMBERS',
     clientPermReqs: 'MANAGE_MESSAGES',
-    async execute(message, parsed, client) {
+    async execute(message, parsed, client, tag) {
         const guild = message.guild;
         const userTarget = parsed.userTarget;
-        const tag = await client.Tags.findOne({ where: { guildID: guild.id } });
 
         // Censorship of users
         if (userTarget) {
