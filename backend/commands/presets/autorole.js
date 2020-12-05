@@ -37,7 +37,7 @@ export default {
                 return message.reply(`${action} is not a valid action!`);
         }
 
-        await log(client, guild, 0xf6b40c, message.author.tag, message.author.avatarURL(),
+        await log(client, guild, tag, 0xf6b40c, message.author.tag, message.author.avatarURL(),
             `**${roleTarget} has been ${messageArg} this server's autorole by ${message.author} in ${message.channel}**\n[Jump to message](${message.url})`);
         message.channel.send(`${roleTarget.id} has been ${messageArg} this server's autorole!`);
     }

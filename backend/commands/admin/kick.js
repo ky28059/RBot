@@ -8,7 +8,7 @@ export default {
     guildOnly: true,
     permReqs: 'KICK_MEMBERS',
     clientPermReqs: 'KICK_MEMBERS',
-    async execute(message, parsed, client) {
+    async execute(message, parsed, client, tag) {
         const guild = message.guild;
         const memberTarget = parsed.memberTarget;
 
@@ -23,7 +23,7 @@ export default {
         await memberTarget.kick(reason)
             .catch(error => message.reply(`sorry, I couldn't kick because of : ${error}`));
 
-        await log(client, guild, 0x7f0000, memberTarget.user.tag, memberTarget.user.avatarURL(), `**${memberTarget.user} has been kicked by ${message.author} for the reason:**\n${reason}`);
+        await log(client, guild, tag, 0x7f0000, memberTarget.user.tag, memberTarget.user.avatarURL(), `**${memberTarget.user} has been kicked by ${message.author} for the reason:**\n${reason}`);
         message.react('👌');
     }
 }
