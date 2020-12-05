@@ -38,7 +38,7 @@ export default {
                 return message.reply(`${action} is not a valid action!`);
         }
 
-        await log(client, guild, 0x7f0000, userTarget.tag, userTarget.avatarURL(),
+        await log(client, guild, tag, 0x7f0000, userTarget.tag, userTarget.avatarURL(),
             `**${userTarget} has been ${messageArg} this server's blacklist by ${message.author} in ${message.channel}**\n[Jump to message](${message.url})`);
         message.channel.send(`${userTarget.tag} has been ${messageArg} this server's blacklist!`);
     }

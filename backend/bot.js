@@ -112,7 +112,7 @@ client.on('message', async message => {
             await message.delete()
                 .catch(error => console.error(`message in ${guild} could not be censored because of ${error}!`));
 
-            await log(client, guild, 0x7f0000, message.author.tag, message.author.avatarURL(), `**Message by ${message.author} censored in ${message.channel}:**\n${message.content}`)
+            await log(client, guild, tag, 0x7f0000, message.author.tag, message.author.avatarURL(), `**Message by ${message.author} censored in ${message.channel}:**\n${message.content}`)
             return;
         }
     }
@@ -170,7 +170,7 @@ client.on("messageDelete", async message => {
     if (!(tag.logchannel && tag.log_message_delete)) return;
 
     let desc = truncateMessage(`**Message by ${message.author} in ${message.channel} was deleted:**\n${message.content}`, -48) // Unlike messages, embed descriptions have a character limit of 2048
-    await log(client, guild, 0xb50300, message.author.tag, message.author.avatarURL(), desc);
+    await log(client, guild, tag, 0xb50300, message.author.tag, message.author.avatarURL(), desc);
 });
 
 client.on("messageDeleteBulk", async messages => {
@@ -179,7 +179,7 @@ client.on("messageDeleteBulk", async messages => {
     if (!(tag.logchannel && tag.log_message_delete_bulk)) return;
 
     // temporary Dyno-like bulkdelete logging system, will convert into superior system later
-    await log(client, guild, 0xb50300, guild.name, guild.iconURL(), `**${messages.array().length} messages were deleted in ${messages.first().channel}**`);
+    await log(client, guild, tag, 0xb50300, guild.name, guild.iconURL(), `**${messages.array().length} messages were deleted in ${messages.first().channel}**`);
 });
 
 client.on("messageUpdate", async (oldMessage, newMessage) => {
@@ -196,7 +196,7 @@ client.on("messageUpdate", async (oldMessage, newMessage) => {
     let truncatedAfter = truncateMessage(newMessage.content, 976);
     let fields = [{name: 'Before:', value: truncatedBefore}, {name: 'After:', value: truncatedAfter}];
 
-    await log(client, guild, 0xed7501, oldMessage.author.tag, oldMessage.author.avatarURL(), desc, fields);
+    await log(client, guild, tag, 0xed7501, oldMessage.author.tag, oldMessage.author.avatarURL(), desc, fields);
 });
 
 client.on("guildMemberUpdate", async (oldMember, newMember) => { // TODO: finish this by adding role logging
@@ -229,7 +229,7 @@ client.on("guildMemberAdd", async (member) => {
 
     if (tag.blacklist.includes(member.id)) { // Enforces blacklist
         await member.ban('Blacklisted user');
-        await log(client, guild, 0x7f0000, member.user.tag, member.user.avatarURL(), `**User ${member.user} has been banned on join (blacklist)**`);
+        await log(client, guild, tag, 0x7f0000, member.user.tag, member.user.avatarURL(), `**User ${member.user} has been banned on join (blacklist)**`);
         return;
     }
 
@@ -239,7 +239,7 @@ client.on("guildMemberAdd", async (member) => {
     }
     if (!(tag.logchannel && tag.log_member_join)) return;
 
-    await log(client, guild, 0x79ff3b, 'Member joined the server', member.user.avatarURL(), `${member.user} ${member.user.tag}`);
+    await log(client, guild, tag, 0x79ff3b, 'Member joined the server', member.user.avatarURL(), `${member.user} ${member.user.tag}`);
     // add potential welcome messages later
 });
 

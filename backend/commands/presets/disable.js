@@ -30,7 +30,7 @@ export default {
         }
 
         await addToField(tag, 'disabled_commands', disables);
-        await log(client, guild, 0xf6b40c, message.author.tag, message.author.avatarURL(),
+        await log(client, guild, tag, 0xf6b40c, message.author.tag, message.author.avatarURL(),
             `**Commands [${disables.join(', ')}] were disabled by ${message.author} in ${message.channel}**\n[Jump to message](${message.url})`);
         message.channel.send(`Disabling \`[${disables.join(', ')}]\`!`);
     }
