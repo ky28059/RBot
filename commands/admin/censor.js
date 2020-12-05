@@ -29,7 +29,8 @@ export default {
             let censored = [];
 
             for (let censorPhrase of parsed.raw) {
-                if (isInField(tag, 'censored_words', censorPhrase)) return message.reply('that phrase is already censored!');
+                if (isInField(tag, 'censored_words', censorPhrase)) return message.reply(`\`${censorPhrase}\` is already censored!`);
+                if (censored.includes(censorPhrase)) return message.reply(`you cannot censor \`${censorPhrase}\` twice!`);
                 censored.push(censorPhrase);
             }
             await addToField(tag, 'censored_words', censored);

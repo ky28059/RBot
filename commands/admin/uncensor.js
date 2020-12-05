@@ -26,7 +26,8 @@ export default {
             let uncensored = [];
 
             for (let uncensorPhrase of parsed.raw) {
-                if (!isInField(tag, 'censored_words', uncensorPhrase)) return message.reply('that phrase was not censored!');
+                if (!isInField(tag, 'censored_words', uncensorPhrase)) return message.reply(`\`${uncensorPhrase}\` was not censored!`);
+                if (uncensored.includes(uncensorPhrase)) return message.reply(`you cannot uncensor \`${uncensorPhrase}\` twice!`);
                 uncensored.push(uncensorPhrase);
             }
             await removeFromField(tag, 'censored_words', uncensored);

@@ -5,7 +5,7 @@ export default {
     description: 'Gets info about a command.',
     usage: 'help [command name]',
     examples: 'help censor',
-    async execute(message, parsed, client) {
+    async execute(message, parsed, client, tag) {
         /*
         // https://discordjs.guide/popular-topics/embeds.html#using-the-richembedmessageembed-constructor
         const helpEmbed1 = new MessageEmbed()
@@ -136,7 +136,6 @@ export default {
         let prefix = '!';
         const guild = message.guild;
         if (guild) {
-            const tag = await client.Tags.findOne({ where: { guildID: guild.id } });
             prefix = tag.prefix;
         }
 

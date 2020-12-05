@@ -17,7 +17,14 @@ import loadGuilds from './models/Guild.js';
 
 
 const client = new Discord.Client({
-    ws: { intents: ["GUILDS", "GUILD_MESSAGES", "GUILD_MEMBERS", "GUILD_MESSAGE_REACTIONS", "DIRECT_MESSAGES"] }
+    ws: { intents: [
+            "GUILDS",
+            "GUILD_MESSAGES",
+            "GUILD_PRESENCES",
+            "GUILD_MEMBERS",
+            "GUILD_MESSAGE_REACTIONS",
+            "DIRECT_MESSAGES"
+        ] }
 });
 
 // Models

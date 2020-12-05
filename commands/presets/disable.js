@@ -16,12 +16,13 @@ export default {
         let disables = [];
 
         for (let command of commands) {
-            if (command === 'disable' || command === 'enable') return message.reply(`you cannot disable ${command}!`);
+            if (command === 'disable' || command === 'enable') return message.reply(`you cannot disable \`${command}\`!`);
 
             const cmd = client.commands.get(command.toLowerCase())
                 || client.commands.find(c => c.aliases && c.aliases.includes(command));
-            if (!cmd) return message.reply(`the command ${command} does not exist!`);
-            if (isInField(tag, 'disabled_commands', command)) return message.reply(`the command ${command} is already disabled!`);
+            if (!cmd) return message.reply(`the command \`${command}\` does not exist!`);
+            if (isInField(tag, 'disabled_commands', command)) return message.reply(`the command \`${command}\` is already disabled!`);
+            if (disables.includes(cmd.name)) return message.reply(`you cannot disable \`${command}\` twice!`);
 
             // Add command and aliases to the disables array
             disables.push(cmd.name);

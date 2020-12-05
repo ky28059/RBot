@@ -18,8 +18,9 @@ export default {
         for (let command of commands) {
             const cmd = client.commands.get(command.toLowerCase())
                 || client.commands.find(c => c.aliases && c.aliases.includes(command));
-            if (!cmd) return message.reply(`the command ${command} does not exist!`);
-            if (!isInField(tag, 'disabled_commands', command)) return message.reply(`the command ${command} was not disabled!`);
+            if (!cmd) return message.reply(`the command \`${command}\` does not exist!`);
+            if (!isInField(tag, 'disabled_commands', command)) return message.reply(`the command \`${command}\` was not disabled!`);
+            if (enables.includes(cmd.name)) return message.reply(`you cannot enable \`${command}\` twice!`);
 
             // Add command and aliases to the disables array
             enables.push(cmd.name);

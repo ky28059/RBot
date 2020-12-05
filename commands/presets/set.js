@@ -7,9 +7,9 @@ export default {
     permReqs: 'MANAGE_GUILD',
     async execute(message, parsed, client, tag) {
         const args = parsed.raw;
+        if (!args.length) return message.reply('you must specify the token field to modify!');
         const guild = message.guild;
         const field = args.shift().toLowerCase();
-        if (!field) return message.reply('you must specify the token field to modify!');
 
         let updated; // better way of doing this, there is probably
 
