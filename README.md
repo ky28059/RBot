@@ -8,11 +8,13 @@
 # Additional Info
  
 ### Folder Structure:
- The main file that runs the bot, index.js, can be located in the root folder. However, the source code for the bot itself is in bot.js; index.js is just the sharding manager. 
+ The main directory is divided into two parts: /backend, which contains the code for the bot, and /frontend, which contains the code for the website.
+
+ In /backend, index.js is the file you load to start the bot, while the source code for the bot itself is in bot.js. 
 
  Utilities specifically used by bot.js are in /utils.
  
- The commands that RBot uses can be located in /commands, and are organized into 4 groups:
+ The commands that RBot uses can be located in /commands, and are organized into several subgroups:
  
  - /commands/admin: Basic moderator commands; purge, kick, ban, etc.
  
