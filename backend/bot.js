@@ -39,7 +39,7 @@ client.loadCommands = async function() {
         const commands = fs.readdirSync(`./commands/${dir}`).filter(file => file.endsWith('.js'));
 
         for (let file of commands) {
-            let command = await import(`./commands/${dir}/${file}`);
+            let command = await import(`./backend/commands`);
             command = command.default; // Required because of default exports
             command.commandGroup = dir; // Dynamic commandgroups
             client.commands.set(command.name, command);
