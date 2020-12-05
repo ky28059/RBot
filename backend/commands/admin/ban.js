@@ -8,7 +8,7 @@ export default {
     guildOnly: true,
     permReqs: 'BAN_MEMBERS',
     clientPermReqs: 'BAN_MEMBERS',
-    async execute(message, parsed, client) { // target = GuildMember
+    async execute(message, parsed, client, tag) { // target = GuildMember
         const guild = message.guild;
         const memberTarget = parsed.memberTarget;
 
@@ -23,7 +23,7 @@ export default {
         await memberTarget.ban(reason)
             .catch(error => message.reply(`sorry, I couldn't ban because of : ${error}`));
 
-        await log(client, guild, 0x7f0000, memberTarget.user.tag, memberTarget.user.avatarURL(), `**${memberTarget.user} has been banned by ${message.author} for the reason:**\n${reason}`);
+        await log(client, guild, tag, 0x7f0000, memberTarget.user.tag, memberTarget.user.avatarURL(), `**${memberTarget.user} has been banned by ${message.author} for the reason:**\n${reason}`);
         await message.react('👌');
     }
 }
