@@ -2,7 +2,7 @@ export function parseArgs(message, prefix, client) {
     const guild = message.guild;
     let parsed = {};
 
-    const args = message.cleanContent.slice(prefix.length).trim().split(/ +/g); // removes the prefix, then the spaces, then splits into array
+    const args = message.content.slice(prefix.length).trim().split(/ +/g); // removes the prefix, then the spaces, then splits into array
     parsed.commandName = args.shift().toLowerCase();
 
     const snowflakes = args.filter(arg => Number(arg));

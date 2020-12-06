@@ -7,6 +7,6 @@ export default {
         const content = parsed.joined;
         if (!content) return message.reply('you must specify what to say!');
 
-        message.channel.send(content);
+        message.channel.send(content, {allowedMentions: {parse: []}});
     }
 }
