@@ -107,9 +107,8 @@ client.on('message', async message => {
 
         // Handles censorship
         if (
-            (tag.censored_users || tag.censored_words)
-            && (isInField(tag, 'censored_users', message.author.id)
-                || isInField(tag, 'censored_words', message.content.split(' ')))
+            (tag.censored_users && isInField(tag, 'censored_users', message.author.id)
+            || (tag.censored_words && isInField(tag, 'censored_words', message.content.split(' '))))
             && !member.hasPermission('ADMINISTRATOR')
         ) {
             await message.delete()
