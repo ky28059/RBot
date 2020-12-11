@@ -7,12 +7,7 @@ export default {
     usage: 'joke',
     examples: 'joke',
     async execute(message) {
-        let joke;
-        await fetch('https://official-joke-api.appspot.com/random_joke')
-            .then(response => response.json())
-            .then(body => joke = body);
-
-        console.log(joke)
+        let joke = await (await fetch('https://official-joke-api.appspot.com/random_joke')).json()
 
         const jokeEmbed = new MessageEmbed()
             .setColor(0x333333)

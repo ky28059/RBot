@@ -14,7 +14,7 @@ export default {
 
         // Uncensorship of users
         if (userTarget) {
-            if (!isInField(tag, 'censored_users', userTarget.id)) return message.reply("that user is already censored!");
+            if (!isInField(tag, 'censored_users', userTarget.id)) return message.reply("that user was not censored!");
 
             await removeFromField(tag, 'censored_users', userTarget.id);
             await log(client, guild, tag, 0x7f0000, userTarget.tag, userTarget.avatarURL(), `**${userTarget} was uncensored by ${message.author} in ${message.channel}**\n[Jump to message](${message.url})`);

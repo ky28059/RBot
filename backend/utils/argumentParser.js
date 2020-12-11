@@ -5,7 +5,7 @@ export function parseArgs(message, prefix, client) {
     const args = message.content.slice(prefix.length).trim().split(/ +/g); // removes the prefix, then the spaces, then splits into array
     parsed.commandName = args.shift().toLowerCase();
 
-    const snowflakes = args.filter(arg => Number(arg));
+    const snowflakes = args.filter(arg => isSnowflake(arg));
 
     // Mentions
     parsed.userTarget = message.mentions.users.first() || client.users.cache.get(snowflakes[0]) || client.users.cache.find(user => user.username === args[0]);
@@ -24,3 +24,5 @@ export function parseArgs(message, prefix, client) {
 
     return parsed;
 }
+
+const isSnowflake = (arg) => arg.length === 18 && Number(arg)

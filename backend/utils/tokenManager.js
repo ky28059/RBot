@@ -18,10 +18,12 @@ export async function update(guild, client) {
 
     // If the tag exists, run checks on it
     // Since update() gets called on every message, this may get tedious
-    runTagChecks(tag, guild, client);
+    await runTagChecks(tag, guild, client);
 }
 
-function runTagChecks(tag, guild, client) {
+async function runTagChecks(tag, guild, client) {
+    const warn = (message) => console.error(`Token error in Guild ${guild} (${guild.id}): ${message}`);
+
     // Check if all disabled commands are actual existing commands
     if (tag.disabled_commands) {
         tag.disabled_commands.split(' ').forEach(disabled => {
@@ -29,12 +31,24 @@ function runTagChecks(tag, guild, client) {
             const command = client.commands.get(disabled)
                 || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(disabled));
 
-            if (!command) console.error(`Guild ${guild} (${guild.id}) found with malformed disabled commands: [${disabled}] is not a valid command!`);
+            if (!command) warn('Malformed disabled commands');
         })
+    }
+
+    // Check if channel fields have become invalid since their setting and reset if they have
+    for (let field of ['logchannel']) { // List of channel dependent fields
+        if (tag[field]) {
+            const channel = client.channels.cache.get(tag[field]);
+            if (!channel) {
+                warn(`Invalid ${field} - resetting field`);
+                tag[field] = '';
+            }
+        }
     }
 
     // TODO: add checks for user centric fields such as censored_users or blacklist
     // and also role centric fields such as autorole
+    await tag.save();
 }
 
 
@@ -47,7 +61,7 @@ export function isInField(tag, field, query) {
 
     if (Array.isArray(query)) {
         // If query is an array, filter query to see if any words are included in key
-        return query.filter(q => keys.includes(q)).length ? true : false;
+        return !!query.filter(q => keys.includes(q)).length;
     } else {
         // Else, check if query is included in key
         return keys.includes(query);
