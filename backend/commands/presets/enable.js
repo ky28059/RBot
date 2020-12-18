@@ -1,5 +1,9 @@
 import {isInField, removeFromField} from '../../utils/tokenManager.js';
-import {log} from "../utils/logger.js";
+import {log} from '../utils/logger.js';
+
+// Errors
+import ArgumentError from '../../errors/ArgumentError.js';
+
 
 export default {
     name: 'enable',
@@ -11,16 +15,19 @@ export default {
     async execute(message, parsed, client, tag) {
         const guild = message.guild;
         const commands = parsed.raw;
-        if (!commands) return message.reply("please mention commands to reenable!");
+        if (!commands) throw new ArgumentError(this.name, 'Missing field `[Commands]`');
 
         let enables = [];
 
         for (let command of commands) {
             const cmd = client.commands.get(command.toLowerCase())
                 || client.commands.find(c => c.aliases && c.aliases.includes(command));
-            if (!cmd) return message.reply(`the command \`${command}\` does not exist!`);
-            if (!isInField(tag, 'disabled_commands', command)) return message.reply(`the command \`${command}\` was not disabled!`);
-            if (enables.includes(cmd.name)) return message.reply(`you cannot enable \`${command}\` twice!`);
+            if (!cmd)
+                throw new ArgumentError(this.name, `Command \`${command}\` does not exist`);
+            if (!isInField(tag, 'disabled_commands', command))
+                throw new ArgumentError(this.name, `Command \`${command}\` not disabled`);
+            if (enables.includes(cmd.name))
+                throw new ArgumentError(this.name, `Attempt to enable \`${command}\` twice`);
 
             // Add command and aliases to the disables array
             enables.push(cmd.name);

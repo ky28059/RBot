@@ -1,3 +1,5 @@
+import MissingArgumentError from '../../errors/MissingArgumentError.js';
+
 export default {
     name: 'concat',
     aliases: ['cat'],
@@ -6,7 +8,8 @@ export default {
     examples: ['concat Hello world!', 'concat <:notlikeduck :762731625498542091>'],
     execute(message, parsed) {
         const args = parsed.raw;
-        if (!args) return message.reply('you must specify what to concat!');
+        if (!args.length)
+            throw new MissingArgumentError(this.name, '[args]');
 
         message.channel.send(args.join(''), {allowedMentions: {parse: []}});
     }

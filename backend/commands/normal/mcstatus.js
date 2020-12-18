@@ -2,6 +2,10 @@ import {MessageEmbed} from 'discord.js';
 import fetch from 'node-fetch';
 import {parse} from '../utils/stringParser.js';
 
+// Errors
+import MissingArgumentError from '../../errors/MissingArgumentError.js';
+
+
 export default {
     name: 'mcstatus',
     aliases: ['status'],
@@ -10,13 +14,12 @@ export default {
     examples: 'mcstatus hypixel.net',
     async execute(message, parsed) {
         const server = parsed.first;
-        if (!server) return message.reply('you must specify an IP to get the status of!');
+        if (!server) throw new MissingArgumentError(this.name, 'Server IP');
 
         let source = '';
         await fetch(`https://mcsrvstat.us/server/${server}`)
             .then(res => res.text())
             .then(body => source = body)
-            .catch(error => message.reply(`error fetching server: ${error}`));
 
         const players = parse(source, '<td>Players</td>\n			<td>', ' - <a href="#" id="show_players"') || parse(source, '<td>Players</td>\n			<td>', '</td>', 0);
         const version = parse(source, '<td>Version</td>\n			<td>', '</td>', 0);

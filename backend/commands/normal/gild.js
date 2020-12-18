@@ -6,7 +6,7 @@ export default {
     usage: 'gild',
     examples: 'gild',
     clientPermReqs: 'ADD_REACTIONS',
-    execute(message) {
+    async execute(message) {
         message.channel.messages.fetch({limit: 2}).then(messages => {
             let gildTarget = messages.last();
             Promise.all([
@@ -14,7 +14,7 @@ export default {
                 gildTarget.react('726691291970404353'),
                 gildTarget.react('726691292020736110'),
             ])
-            messages.first().delete().catch(error => console.error(error));
+            messages.first().delete();
         });
     }
 }

@@ -24,6 +24,6 @@ export default {
             .catch(error => message.reply(`sorry, I couldn't kick because of : ${error}`));
 
         await log(client, guild, tag, 0x7f0000, memberTarget.user.tag, memberTarget.user.avatarURL(), `**${memberTarget.user} has been kicked by ${message.author} for the reason:**\n${reason}`);
-        message.react('👌');
+        await message.react('👌');
     }
 }

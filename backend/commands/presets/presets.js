@@ -8,8 +8,6 @@ export default {
     guildOnly: true,
     permReqs: 'MANAGE_GUILD',
     async execute(message, parsed, client, tag) {
-        const guild = message.guild;
-
         const disabledCommands = tag.disabled_commands;
         const autoroles = tag.autoroles;
         const censoredUsers = tag.censored_users;

@@ -1,6 +1,11 @@
 import {isInField, removeFromField} from '../../utils/tokenManager.js';
 import {log} from "../utils/logger.js";
 
+// Errors
+import MissingArgumentError from '../../errors/MissingArgumentError.js';
+import IllegalArgumentError from '../../errors/IllegalArgumentError.js';
+
+
 export default {
     name: 'uncensor',
     description: 'Uncensor a user.',
@@ -14,7 +19,9 @@ export default {
 
         // Uncensorship of users
         if (userTarget) {
-            if (!isInField(tag, 'censored_users', userTarget.id)) return message.reply("that user was not censored!");
+            if (!isInField(tag, 'censored_users', userTarget.id))
+                // This being an IllegalArgumentError is shaky at best
+                throw new IllegalArgumentError(this.name, `${userTarget} was not censored`);
 
             await removeFromField(tag, 'censored_users', userTarget.id);
             await log(client, guild, tag, 0x7f0000, userTarget.tag, userTarget.avatarURL(), `**${userTarget} was uncensored by ${message.author} in ${message.channel}**\n[Jump to message](${message.url})`);
@@ -26,14 +33,17 @@ export default {
             let uncensored = [];
 
             for (let uncensorPhrase of parsed.raw) {
-                if (!isInField(tag, 'censored_words', uncensorPhrase)) return message.reply(`\`${uncensorPhrase}\` was not censored!`);
-                if (uncensored.includes(uncensorPhrase)) return message.reply(`you cannot uncensor \`${uncensorPhrase}\` twice!`);
+                if (!isInField(tag, 'censored_words', uncensorPhrase))
+                    // Once again, shaky at best
+                    throw new IllegalArgumentError(this.name, `\`${uncensorPhrase}\` was not censored`);
+                if (uncensored.includes(uncensorPhrase))
+                    throw new IllegalArgumentError(this.name, `Attempt to uncensor \`${uncensorPhrase}\` twice`);
                 uncensored.push(uncensorPhrase);
             }
             await removeFromField(tag, 'censored_words', uncensored);
             return message.channel.send(`Now uncensoring the mention of \`[${uncensored.join(', ')}]\`!`);
         }
 
-        return message.reply('please specify what to uncensor!');
+        throw new MissingArgumentError(this.name, 'Target');
     }
 }

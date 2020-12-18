@@ -1,3 +1,6 @@
+import MissingArgumentError from '../../errors/MissingArgumentError.js';
+import IllegalArgumentError from '../../errors/IllegalArgumentError.js';
+
 export default {
     name: 'set',
     description: 'Sets new token data for this server.',
@@ -7,7 +10,9 @@ export default {
     permReqs: 'MANAGE_GUILD',
     async execute(message, parsed, client, tag) {
         const args = parsed.raw;
-        if (!args.length) return message.reply('you must specify the token field to modify!');
+        if (!args.length)
+            throw new MissingArgumentError(this.name, 'Field');
+
         const guild = message.guild;
         const field = args.shift().toLowerCase();
 
@@ -16,9 +21,12 @@ export default {
         switch (field) {
             case 'logchannel':
                 const channelTarget = parsed.channelTarget;
-                if (!channelTarget) return message.reply("please mention a valid channel in this server");
-                if (channelTarget.type !== 'text') return message.reply('I can only log to guild text channels!');
-                if (!(channelTarget.guild.id === guild.id)) return message.reply('you can only log to your own server!');
+                if (!channelTarget)
+                    throw new MissingArgumentError(this.name, 'Channel');
+                if (channelTarget.type !== 'text')
+                    throw new IllegalArgumentError(this.name, '`Channel` must be a text channel');
+                if (!(channelTarget.guild.id === guild.id))
+                    throw new IllegalArgumentError(this.name, '`Channel` must be within this server');
 
                 tag.logchannel = channelTarget.id;
                 updated = channelTarget;
@@ -26,14 +34,14 @@ export default {
 
             case 'prefix':
                 const prefix = args.join(" ");
-                if (!prefix) return message.reply('you must specify a prefix to set!')
+                if (!prefix) throw new MissingArgumentError(this.name, 'Prefix')
 
                 tag.prefix = prefix;
                 updated = prefix;
                 break;
 
             default:
-                return message.reply('you must specify a valid token field to modify! Valid token fields: `logchannel, prefix`');
+                throw new IllegalArgumentError(this.name, `${field} not a valid token field; valid token fields: \`logchannel\`, \`prefix\``);
         }
         await tag.save();
         message.channel.send(`Success! ${field} has been updated to ${updated}!`);

@@ -120,10 +120,11 @@ export default {
             // Return a list of all commands
             const commandListEmbed = new MessageEmbed()
                 .setColor(0x333333)
-                .setTitle('Command List');
-            commandListEmbed.setDescription(
-                client.commands.array().map(command => command.name).join(', ')
-            );
+                .setTitle('Command List')
+                .setDescription(
+                    client.commands.array().map(command => command.name).join(', ')
+                )
+                .setFooter(`Requested by ${message.author.tag}`);
 
             return message.channel.send(commandListEmbed);
         }
@@ -141,7 +142,8 @@ export default {
 
         const helpEmbed = new MessageEmbed()
             .setColor(0x333333)
-            .setTitle(`${command.name}`);
+            .setTitle(`${command.name}`)
+            .setFooter(`Requested by ${message.author.tag}`);
 
         if (command.description) helpEmbed.setDescription(`${command.description}`);
         if (command.commandGroup) helpEmbed.addField('**Command Group:**', `${command.commandGroup}`);

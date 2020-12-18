@@ -1,3 +1,8 @@
+// Errors
+import MissingArgumentError from '../../errors/MissingArgumentError.js';
+import IllegalArgumentError from '../../errors/IllegalArgumentError.js';
+
+
 export default {
     name: 'purge',
     description: 'Bulk deletes the specified amount of messages in the channel.',
@@ -8,13 +13,19 @@ export default {
     clientPermReqs: 'MANAGE_MESSAGES',
     async execute(message, parsed) {
         let deleteCount = Number(parsed.first);
-        if (!deleteCount || deleteCount < 1 || deleteCount > 99) return message.reply("please provide a number between 1 and 99 for the number of messages to delete");
 
-        let fetched = await message.channel.messages.fetch({limit: deleteCount + 1});
+        if (!deleteCount)
+            throw new MissingArgumentError(this.name, 'Count')
+        if (deleteCount < 1 || deleteCount > 100)
+            throw new IllegalArgumentError(this.name, '`Count` must be an integer between 1 and 100');
+
+        // Delete the original message so that more messages can be bulk deleted
+        await message.delete()
+
+        let fetched = await message.channel.messages.fetch({limit: deleteCount});
         if (parsed.memberTarget) // Supports purge by user
             fetched = fetched.filter(message => message.author.id === parsed.memberTarget.id);
 
-        message.channel.bulkDelete(fetched)
-            .catch(error => message.reply(`couldn't delete messages because of: ${error}`));
+        await message.channel.bulkDelete(fetched)
     }
 }

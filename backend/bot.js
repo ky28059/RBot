@@ -12,6 +12,10 @@ import {parseArgs} from './utils/argumentParser.js';
 import {update, isInField} from './utils/tokenManager.js';
 import {truncateMessage} from './commands/utils/messageTruncator.js';
 
+// Messages
+import {err} from './utils/messages.js';
+import CommandError from './errors/CommandError.js';
+
 // Models
 import loadGuilds from './models/Guild.js';
 
@@ -133,20 +137,24 @@ client.on('message', async message => {
 
         if (!command) return;
 
+        // List of conditions to check before executing command
         if (command.guildOnly && message.channel.type === 'dm')
-            return message.reply('I can\'t execute that command inside DMs!');
+            return message.reply(err('DM_ERROR', 'Guild only command cannot be executed inside DMs'));
         if (command.permReqs && !member.hasPermission(command.permReqs))
-            return message.reply(`you do not have sufficient perms to do that! Perms required for this command: ${command.permReqs}`);
+            return message.reply(err('USER_PERMS_MISSING', `User lacks permissions: \`${command.permReqs}\``));
         if (command.clientPermReqs && !guild.member(client.user).hasPermission(command.clientPermReqs))
-            return message.reply(`I do not have sufficient perms to do that! Perms I need for this command: ${command.clientPermReqs}`);
+            return message.reply(err('CLIENT_PERMS_MISSING', `Client lacks permissions: \`${command.clientPermReqs}\``));
         if (command.ownerOnly && message.author.id !== client.ownerID)
-            return message.reply('you must be the bot owner to use this command!');
+            return message.reply(err('OWNER_ONLY', 'Owner only command cannot be invoked by non owner'));
 
         try {
             await command.execute(message, parsed, client, tag);
-        } catch (error) {
-            console.error(error);
-            message.reply('there was an error trying to execute that command!');
+        } catch (e) {
+            // If the error was a result of bad code, log it
+            if (!e instanceof CommandError) {
+                console.error(e);
+            }
+            await message.reply(err(e.name, e.message));
         }
 
         // adds user to set if they have used a command recently

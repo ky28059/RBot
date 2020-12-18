@@ -1,3 +1,8 @@
+// Errors
+import MissingArgumentError from '../../errors/MissingArgumentError.js';
+import IllegalArgumentError from '../../errors/IllegalArgumentError.js';
+
+
 export default {
     name: 'expunge',
     description: 'Removes all reactions from the specified amount of messages in the channel.',
@@ -8,7 +13,11 @@ export default {
     clientPermReqs: 'MANAGE_MESSAGES',
     async execute(message, parsed) {
         let expungeCount = Number(parsed.first);
-        if (!expungeCount || expungeCount < 1 || expungeCount > 99) return message.reply("please provide a number between 1 and 99 for the number of messages to expunge reactions from");
+
+        if (!expungeCount)
+            throw new MissingArgumentError(this.name, 'Count')
+        if (expungeCount < 1 || expungeCount > 100)
+            throw new IllegalArgumentError(this.name, '`Count` must be an integer between 1 and 100');
 
         const fetched = await message.channel.messages.fetch({limit: expungeCount + 1});
         fetched.array().forEach(message =>
@@ -16,6 +25,6 @@ export default {
                 ? message.reactions.removeAll()
                 : null
         );
-        message.react('👌');
+        await message.react('👌');
     }
 }

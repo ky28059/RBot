@@ -8,8 +8,6 @@ export default {
     guildOnly: true,
     permReqs: 'MANAGE_GUILD',
     async execute(message, parsed, client, tag) {
-        const guild = message.guild;
-
         const tokenEmbed = new MessageEmbed()
             .setColor(0x333333)
             .setTitle('Raw Token Data:')

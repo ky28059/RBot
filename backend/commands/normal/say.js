@@ -1,3 +1,5 @@
+import MissingArgumentError from '../../errors/MissingArgumentError.js';
+
 export default {
     name: 'say',
     description: 'Repeats your message.',
@@ -5,7 +7,7 @@ export default {
     examples: 'say Hello world!',
     execute(message, parsed) {
         const content = parsed.joined;
-        if (!content) return message.reply('you must specify what to say!');
+        if (!content) throw new MissingArgumentError(this.name, 'Message');
 
         message.channel.send(content, {allowedMentions: {parse: []}});
     }

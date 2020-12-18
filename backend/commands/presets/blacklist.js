@@ -1,6 +1,11 @@
 import {isInField, addToField, removeFromField} from '../../utils/tokenManager.js';
 import {log} from "../utils/logger.js";
 
+// Errors
+import MissingArgumentError from '../../errors/MissingArgumentError.js';
+import IllegalArgumentError from '../../errors/IllegalArgumentError.js';
+
+
 export default {
     name: 'blacklist',
     aliases: ['hackban'],
@@ -15,27 +20,36 @@ export default {
         const action = parsed.first;
         const userTarget = parsed.userTarget;
 
-        if (!userTarget) return message.reply("please mention a valid user id");
-        if (userTarget.id === message.author.id) return message.reply("you cannot blacklist yourself!");
-        if (!action) return message.reply('you must specify an action to perform with that user!');
+        if (!userTarget)
+            throw new MissingArgumentError(this.name, 'User');
+        if (userTarget.id === message.author.id)
+            throw new IllegalArgumentError(this.name, '`User` cannot be yourself');
+        if (!action)
+            throw new MissingArgumentError(this.name, 'Action');
 
         let messageArg;
 
         switch (action) {
             case 'add':
-                if (isInField(tag, 'blacklist', userTarget.id)) return message.reply("that user is already blacklisted!");
+                if (isInField(tag, 'blacklist', userTarget.id))
+                    // Shaky
+                    throw new IllegalArgumentError(this.name, `${userTarget} already blacklisted`);
+
                 await addToField(tag, 'blacklist', userTarget.id);
                 messageArg = 'added to';
                 break;
 
             case 'remove':
-                if (!isInField(tag, 'blacklist', userTarget.id)) return message.reply("that user is not blacklisted!");
+                if (!isInField(tag, 'blacklist', userTarget.id))
+                    // Shaky
+                    throw new IllegalArgumentError(this.name, `${userTarget} not blacklisted`);
+
                 await removeFromField(tag, 'blacklist', userTarget.id);
                 messageArg = 'removed from';
                 break;
 
             default:
-                return message.reply(`${action} is not a valid action!`);
+                throw new IllegalArgumentError(`\`${action}\` not a valid action`);
         }
 
         await log(client, guild, tag, 0x7f0000, userTarget.tag, userTarget.avatarURL(),

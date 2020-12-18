@@ -1,6 +1,10 @@
 import fetch from 'node-fetch';
-import {parse} from '../utils/stringParser.js';
+import {MessageEmbed} from 'discord.js';
 import {truncateMessage} from '../utils/messageTruncator.js';
+
+// Errors
+import MissingArgumentError from '../../errors/MissingArgumentError.js';
+
 
 export default {
     name: 'fetch',
@@ -10,14 +14,16 @@ export default {
     examples: 'fetch https://google.com',
     async execute(message, parsed) {
         const url = parsed.first;
-        if (!url) return message.reply('you must specify an IP to get the status of!');
+        if (!url) throw new MissingArgumentError(this.name, 'URL');
 
-        let source = '[Error: no source found]';
-        await fetch(url)
-            .then(res => res.text())
-            .then(body => source = body)
-            .catch(error => message.reply(`error fetching website: ${error}`));
+        let source = await (await fetch(url)).text() || '[No Source Found]';
 
-        message.channel.send(`Fetched:\`\`\`html\n${truncateMessage(source, 19)}\`\`\``);
+        const fetchEmbed = new MessageEmbed()
+            .setColor(0x333333)
+            .setTitle('Fetched:')
+            .setDescription(`\`\`\`html\n${truncateMessage(source, -37)}\`\`\``)
+            .setFooter(`Requested by ${message.author.tag}`)
+
+        message.channel.send(fetchEmbed);
     }
 }

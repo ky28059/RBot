@@ -21,10 +21,7 @@ export default {
         if (serverQueue && channel !== message.guild.me.voice.channel)
             return message.reply(`You must be in the same channel as ${message.client.user}`).catch(console.error);
 
-        if (!args.length)
-            return message
-                .reply(`Usage: ${message.client.prefix}play <YouTube URL | Video Name | Soundcloud URL>`)
-                .catch(console.error);
+        if (!args.length) return message.reply('you must specify what to play!')
 
         const permissions = channel.permissionsFor(message.client.user);
         if (!permissions.has("CONNECT"))
@@ -113,7 +110,7 @@ export default {
         try {
             queueConstruct.connection = await channel.join();
             await queueConstruct.connection.voice.setSelfDeaf(true);
-            play(queueConstruct.songs[0], message);
+            await play(queueConstruct.songs[0], message);
         } catch (error) {
             console.error(error);
             message.client.queue.delete(message.guild.id);
