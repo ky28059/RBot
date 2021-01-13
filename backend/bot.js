@@ -8,7 +8,7 @@ import {token} from './auth.js';
 
 // Utils
 import {log} from "./commands/utils/logger.js";
-import {parseArgs} from './utils/argumentParser.js';
+import parse from './utils/argumentParser.js';
 import {update, isInField} from './utils/tokenManager.js';
 import {truncateMessage} from './commands/utils/messageTruncator.js';
 
@@ -124,9 +124,9 @@ client.on('message', async message => {
     }
 
     if (message.content.substring(0, prefix.length) === prefix) {
-        const parsed = parseArgs(message, prefix, client);
+        const args = message.content.slice(prefix.length).trim().split(/ +/g); // removes the prefix, then the spaces, then splits into array
+        const commandName = args.shift().toLowerCase();
 
-        const commandName = parsed.commandName;
         if (message.guild
             && tag.disabled_commands
             && isInField(tag, 'disabled_commands', commandName)
@@ -148,6 +148,7 @@ client.on('message', async message => {
             return message.reply(err('OWNER_ONLY', 'Owner only command cannot be invoked by non owner'));
 
         try {
+            const parsed = parse(args.join(' '), command, client, guild); // ArgString needs to be the raw string content
             await command.execute(message, parsed, client, tag);
         } catch (e) {
             // If the error was a result of bad code, log it

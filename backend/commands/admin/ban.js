@@ -24,7 +24,6 @@ export default {
         if (!memberTarget.bannable)
             return message.reply("I cannot ban this user!");
 
-        // TODO: not sure why I didn't catch this before but reason includes memberTarget
         let reason = parsed.joined;
         if (!reason) reason = "No reason provided";
 
