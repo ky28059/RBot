@@ -4,11 +4,9 @@ export default {
     name: 'say',
     description: 'Repeats your message.',
     usage: 'say [content]',
+    pattern: '<Message>',
     examples: 'say Hello world!',
     execute(message, parsed) {
-        const content = parsed.joined;
-        if (!content) throw new MissingArgumentError(this.name, 'Message');
-
-        message.channel.send(content, {allowedMentions: {parse: []}});
+        message.channel.send(parsed.message, {allowedMentions: {parse: []}});
     }
 }

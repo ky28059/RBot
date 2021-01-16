@@ -4,11 +4,12 @@ export default {
     name: 'profile',
     description: 'Fetches information about the specified user.',
     usage: 'profile @[user]',
+    pattern: '@[Target]?',
     examples: 'profile @RBot',
     guildOnly: true,
     execute(message, parsed) {
         // TODO: make prettier, add functionality
-        const profileTarget = parsed.userTarget || message.author;
+        const profileTarget = parsed.target || message.author;
         const guildProfileTarget = message.guild.member(profileTarget);
 
         const profileEmbed = new MessageEmbed()

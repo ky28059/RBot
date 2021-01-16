@@ -2,10 +2,11 @@ export default {
     name: 'emit',
     description: 'Emits an event to be detected by the client (for testing purposes).',
     usage: 'emit [event]',
+    pattern: '[Event]',
     examples: 'emit leave',
     ownerOnly: true,
     async execute(message, parsed, client) {
-        const event = parsed.raw.shift().toLowerCase();
+        const event = parsed.event;
 
         switch (event) {
             case 'join':

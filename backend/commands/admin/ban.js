@@ -1,7 +1,4 @@
 import {log} from "../utils/logger.js";
-
-// Errors
-import MissingArgumentError from '../../errors/MissingArgumentError.js';
 import IllegalArgumentError from '../../errors/IllegalArgumentError.js';
 
 
@@ -9,27 +6,26 @@ export default {
     name: 'ban',
     description: 'Ban a user from this server.',
     usage: 'ban @[user] [reason]',
+    pattern: '@[Target] <Reason>?',
     examples: 'ban @example NSFW imagery',
     guildOnly: true,
     permReqs: 'BAN_MEMBERS',
     clientPermReqs: 'BAN_MEMBERS',
-    async execute(message, parsed, client, tag) { // target = GuildMember
+    async execute(message, parsed, client, tag) {
         const guild = message.guild;
-        const memberTarget = parsed.memberTarget;
+        const target = guild.mamber(parsed.target);
 
-        if (!memberTarget)
-            throw new MissingArgumentError(this.name, 'Target');
-        if (memberTarget.user.id === message.author.id)
+        if (target.user.id === message.author.id)
             throw new IllegalArgumentError(this.name, '`Target` cannot be yourself');
-        if (!memberTarget.bannable)
+        if (!target.bannable)
             return message.reply("I cannot ban this user!");
 
-        let reason = parsed.joined;
+        let reason = parsed.reason;
         if (!reason) reason = "No reason provided";
 
-        await memberTarget.ban(reason);
+        await target.ban(reason);
 
-        await log(client, guild, tag, 0x7f0000, memberTarget.user.tag, memberTarget.user.avatarURL(), `**${memberTarget.user} has been banned by ${message.author} for the reason:**\n${reason}`);
+        await log(client, guild, tag, 0x7f0000, target.user.tag, target.user.avatarURL(), `**${target.user} has been banned by ${message.author} for the reason:**\n${reason}`);
         await message.react('👌');
     }
 }

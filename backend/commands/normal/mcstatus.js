@@ -11,15 +11,11 @@ export default {
     aliases: ['status'],
     description: 'Gets server info of the specified Minecraft server.',
     usage: 'mcstatus [server ip]',
+    pattern: '[ServerIP]',
     examples: 'mcstatus hypixel.net',
     async execute(message, parsed) {
-        const server = parsed.first;
-        if (!server) throw new MissingArgumentError(this.name, 'Server IP');
-
-        let source = '';
-        await fetch(`https://mcsrvstat.us/server/${server}`)
-            .then(res => res.text())
-            .then(body => source = body)
+        const server = parsed.ip;
+        const source = await (await fetch(`https://mcsrvstat.us/server/${server}`)).text();
 
         const players = parse(source, '<td>Players</td>\n			<td>', ' - <a href="#" id="show_players"') || parse(source, '<td>Players</td>\n			<td>', '</td>', 0);
         const version = parse(source, '<td>Version</td>\n			<td>', '</td>', 0);

@@ -1,9 +1,11 @@
 import {MessageEmbed} from 'discord.js';
+import IllegalArgumentError from '../../errors/IllegalArgumentError.js';
 
 export default {
     name: 'help',
     description: 'Gets info about a command.',
     usage: 'help [command name]',
+    pattern: '[CommandName]?',
     examples: 'help censor',
     async execute(message, parsed, client, tag) {
         /*
@@ -113,7 +115,7 @@ export default {
         collector.on('end', () => helpMessage.reactions.removeAll());
         */
         const commands = client.commands;
-        const name = parsed.first;
+        const name = parsed.commandname;
 
         // If there were no arguments given
         if (!name) {
@@ -131,7 +133,7 @@ export default {
 
         // If there were arguments given
         const command = commands.get(name.toLowerCase()) || commands.find(c => c.aliases && c.aliases.includes(name));
-        if (!command) return message.reply('that was not a valid command!');
+        if (!command) throw new IllegalArgumentError(this.name, `Command \`${name}\` not a valid command`);
 
         // If there were arguments given and the argument was a valid command
         let prefix = '!';
@@ -151,14 +153,14 @@ export default {
         // Better way of doing the following 3 fields?
         if (command.usage) {
             if (Array.isArray(command.usage)) {
-                helpEmbed.addField('**Usages:**', `${command.usage.map(usage => usage = prefix + usage).join('\n')}`);
+                helpEmbed.addField('**Usages:**', `${command.usage.map(usage => prefix + usage).join('\n')}`);
             } else {
                 helpEmbed.addField('**Usage:**', `${prefix}${command.usage}`);
             }
         }
         if (command.examples) {
             if (Array.isArray(command.examples)) {
-                helpEmbed.addField('**Examples:**', `${command.examples.map(example => example = prefix + example).join('\n')}`);
+                helpEmbed.addField('**Examples:**', `${command.examples.map(example => prefix + example).join('\n')}`);
             } else {
                 helpEmbed.addField('**Example:**', `${prefix}${command.examples}`);
             }

@@ -3,17 +3,18 @@ export default {
     aliases: ['createemote'],
     description: 'Add an emote to this server.',
     usage: 'addemote [image link] [name]',
+    pattern: '[Link] <Name>',
     examples: 'addemote https://example.com/image.png example',
     guildOnly: true,
     permReqs: 'MANAGE_EMOJIS',
     clientPermReqs: 'MANAGE_EMOJIS',
     execute(message, parsed) {
         const guild = message.guild;
-        let args = parsed.raw;
-        const name = args.slice(1).join('_');
-        guild.emojis.create(args[0], name)
+        const link = parsed.link;
+        const name = parsed.name.replace(/ /g, '_');
+
+        guild.emojis.create(link, name)
             .then(emoji => message.channel.send(`Created new emoji with name ${emoji.name}!`))
-            .catch(error => message.channel.send(`Sorry ${message.author}, I couldn't create emoji because of : ${error}`));
     }
 }
 

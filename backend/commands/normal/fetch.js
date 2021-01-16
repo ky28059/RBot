@@ -10,12 +10,11 @@ export default {
     name: 'fetch',
     aliases: ['grab'],
     description: 'Fetches plaintext HTML from a website link.',
-    usage: 'fetch [website]',
+    usage: 'fetch [URL]',
+    pattern: '[URL]',
     examples: 'fetch https://google.com',
     async execute(message, parsed) {
-        const url = parsed.first;
-        if (!url) throw new MissingArgumentError(this.name, 'URL');
-
+        const url = parsed.url;
         let source = await (await fetch(url)).text() || '[No Source Found]';
 
         const fetchEmbed = new MessageEmbed()
