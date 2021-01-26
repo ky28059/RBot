@@ -1,16 +1,15 @@
-import MissingArgumentError from '../../errors/MissingArgumentError.js';
 import IllegalArgumentError from '../../errors/IllegalArgumentError.js';
 
 export default {
     name: 'toggle',
     description: 'Toggles whether the specific action will be logged.',
     usage: 'toggle [action or actions]',
+    pattern: '[...Presets]',
     examples: ['toggle message_delete', 'toggle message_delete member_join member_leave'],
     guildOnly: true,
     permReqs: 'MANAGE_GUILD',
     async execute(message, parsed, client, tag) {
-        const presets = parsed.raw;
-        if (!presets) throw new MissingArgumentError(this.name, '[Actions]');
+        const presets = parsed.presets;
 
         let newPresets = [];
 

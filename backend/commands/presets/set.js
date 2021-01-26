@@ -5,24 +5,24 @@ export default {
     name: 'set',
     description: 'Sets new token data for this server.',
     usage: 'set [field] [value]',
+    pattern: '[Field] <Args>',
     examples: ['set logchannel #logs', 'set prefix r'],
     guildOnly: true,
     permReqs: 'MANAGE_GUILD',
     async execute(message, parsed, client, tag) {
-        const args = parsed.raw;
-        if (!args.length)
-            throw new MissingArgumentError(this.name, 'Field');
-
+        const {field, args} = parsed;
         const guild = message.guild;
-        const field = args.shift().toLowerCase();
 
         let updated; // better way of doing this, there is probably
 
         switch (field) {
             case 'logchannel':
-                const channelTarget = parsed.channelTarget;
+                // sloppily copy code from argparser in lieu of multiple patterns
+                let channelID = args.match(/^<#(\d+)>$/) ? args.match(/^<#(\d+)>$/)[1] : args;
+                const channelTarget = client.channels.cache.get(channelID);
+
                 if (!channelTarget)
-                    throw new MissingArgumentError(this.name, 'Channel');
+                    throw new IllegalArgumentError(this.name, '`Channel` must be a valid text channel');
                 if (channelTarget.type !== 'text')
                     throw new IllegalArgumentError(this.name, '`Channel` must be a text channel');
                 if (!(channelTarget.guild.id === guild.id))
@@ -33,11 +33,8 @@ export default {
                 break;
 
             case 'prefix':
-                const prefix = args.join(" ");
-                if (!prefix) throw new MissingArgumentError(this.name, 'Prefix')
-
-                tag.prefix = prefix;
-                updated = prefix;
+                tag.prefix = args;
+                updated = args;
                 break;
 
             default:

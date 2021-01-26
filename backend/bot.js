@@ -113,7 +113,7 @@ client.on('message', async message => {
         if (
             (tag.censored_users && isInField(tag, 'censored_users', message.author.id)
             || (tag.censored_words && isInField(tag, 'censored_words', message.content.split(' '))))
-            && !member.hasPermission('ADMINISTRATOR')
+            && !member.hasPermission('ADMINISTRATOR') // Admin override
         ) {
             await message.delete()
                 .catch(error => console.error(`message in ${guild} could not be censored because of ${error}!`));
@@ -130,7 +130,7 @@ client.on('message', async message => {
         if (message.guild
             && tag.disabled_commands
             && isInField(tag, 'disabled_commands', commandName)
-        ) return message.reply('that command is disabled!'); // Handles command disabling
+        ) return message.reply(err('DISABLED_ERROR', 'Invoked command disabled in current server')); // Handles command disabling
 
         const command = client.commands.get(commandName)
             || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));

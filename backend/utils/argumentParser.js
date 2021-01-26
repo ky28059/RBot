@@ -4,6 +4,7 @@
     Parser Syntax:
     [field] = String field
     [field]? = Optional field
+    [...field] = Repeating field
     @[user] = Mention field
     #[channel] = Channel field
     &[role] = Role field
@@ -20,9 +21,12 @@
         => MissingArgumentError
     "something other else", "<message>"
         => { message: "something other else" }
+    "one two three", "[...numbers]"
+        => { numbers: ["one", "two", "three"] }
+    "@user @otheruser @thirduser", "@[...people]"
+        => { people: [Discord.User, Discord.User, Discord.User] }
 
-    TODO: add syntax for commands that take in arbitrary amounts of arguments and commands that can have multiple patterns
-    Commands that take in arbitrary amounts of arguments: enable, disable, toggle, react, concat
+    TODO: add syntax for commands that can have multiple patterns
     Commands whose arguments can be one of multiple patterns: set, censor, uncensor
 */
 
@@ -50,11 +54,8 @@ export default function parse(argString, command, client, guild) {
     // Go down the queue of args and attempt to match 1:1 to patterns
     for (let i = 0; i < patterns.length; i++) {
 
-        const pattern = patterns[i].match(/^(?<prefix>[@#&]?)(?<bracket>[<\[])(?<name>\w+)[\]>](?<optional>\??)$/).groups;
-        const name = pattern.name;
-        const bracket = pattern.bracket;
-        const prefix = pattern.prefix;
-        const optional = pattern.optional;
+        const pattern = patterns[i].match(/^(?<prefix>[@#&]?)(?<bracket>[<\[])(?<repeating>(?:\.{3})?)(?<name>\w+)[\]>](?<optional>\??)$/);
+        const { name, bracket, prefix, repeating, optional } = pattern.groups;
 
         // If no args were provided, or if none remain
         if (!args || !args.length) {
@@ -65,53 +66,57 @@ export default function parse(argString, command, client, guild) {
         }
 
         let arg = args.shift();
-        let match;
 
-        switch (bracket) {
-            case '[':
-                arg = arg.replace(/^"|"$/g, ''); // Sanitize quotes
+        // If repeating, match remaining args and return
+        if (repeating) {
+            args.unshift(arg)
+            returnObj[name.toLowerCase()] = args
+                .map(arg => matchSingular(arg, prefix, client, guild));
 
-                switch (prefix) {
-                    case '@': // Users
-                        let userID = arg.match(mentionRegex) ? arg.match(mentionRegex)[1] : arg;
-
-                        let user = client.users.cache.get(userID);
-                        if (!user) throw new IllegalArgumentError(command.name, `Field \`${name}\` must be a valid user`);
-                        match = user;
-                        break;
-
-                    case '#': // Channels
-                        let channelID = arg.match(channelRegex) ? arg.match(channelRegex)[1] : arg;
-
-                        let channel = client.channels.cache.get(channelID);
-                        if (!channel) throw new IllegalArgumentError(command.name, `Field \`${name}\` must be a valid channel`);
-                        match = channel;
-                        break;
-
-                    case '&': // Roles
-                        let roleID = arg.match(roleRegex) ? arg.match(roleRegex)[1] : arg;
-
-                        let role = guild.roles.cache.get(roleID);
-                        if (!role) throw new IllegalArgumentError(command.name, `Field \`${name}\` must be a valid role`);
-                        match = role;
-                        break;
-
-                    default: // Default string field
-                        match = arg;
-                        break;
-                }
-                break;
-
-            case '<':
-                // Add arg back into the array so that the raw string can be rebuilt
-                // Do not sanitize quotes in this case!
-                args.unshift(arg);
-                match = args.join(' ');
-                break;
+            return returnObj;
         }
 
-        returnObj[name.toLowerCase()] = match;
+        // Special case for <Rest> patterns
+        // Can probably be simplified
+        if (bracket === '<') {
+            args.unshift(arg)
+            returnObj[name.toLowerCase()] = args.join(' ');
+
+            return returnObj;
+        }
+        
+        // Otherwise, match arg based on prefix
+        arg = arg.replace(/^"|"$/g, ''); // Sanitize quotes
+        returnObj[name.toLowerCase()] = matchSingular(arg, prefix, client, guild);
     }
 
     return returnObj;
+}
+
+function matchSingular(arg, prefix, client, guild) {
+    switch (prefix) {
+        case '@': // Users
+            let userID = arg.match(mentionRegex) ? arg.match(mentionRegex)[1] : arg;
+
+            let user = client.users.cache.get(userID);
+            if (!user) throw new IllegalArgumentError(command.name, `Field \`${name}\` must be a valid user`);
+            return user;
+
+        case '#': // Channels
+            let channelID = arg.match(channelRegex) ? arg.match(channelRegex)[1] : arg;
+
+            let channel = client.channels.cache.get(channelID);
+            if (!channel) throw new IllegalArgumentError(command.name, `Field \`${name}\` must be a valid channel`);
+            return channel;
+
+        case '&': // Roles
+            let roleID = arg.match(roleRegex) ? arg.match(roleRegex)[1] : arg;
+
+            let role = guild.roles.cache.get(roleID);
+            if (!role) throw new IllegalArgumentError(command.name, `Field \`${name}\` must be a valid role`);
+            return role;
+
+        default: // Default string field
+            return arg;
+    }
 }

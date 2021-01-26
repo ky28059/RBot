@@ -2,20 +2,20 @@ import {isInField, removeFromField} from '../../utils/tokenManager.js';
 import {log} from '../utils/logger.js';
 
 // Errors
-import ArgumentError from '../../errors/ArgumentError.js';
+import IllegalArgumentError from '../../errors/IllegalArgumentError.js';
 
 
 export default {
     name: 'enable',
     description: 'Enables a disabled command.',
     usage: 'enable [command name]',
+    pattern: '[...Commands]',
     examples: 'enable censor',
     guildOnly: true,
     permReqs: 'ADMINISTRATOR',
     async execute(message, parsed, client, tag) {
         const guild = message.guild;
-        const commands = parsed.raw;
-        if (!commands) throw new ArgumentError(this.name, 'Missing field `[Commands]`');
+        const commands = parsed.commands;
 
         let enables = [];
 
@@ -23,11 +23,11 @@ export default {
             const cmd = client.commands.get(command.toLowerCase())
                 || client.commands.find(c => c.aliases && c.aliases.includes(command));
             if (!cmd)
-                throw new ArgumentError(this.name, `Command \`${command}\` does not exist`);
+                throw new IllegalArgumentError(this.name, `Command \`${command}\` does not exist`);
             if (!isInField(tag, 'disabled_commands', command))
-                throw new ArgumentError(this.name, `Command \`${command}\` not disabled`);
+                throw new IllegalArgumentError(this.name, `Command \`${command}\` not disabled`);
             if (enables.includes(cmd.name))
-                throw new ArgumentError(this.name, `Attempt to enable \`${command}\` twice`);
+                throw new IllegalArgumentError(this.name, `Attempt to enable \`${command}\` twice`);
 
             // Add command and aliases to the disables array
             enables.push(cmd.name);
