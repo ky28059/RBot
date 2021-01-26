@@ -1,3 +1,5 @@
+import {splitMessage} from 'discord.js';
+
 export default {
     name: 'roll',
     aliases: ['rng', 'dice'],
@@ -30,6 +32,16 @@ export default {
         let total = 0;
         rolls.forEach(roll => total += roll);
 
-        message.channel.send(`Rolled **${dice}** **${sides}** sided die and got **[${rolls.join(', ')}]**, for a total of **${total}**!`);
+
+        const splitDescription = splitMessage(`Rolled **${dice}** **${sides}** sided die and got **[${rolls.join(', ')}]**, for a total of **${total}**!`, {
+            maxLength: 2000,
+            char: ' ',
+            prepend: '**...',
+            append: '...**'
+        });
+
+        splitDescription.forEach(async (m) => {
+            message.channel.send(m);
+        });
     }
 }
