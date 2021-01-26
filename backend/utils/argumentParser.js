@@ -27,7 +27,7 @@
         => { people: [Discord.User, Discord.User, Discord.User] }
 
     TODO: add syntax for commands that can have multiple patterns
-    Commands whose arguments can be one of multiple patterns: set, censor, uncensor
+    Commands whose arguments can be one of multiple patterns: set, censor, uncensor, technically roll would benefit from it as well
 */
 
 import MissingArgumentError from '../errors/MissingArgumentError.js';
@@ -84,7 +84,7 @@ export default function parse(argString, command, client, guild) {
 
             return returnObj;
         }
-        
+
         // Otherwise, match arg based on prefix
         arg = arg.replace(/^"|"$/g, ''); // Sanitize quotes
         returnObj[name.toLowerCase()] = matchSingular(arg, prefix, client, guild);

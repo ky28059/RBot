@@ -8,7 +8,6 @@ import IllegalArgumentError from '../../errors/IllegalArgumentError.js';
 export default {
     name: 'disable',
     description: 'Disables a command.',
-    usage: 'disable [command name]',
     pattern: '[...Commands]',
     examples: 'disable censor',
     guildOnly: true,

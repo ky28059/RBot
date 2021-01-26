@@ -2,7 +2,6 @@ export default {
     name: 'addemote',
     aliases: ['createemote'],
     description: 'Add an emote to this server.',
-    usage: 'addemote [image link] [name]',
     pattern: '[Link] <Name>',
     examples: 'addemote https://example.com/image.png example',
     guildOnly: true,

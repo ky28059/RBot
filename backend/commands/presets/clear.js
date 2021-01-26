@@ -1,7 +1,6 @@
 export default {
     name: 'clear',
     description: 'Clear this server\'s token.',
-    usage: 'clear',
     examples: 'clear',
     guildOnly: true,
     permReqs: 'ADMINISTRATOR',

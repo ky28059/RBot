@@ -3,7 +3,6 @@ import IllegalArgumentError from '../../errors/IllegalArgumentError.js';
 export default {
     name: 'toggle',
     description: 'Toggles whether the specific action will be logged.',
-    usage: 'toggle [action or actions]',
     pattern: '[...Presets]',
     examples: ['toggle message_delete', 'toggle message_delete member_join member_leave'],
     guildOnly: true,

@@ -8,7 +8,6 @@ import ActionUntakeableError from '../../errors/ActionUntakeableError.js';
 export default {
     name: 'kick',
     description: 'Kick a user from this server.',
-    usage: 'kick @[user] [reason]',
     pattern: '@[Target] <Reason>?',
     examples: 'kick @example Spamming in #general',
     guildOnly: true,

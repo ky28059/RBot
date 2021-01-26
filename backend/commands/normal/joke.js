@@ -4,7 +4,6 @@ import {MessageEmbed} from 'discord.js';
 export default {
     name: 'joke',
     description: 'Tells a random joke from https://official-joke-api.appspot.com/.',
-    usage: 'joke',
     examples: 'joke',
     async execute(message) {
         let joke = await (await fetch('https://official-joke-api.appspot.com/random_joke')).json()

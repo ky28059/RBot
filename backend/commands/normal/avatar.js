@@ -3,8 +3,7 @@ import {MessageEmbed} from 'discord.js';
 export default {
     name: 'avatar',
     aliases: ['icon', 'pfp'],
-    description: 'Fetches the discord avatar of the specified user.',
-    usage: 'avatar @[user]',
+    description: 'Fetches the discord avatar of the specified user, or yourself if no user was given.',
     pattern: '@[Target]?',
     examples: 'avatar @RBot',
     execute(message, parsed) {

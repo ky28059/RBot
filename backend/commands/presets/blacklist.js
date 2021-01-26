@@ -10,7 +10,6 @@ export default {
     name: 'blacklist',
     aliases: ['hackban'],
     description: 'Add or remove a user from the server blacklist (blacklisted users are banned upon joining).',
-    usage: ['blacklist add @[user]', 'blacklist remove @[user]'],
     pattern: '[Action] @[Target]',
     examples: ['blacklist add @example', 'blacklist remove @example'],
     guildOnly: true,

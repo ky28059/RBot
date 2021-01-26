@@ -5,7 +5,6 @@ export default {
     name: 'reload',
     aliases: ['rl'],
     description: 'Reloads all command files.',
-    usage: 'reload',
     examples: 'reload',
     ownerOnly: true,
     async execute(message, parsed, client) {

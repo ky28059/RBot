@@ -2,8 +2,7 @@ import {MessageEmbed} from 'discord.js';
 
 export default {
     name: 'profile',
-    description: 'Fetches information about the specified user.',
-    usage: 'profile @[user]',
+    description: 'Fetches information about the specified user, or yourself if no user was given.',
     pattern: '@[Target]?',
     examples: 'profile @RBot',
     guildOnly: true,

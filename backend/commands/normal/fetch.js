@@ -2,15 +2,11 @@ import fetch from 'node-fetch';
 import {MessageEmbed} from 'discord.js';
 import {truncateMessage} from '../utils/messageTruncator.js';
 
-// Errors
-import MissingArgumentError from '../../errors/MissingArgumentError.js';
-
 
 export default {
     name: 'fetch',
     aliases: ['grab'],
     description: 'Fetches plaintext HTML from a website link.',
-    usage: 'fetch [URL]',
     pattern: '[URL]',
     examples: 'fetch https://google.com',
     async execute(message, parsed) {

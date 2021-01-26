@@ -3,7 +3,6 @@ import {MessageEmbed} from 'discord.js';
 export default {
     name: 'raw',
     description: 'Displays this server\'s current settings, but in their unparsed form. Useful for testing.',
-    usage: 'raw',
     examples: 'raw',
     guildOnly: true,
     permReqs: 'MANAGE_GUILD',

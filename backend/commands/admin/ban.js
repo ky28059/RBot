@@ -1,12 +1,11 @@
 import {log} from "../utils/logger.js";
 import IllegalArgumentError from '../../errors/IllegalArgumentError.js';
-import ActionUntakeableError from "../../errors/ActionUntakeableError";
+import ActionUntakeableError from '../../errors/ActionUntakeableError.js';
 
 
 export default {
     name: 'ban',
     description: 'Ban a user from this server.',
-    usage: 'ban @[user] [reason]',
     pattern: '@[Target] <Reason>?',
     examples: 'ban @example NSFW imagery',
     guildOnly: true,

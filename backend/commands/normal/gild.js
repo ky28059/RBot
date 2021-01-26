@@ -3,7 +3,6 @@ export default {
     name: 'gild',
     aliases: ['award'],
     description: 'Gives some reddit gold to the previous message.',
-    usage: 'gild',
     examples: 'gild',
     clientPermReqs: 'ADD_REACTIONS',
     async execute(message) {

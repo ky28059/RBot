@@ -4,8 +4,7 @@ import IllegalArgumentError from '../../errors/IllegalArgumentError.js';
 
 export default {
     name: 'purge',
-    description: 'Bulk deletes the specified amount of messages in the channel.',
-    usage: ['purge [1-99]', 'purge [1-99] @[user]'],
+    description: 'Bulk deletes the specified amount of messages in the channel, or if a user is given only messages sent by that user.',
     pattern: '[Count] @[Target]?',
     examples: ['purge 80', 'purge 80 @RBot'],
     guildOnly: true,

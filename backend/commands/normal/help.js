@@ -150,14 +150,9 @@ export default {
         if (command.description) helpEmbed.setDescription(`${command.description}`);
         if (command.commandGroup) helpEmbed.addField('**Command Group:**', `${command.commandGroup}`);
         if (command.aliases) helpEmbed.addField('**Aliases:**', `${command.aliases.join(', ')}`);
-        // Better way of doing the following 3 fields?
-        if (command.usage) {
-            if (Array.isArray(command.usage)) {
-                helpEmbed.addField('**Usages:**', `${command.usage.map(usage => prefix + usage).join('\n')}`);
-            } else {
-                helpEmbed.addField('**Usage:**', `${prefix}${command.usage}`);
-            }
-        }
+        helpEmbed.addField('**Usage:**', `${prefix}${command.name} ${command.pattern}`);
+
+        // Better way of doing the following 2 fields?
         if (command.examples) {
             if (Array.isArray(command.examples)) {
                 helpEmbed.addField('**Examples:**', `${command.examples.map(example => prefix + example).join('\n')}`);

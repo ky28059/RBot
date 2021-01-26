@@ -1,7 +1,6 @@
 export default {
     name: 'ping',
     description: 'Gets latency.',
-    usage: 'ping',
     examples: 'ping',
     async execute(message, parsed, client) {
         let m = await message.channel.send("Ping?");

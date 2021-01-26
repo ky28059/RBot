@@ -1,4 +1,4 @@
-import CommandError from "./CommandError";
+import CommandError from './CommandError.js';
 
 
 // Represents an untakeable action, whether from hierarchy or other restrictions

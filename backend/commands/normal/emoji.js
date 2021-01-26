@@ -3,7 +3,6 @@ import IllegalArgumentError from '../../errors/IllegalArgumentError.js';
 export default {
     name: 'emoji',
     description: 'Fetches the requested emoji and sends it.',
-    usage: 'emoji [emoji ID]',
     pattern: '[EmojiID]',
     examples: 'emoji 762731625498542091',
     execute(message, parsed, client) {

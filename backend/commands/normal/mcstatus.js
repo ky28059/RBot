@@ -2,15 +2,11 @@ import {MessageEmbed} from 'discord.js';
 import fetch from 'node-fetch';
 import {parse} from '../utils/stringParser.js';
 
-// Errors
-import MissingArgumentError from '../../errors/MissingArgumentError.js';
-
 
 export default {
     name: 'mcstatus',
     aliases: ['status'],
     description: 'Gets server info of the specified Minecraft server.',
-    usage: 'mcstatus [server ip]',
     pattern: '[ServerIP]',
     examples: 'mcstatus hypixel.net',
     async execute(message, parsed) {
