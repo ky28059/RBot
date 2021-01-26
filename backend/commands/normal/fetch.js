@@ -1,12 +1,11 @@
 import fetch from 'node-fetch';
-import {MessageEmbed} from 'discord.js';
-import {truncateMessage} from '../utils/messageTruncator.js';
+import {MessageEmbed, splitMessage} from 'discord.js';
 
 
 export default {
     name: 'fetch',
     aliases: ['grab'],
-    description: 'Fetches plaintext HTML from a website link.',
+    description: 'Fetches plaintext HTML from a website link. It is highly recommended to use this in a spam channel if you care about message history',
     pattern: '[URL]',
     examples: 'fetch https://google.com',
     async execute(message, parsed) {
@@ -16,9 +15,18 @@ export default {
         const fetchEmbed = new MessageEmbed()
             .setColor(0x333333)
             .setTitle('Fetched:')
-            .setDescription(`\`\`\`html\n${truncateMessage(source, -37)}\`\`\``)
             .setFooter(`Requested by ${message.author.tag}`)
 
-        message.channel.send(fetchEmbed);
+        const splitDescription = splitMessage(source, {
+            maxLength: 2048 - 12,
+            char: '',
+            prepend: '...',
+            append: '...'
+        });
+
+        splitDescription.forEach(async (m) => {
+            fetchEmbed.setDescription(`\`\`\`html\n${m}\`\`\``);
+            message.channel.send(fetchEmbed);
+        });
     }
 }

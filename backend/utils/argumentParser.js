@@ -67,33 +67,38 @@ export default function parse(argString, command, client, guild) {
 
         let arg = args.shift();
 
-        // If repeating, match remaining args and return
-        if (repeating) {
-            args.unshift(arg)
-            returnObj[name.toLowerCase()] = args
-                .map(arg => matchSingular(arg, prefix, client, guild));
-
-            return returnObj;
-        }
-
         // Special case for <Rest> patterns
         // Can probably be simplified
         if (bracket === '<') {
+            // Check for bad patterns
+            if (repeating) console.warn(`Bad pattern in ${command.name}, field <${name}> cannot be repeating`);
+            if (prefix) console.warn(`Bad pattern in ${command.name}, field <${name}> cannot have a prefix`);
+            if (i !== patterns.length) console.warn(`Bad pattern in ${command.name}, field <${name}> is not the last field`);
+
             args.unshift(arg)
             returnObj[name.toLowerCase()] = args.join(' ');
 
             return returnObj;
         }
 
+        // If repeating, match remaining args and return
+        if (repeating) {
+            args.unshift(arg)
+            returnObj[name.toLowerCase()] = args
+                .map(arg => matchSingular(arg, prefix, client, guild, command));
+
+            return returnObj;
+        }
+
         // Otherwise, match arg based on prefix
         arg = arg.replace(/^"|"$/g, ''); // Sanitize quotes
-        returnObj[name.toLowerCase()] = matchSingular(arg, prefix, client, guild);
+        returnObj[name.toLowerCase()] = matchSingular(arg, prefix, client, guild, command);
     }
 
     return returnObj;
 }
 
-function matchSingular(arg, prefix, client, guild) {
+function matchSingular(arg, prefix, client, guild, command) {
     switch (prefix) {
         case '@': // Users
             let userID = arg.match(mentionRegex) ? arg.match(mentionRegex)[1] : arg;
