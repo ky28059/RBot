@@ -1,5 +1,8 @@
 import {log} from "../utils/logger.js";
+
+// Errors
 import IllegalArgumentError from '../../errors/IllegalArgumentError.js';
+import ActionUntakeableError from '../../errors/ActionUntakeableError.js';
 
 
 export default {
@@ -18,7 +21,7 @@ export default {
         if (target.user.id === message.author.id)
             throw new IllegalArgumentError(this.name, '`Target` cannot be yourself');
         if (!target.kickable)
-            return message.reply("I cannot kick this user!");
+            throw new ActionUntakeableError(this.name, `${target} too high in hierarchy, unable to kick`);
 
         let reason = parsed.reason;
         if (!reason) reason = "No reason provided";

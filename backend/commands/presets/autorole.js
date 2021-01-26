@@ -2,8 +2,8 @@ import {isInField, addToField, removeFromField} from '../../utils/tokenManager.j
 import {log} from "../utils/logger.js";
 
 // Errors
-import MissingArgumentError from '../../errors/MissingArgumentError.js';
 import IllegalArgumentError from '../../errors/IllegalArgumentError.js';
+import ActionUntakeableError from "../../errors/ActionUntakeableError";
 
 
 export default {
@@ -19,12 +19,12 @@ export default {
         const guild = message.guild;
         const {role, action} = parsed;
 
-        if (!role.editable) return message.reply('that role is too high up in the hierarchy! Please adjust it so that my highest role is above that role!');
-
         let messageArg;
 
         switch (action) {
             case 'add':
+                if (!role.editable)
+                    throw new ActionUntakeableError(this.name, `${role} too high up in hierarchy, cannot be assigned to others`);
                 if (isInField(tag, 'autoroles', role.id))
                     // Shaky
                     throw new IllegalArgumentError(this.name, `${role} already in autorole`);

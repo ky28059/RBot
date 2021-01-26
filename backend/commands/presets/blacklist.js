@@ -22,8 +22,6 @@ export default {
 
         if (target.id === message.author.id)
             throw new IllegalArgumentError(this.name, '`Target` cannot be yourself');
-        if (!action)
-            throw new MissingArgumentError(this.name, 'Action');
 
         let messageArg;
 

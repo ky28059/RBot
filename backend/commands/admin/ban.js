@@ -1,5 +1,6 @@
 import {log} from "../utils/logger.js";
 import IllegalArgumentError from '../../errors/IllegalArgumentError.js';
+import ActionUntakeableError from "../../errors/ActionUntakeableError";
 
 
 export default {
@@ -18,7 +19,7 @@ export default {
         if (target.user.id === message.author.id)
             throw new IllegalArgumentError(this.name, '`Target` cannot be yourself');
         if (!target.bannable)
-            return message.reply("I cannot ban this user!");
+            throw new ActionUntakeableError(this.name, `${target} too high in hierarchy, unable to ban`);
 
         let reason = parsed.reason;
         if (!reason) reason = "No reason provided";
