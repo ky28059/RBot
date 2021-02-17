@@ -1,4 +1,5 @@
 import { canModifyQueue } from "../utils/canModifyQueue.js";
+import QueueNonexistentError from '../../errors/QueueNonexistentError.js';
 
 export default {
     name: "shuffle",
@@ -8,8 +9,11 @@ export default {
     guildOnly: true,
     execute(message) {
         const queue = message.client.queue.get(message.guild.id);
-        if (!queue) return message.channel.send("There is no queue.").catch(console.error);
-        if (!canModifyQueue(message.member)) return;
+
+        if (!queue)
+            throw new QueueNonexistentError(this.name);
+        if (!canModifyQueue(message.member))
+            return;
 
         let songs = queue.songs;
         for (let i = songs.length - 1; i > 1; i--) {

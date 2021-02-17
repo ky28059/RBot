@@ -1,4 +1,6 @@
 import {splitMessage} from 'discord.js';
+import IllegalArgumentError from '../../errors/IllegalArgumentError.js';
+
 
 export default {
     name: 'roll',
@@ -20,6 +22,9 @@ export default {
         }
         if (!dice || !Number(dice)) dice = 1;
         if (!sides || !Number(sides)) sides = 6;
+
+        // Prevent spam somewhat
+        if (dice > 300) throw new IllegalArgumentError(this.name, 'Field `Dice` cannot exceed 300');
 
         let rolls = [];
         for (let i = 0; i < dice; i++) {

@@ -1,21 +1,27 @@
 import { canModifyQueue } from "../utils/canModifyQueue.js";
+import IllegalArgumentError from '../../errors/IllegalArgumentError.js';
+import ActionUntakeableError from '../../errors/ActionUntakeableError.js';
 
 export default {
     name: "remove",
     description: 'Removes a song from the queue.',
-    usage: 'remove [song number]',
+    pattern: '[Number]',
     examples: 'remove 5',
     guildOnly: true,
     execute(message, parsed) {
-        const args = parsed.raw;
+        const num = parsed.number;
         const queue = message.client.queue.get(message.guild.id);
-        if (!queue) return message.channel.send("There is no queue.").catch(console.error);
-        if (!canModifyQueue(message.member)) return;
 
-        if (!args.length) return message.reply(`Usage: ${message.client.prefix}remove <Queue Number>`);
-        if (isNaN(args[0])) return message.reply(`Usage: ${message.client.prefix}remove <Queue Number>`);
+        if (!queue)
+            throw new ActionUntakeableError(this.name, 'The queue for this server is nonexistent');
+        if (!canModifyQueue(message.member))
+            // shaky
+            throw new ActionUntakeableError(this.name, 'User must join the voice channel first');
 
-        const song = queue.songs.splice(args[0] - 1, 1);
+        if (isNaN(num))
+            throw new IllegalArgumentError(this.name, 'Field `Number` must be a valid integer');
+
+        const song = queue.songs.splice(number - 1, 1);
         queue.textChannel.send(`${message.author} ❌ removed **${song[0].title}** from the queue.`);
     }
 };

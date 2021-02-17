@@ -13,7 +13,7 @@ export default {
     clientPermReqs: 'BAN_MEMBERS',
     async execute(message, parsed, client, tag) {
         const guild = message.guild;
-        const target = guild.mamber(parsed.target);
+        const target = guild.member(parsed.target);
 
         if (target.user.id === message.author.id)
             throw new IllegalArgumentError(this.name, '`Target` cannot be yourself');

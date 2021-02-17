@@ -17,6 +17,7 @@ export async function play(song, message) {
 
     try {
         if (song.url.includes("youtube.com")) {
+            console.log('it is youtube!');
             stream = await ytdlDiscord(song.url, { highWaterMark: 1 << 25 });
         /* } else if (song.url.includes("soundcloud.com")) {
             try {
@@ -37,7 +38,7 @@ export async function play(song, message) {
     } catch (error) {
         if (queue) {
             queue.songs.shift();
-            play(queue.songs[0], message);
+            await play(queue.songs[0], message);
         }
 
         console.error(error);
@@ -70,21 +71,19 @@ export async function play(song, message) {
         });
     dispatcher.setVolumeLogarithmic(queue.volume / 100);
 
-    try {
-        var playingMessage = await queue.textChannel.send(`🎶 Started playing: **${song.title}** ${song.url}`);
-        await playingMessage.react("⏭");
-        await playingMessage.react("⏯");
-        await playingMessage.react("🔇");
-        await playingMessage.react("🔉");
-        await playingMessage.react("🔊");
-        await playingMessage.react("🔁");
-        await playingMessage.react("⏹");
-    } catch (error) {
-        console.error(error);
-    }
+    console.log('sending message');
+    const playingMessage = await queue.textChannel.send(`🎶 Started playing: **${song.title}** ${song.url}`);
+    await playingMessage.react("⏭");
+    await playingMessage.react("⏯");
+    await playingMessage.react("🔇");
+    await playingMessage.react("🔉");
+    await playingMessage.react("🔊");
+    await playingMessage.react("🔁");
+    await playingMessage.react("⏹");
 
+    console.log('filtering');
     const filter = (reaction, user) => user.id !== message.client.user.id;
-    var collector = playingMessage.createReactionCollector(filter, {
+    const collector = playingMessage.createReactionCollector(filter, {
         time: song.duration > 0 ? song.duration * 1000 : 600000
     });
 

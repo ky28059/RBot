@@ -1,4 +1,3 @@
-import MissingArgumentError from '../../errors/MissingArgumentError.js';
 import IllegalArgumentError from '../../errors/IllegalArgumentError.js';
 
 export default {

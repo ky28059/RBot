@@ -1,15 +1,16 @@
 import { MessageEmbed, splitMessage, escapeMarkdown } from "discord.js";
+import QueueNonexistentError from '../../errors/QueueNonexistentError.js';
 
 export default {
     name: "queue",
     aliases: ["q"],
     description: 'Displays the current music queue.',
-    usage: 'queue',
     examples: 'queue',
     guildOnly: true,
     execute(message) {
         const queue = message.client.queue.get(message.guild.id);
-        if (!queue) return message.reply("There is nothing playing.").catch(console.error);
+        if (!queue)
+            throw new QueueNonexistentError(this.name);
 
         const description = queue.songs.map((song, index) => `${index + 1}. ${escapeMarkdown(song.title)}`);
 
