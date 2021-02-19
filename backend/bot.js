@@ -77,7 +77,7 @@ client.once('ready', async () => {
     await client.user.setActivity('!help', {type: "LISTENING"});
 });
 
-client.on("guildCreate", async guild => {
+client.on('guildCreate', async guild => {
     await update(guild, client);
     console.log(`New guild joined: ${guild.name} (id: ${guild.id}). This guild has ${guild.memberCount} members!`);
 });
@@ -154,7 +154,7 @@ client.on('message', async message => {
         } catch (e) {
             // If the error was a result of bad code, log it
             if (!e instanceof CommandError) {
-                console.error(e);
+                console.error(`Error in command ${commandName} called in ${guild.name} at ${new Date()}: ${e}`);
             }
             await message.reply(err(e.name, e.message));
         }
@@ -171,7 +171,7 @@ client.on('message', async message => {
 
 // Bot logs the following events:
 
-client.on("messageDelete", async message => {
+client.on('messageDelete', async message => {
     if (!message.guild) return; // Ignores DMs
     if (message.author.bot) return; // Bot ignores itself and other bots
 
@@ -185,7 +185,7 @@ client.on("messageDelete", async message => {
     await log(client, guild, tag, 0xb50300, message.author.tag, message.author.avatarURL(), desc);
 });
 
-client.on("messageDeleteBulk", async messages => {
+client.on('messageDeleteBulk', async messages => {
     const guild = messages.first().guild;
     const tag = await client.GuildTags.findOne({ where: { guildID: guild.id } });
     if (!(tag.logchannel && tag.log_message_delete_bulk)) return;
@@ -194,7 +194,7 @@ client.on("messageDeleteBulk", async messages => {
     await log(client, guild, tag, 0xb50300, guild.name, guild.iconURL(), `**${messages.array().length} messages were deleted in ${messages.first().channel}**`);
 });
 
-client.on("messageUpdate", async (oldMessage, newMessage) => {
+client.on('messageUpdate', async (oldMessage, newMessage) => {
     if (!oldMessage.guild) return; // Ignores DMs
     if (oldMessage.author.bot) return; // Bot ignores itself and other bots
     if (oldMessage.content === newMessage.content) return; // fixes weird link preview glitch
@@ -211,7 +211,7 @@ client.on("messageUpdate", async (oldMessage, newMessage) => {
     await log(client, guild, tag, 0xed7501, oldMessage.author.tag, oldMessage.author.avatarURL(), desc, fields);
 });
 
-client.on("guildMemberUpdate", async (oldMember, newMember) => { // TODO: finish this by adding role logging
+client.on('guildMemberUpdate', async (oldMember, newMember) => { // TODO: finish this by adding role logging
     if (oldMember.user.bot) return;
 
     const guild = oldMember.guild;
@@ -235,12 +235,12 @@ client.on("guildMemberUpdate", async (oldMember, newMember) => { // TODO: finish
     }
 });
 
-client.on("guildMemberAdd", async (member) => {
+client.on('guildMemberAdd', async (member) => {
     const guild = member.guild;
     const tag = await client.GuildTags.findOne({ where: { guildID: guild.id } });
 
     if (tag.blacklist.includes(member.id)) { // Enforces blacklist
-        await member.ban('Blacklisted user');
+        await member.ban({reason: 'Blacklisted user'});
         await log(client, guild, tag, 0x7f0000, member.user.tag, member.user.avatarURL(), `**User ${member.user} has been banned on join (blacklist)**`);
         return;
     }
@@ -255,7 +255,7 @@ client.on("guildMemberAdd", async (member) => {
     // add potential welcome messages later
 });
 
-client.on("guildMemberRemove", async (member) => {
+client.on('guildMemberRemove', async (member) => {
     const guild = member.guild;
     const tag = await client.GuildTags.findOne({ where: { guildID: guild.id } });
     if (!(guild.systemChannel && tag.log_member_leave)) return;
@@ -270,7 +270,7 @@ client.on("guildMemberRemove", async (member) => {
 });
 
 // Error handling
-client.on("warn", info => console.log(info));
-client.on("error", error => console.error(error));
+client.on('warn', info => console.log(info));
+client.on('error', error => console.error(error));
 
 client.login(token);
