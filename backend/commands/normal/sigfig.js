@@ -14,16 +14,20 @@ export default {
         if (Number(number) > Number.MAX_SAFE_INTEGER)
             throw new IllegalArgumentError(this.name, 'Field `Number` cannot exceed the JS maximum safe integer');
 
-        // Funky looking conversion to convert scientific notation to regular
-        let num = String(Number(number));
+        // Since e is never significant, ignore it for the calculations and add it in at the end
+        let [num, expt] = number.split('e');
+        let exponent = expt !== undefined
+            ? `e${expt}`
+            : '';
 
         let [whole, dec] = num.split('.');
-        if (dec !== undefined) { // If a decimal point exists
-            return message.channel.send(`**${num}**, ${num.length - 1} significant figure(s)`);
+        if (dec !== undefined) {
+            // If a decimal point exists, everything is significant
+            return message.channel.send(`**${num}**${exponent}, ${num.length - 1} significant figure(s)`);
         }
 
         let {text, significant} = parseTrailingZeroes(num);
-        message.channel.send(`${text}, ${significant} significant figure(s)`);
+        message.channel.send(`${text}${exponent}, ${significant} significant figure(s)`);
     }
 }
 
@@ -33,7 +37,7 @@ const parseTrailingZeroes = (num) => {
 
     // Base case for 0 to prevent infinite loop
     if (temp === 0) return {
-        text: `${num}`,
+        text: num,
         significant: 0
     };
 
