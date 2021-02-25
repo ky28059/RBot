@@ -22,18 +22,26 @@ export default {
 
         let [whole, dec] = num.split('.');
         if (dec !== undefined) {
-            // If a decimal point exists, everything is significant
-            return message.channel.send(`**${num}**${exponent}, ${num.length - 1} significant figure(s)`);
-        }
+            // If a decimal point exists and the number is not 0, everything is significant
+            if (Number(whole)) {
+                let {text, significant} = parseTrailingZeroes(whole, true, false);
+                return message.channel.send(`${text}.**${dec}**${exponent}, ${significant + dec.length} significant figure(s)`);
+            }
 
-        let {text, significant} = parseTrailingZeroes(num);
+            // Otherwise, preceding zeros are insignificant
+            let {text, significant} = parseTrailingZeroes(dec, true, false);
+            return message.channel.send(`${whole}.${text}${exponent}, ${significant} significant figure(s)`);
+        }
+        
+        // For integers, both preceding and succeeding zeros are insignificant
+        let {text, significant} = parseTrailingZeroes(num, true, true);
         message.channel.send(`${text}${exponent}, ${significant} significant figure(s)`);
     }
 }
 
-const parseTrailingZeroes = (num) => {
+const parseTrailingZeroes = (num, preceding, succeeding) => {
     let temp = Number(num);
-    let numTrailing = 0;
+    let left = 0, right = num.length; // Indexes for slicing
 
     // Base case for 0 to prevent infinite loop
     if (temp === 0) return {
@@ -41,15 +49,27 @@ const parseTrailingZeroes = (num) => {
         significant: 0
     };
 
-    // Loop until all trailing zeros have been sliced
-    while (temp % 10 === 0) {
-        temp /= 10;
-        numTrailing++;
+    // If preceding zeros are insignificant
+    if (preceding) {
+        let zeros = num.match(/^0+/);
+        if (zeros) left = zeros[0].length;
     }
 
-    let significant = num.length - numTrailing;
+    // If succeeding zeros are insignificant
+    if (succeeding) {
+        // Loop until all trailing zeros have been sliced
+        while (temp % 10 === 0) {
+            temp /= 10;
+            right--;
+        }
+    }
+
+    let before = num.slice(0, left);
+    let significant = num.slice(left, right);
+    let after = num.slice(right);
+
     return {
-        text: `**${num.slice(0, significant)}**${num.slice(significant)}`,
-        significant: significant
+        text: `${before}**${significant}**${after}`,
+        significant: significant.length
     };
 }
