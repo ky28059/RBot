@@ -1,5 +1,6 @@
 import {isInField, addToField, removeFromField} from '../../utils/tokenManager.js';
-import {log} from "../utils/logger.js";
+import {log} from '../utils/logger.js';
+import {success} from '../../utils/messages.js';
 
 // Errors
 import IllegalArgumentError from '../../errors/IllegalArgumentError.js';
@@ -18,8 +19,6 @@ export default {
         const guild = message.guild;
         const {role, action} = parsed;
 
-        let messageArg;
-
         switch (action) {
             case 'add':
                 if (!role.editable)
@@ -29,16 +28,14 @@ export default {
                     throw new IllegalArgumentError(this.name, `${role} already in autorole`);
 
                 await addToField(tag, 'autoroles', role.id);
-                messageArg = 'added to';
                 break;
 
             case 'remove':
-                if (!isInField(tag, 'autoroles', roleTarget.id))
+                if (!isInField(tag, 'autoroles', role.id))
                     // Shaky
                     throw new IllegalArgumentError(this.name, `${role} not in autorole`);
 
                 await removeFromField(tag, 'autoroles', role.id);
-                messageArg = 'removed from';
                 break;
 
             default:
@@ -46,7 +43,7 @@ export default {
         }
 
         await log(client, guild, tag, 0xf6b40c, message.author.tag, message.author.avatarURL(),
-            `**${role} has been ${messageArg} this server's autorole by ${message.author} in ${message.channel}**\n[Jump to message](${message.url})`);
-        message.channel.send(`${role.id} has been ${messageArg} this server's autorole!`);
+            `**${role} has been ${action === 'add' ? 'added to' : 'removed from'} this server's autorole by ${message.author} in ${message.channel}**\n[Jump to message](${message.url})`);
+        message.channel.send(success({desc: `${role} ${action === 'add' ? 'added to' : 'removed from'} server autorole`}));
     }
 }

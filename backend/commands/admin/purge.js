@@ -1,5 +1,6 @@
 // Errors
 import IllegalArgumentError from '../../errors/IllegalArgumentError.js';
+import {success} from '../../utils/messages.js';
 
 
 export default {
@@ -28,5 +29,6 @@ export default {
             fetched = fetched.filter(message => message.author.id === parsed.target.id);
 
         await message.channel.bulkDelete(fetched)
+        await message.channel.send(success({desc: `Purged ${count} messages`}))
     }
 }

@@ -6,6 +6,8 @@ import YouTubeAPI from "simple-youtube-api";
 const youtube = new YouTubeAPI(youtubeAPIKey);
 //import scdl from "soundcloud-downloader";
 
+import {success} from '../../utils/messages.js';
+
 
 export default {
     name: "play",
@@ -33,16 +35,17 @@ export default {
         const video = parsed.video;
 
         const videoPattern = /^(https?:\/\/)?(www\.)?(m\.)?(youtube\.com|youtu\.?be)\/.+$/gi;
-        const playlistPattern = /^.*(list=)([^#\&\?]*).*/gi;
+        const playlistPattern = /^.*(list=)([^#&?]*).*/gi;
         //const scRegex = /^https?:\/\/(soundcloud\.com)\/(.*)$/; // TODO: soundcloud
 
         const urlValid = videoPattern.test(video);
 
         // TODO: playlists
         // Start the playlist if playlist url was provided
+        /*
         if (!videoPattern.test(video) && playlistPattern.test(video)) {
             return message.client.commands.get("playlist").execute(message, args);
-        }/* else if (scdl.isValidUrl(url) && url.includes("/sets/")) {
+        } else if (scdl.isValidUrl(url) && url.includes("/sets/")) {
             return message.client.commands.get("playlist").execute(message, args);
         } */
 
@@ -96,7 +99,7 @@ export default {
 
         if (serverQueue) {
             serverQueue.songs.push(song);
-            return serverQueue.textChannel.send(`✅ **${song.title}** has been added to the queue by ${message.author}`)
+            return serverQueue.textChannel.send(success({desc: `**${song.title}** added to queue by ${message.author}`}))
         }
 
         queueConstruct.songs.push(song);

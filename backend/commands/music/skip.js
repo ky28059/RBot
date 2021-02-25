@@ -1,5 +1,8 @@
 import { canModifyQueue } from '../utils/canModifyQueue.js';
+import {success} from '../../utils/messages.js';
+
 import QueueNonexistentError from '../../errors/QueueNonexistentError.js';
+
 
 export default {
     name: "skip",
@@ -16,6 +19,6 @@ export default {
 
         queue.playing = true;
         queue.connection.dispatcher.end();
-        queue.textChannel.send(`${message.author} ⏭ skipped the song`).catch(console.error);
+        queue.textChannel.send(success({desc: `⏭ Skipped the song`})).catch(console.error);
     }
 };

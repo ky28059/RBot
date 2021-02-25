@@ -2,6 +2,9 @@ import ytdlDiscord from "ytdl-core-discord";
 import { canModifyQueue } from './canModifyQueue.js';
 //import scdl from "soundcloud-downloader";
 
+import {success} from '../../utils/messages.js';
+
+
 export async function play(song, message) {
     //const { PRUNING, SOUNDCLOUD_CLIENT_ID } = require("../config.json");
     const queue = message.client.queue.get(message.guild.id);
@@ -17,7 +20,6 @@ export async function play(song, message) {
 
     try {
         if (song.url.includes("youtube.com")) {
-            console.log('it is youtube!');
             stream = await ytdlDiscord(song.url, { highWaterMark: 1 << 25 });
         /* } else if (song.url.includes("soundcloud.com")) {
             try {
@@ -71,8 +73,7 @@ export async function play(song, message) {
         });
     dispatcher.setVolumeLogarithmic(queue.volume / 100);
 
-    console.log('sending message');
-    const playingMessage = await queue.textChannel.send(`🎶 Started playing: **${song.title}** ${song.url}`);
+    const playingMessage = await queue.textChannel.send(success({title: 'Now playing:', desc: `**${song.title}** ${song.url}`}));
     await playingMessage.react("⏭");
     await playingMessage.react("⏯");
     await playingMessage.react("🔇");
@@ -81,7 +82,6 @@ export async function play(song, message) {
     await playingMessage.react("🔁");
     await playingMessage.react("⏹");
 
-    console.log('filtering');
     const filter = (reaction, user) => user.id !== message.client.user.id;
     const collector = playingMessage.createReactionCollector(filter, {
         time: song.duration > 0 ? song.duration * 1000 : 600000
@@ -97,7 +97,7 @@ export async function play(song, message) {
                 reaction.users.remove(user).catch(console.error);
                 if (!canModifyQueue(member)) return;
                 queue.connection.dispatcher.end();
-                queue.textChannel.send(`${user} ⏩ skipped the song`).catch(console.error);
+                queue.textChannel.send(`${user} ⏩ skipped the song`);
                 collector.stop();
                 break;
 
@@ -107,11 +107,11 @@ export async function play(song, message) {
                 if (queue.playing) {
                     queue.playing = !queue.playing;
                     queue.connection.dispatcher.pause(true);
-                    queue.textChannel.send(`${user} ⏸ paused the music.`).catch(console.error);
+                    queue.textChannel.send(`${user} ⏸ paused the music.`);
                 } else {
                     queue.playing = !queue.playing;
                     queue.connection.dispatcher.resume();
-                    queue.textChannel.send(`${user} ▶ resumed the music!`).catch(console.error);
+                    queue.textChannel.send(`${user} ▶ resumed the music!`);
                 }
                 break;
 
@@ -121,11 +121,11 @@ export async function play(song, message) {
                 if (queue.volume <= 0) {
                     queue.volume = 100;
                     queue.connection.dispatcher.setVolumeLogarithmic(100 / 100);
-                    queue.textChannel.send(`${user} 🔊 unmuted the music!`).catch(console.error);
+                    queue.textChannel.send(`${user} 🔊 unmuted the music!`);
                 } else {
                     queue.volume = 0;
                     queue.connection.dispatcher.setVolumeLogarithmic(0);
-                    queue.textChannel.send(`${user} 🔇 muted the music!`).catch(console.error);
+                    queue.textChannel.send(`${user} 🔇 muted the music!`);
                 }
                 break;
 
@@ -186,4 +186,4 @@ export async function play(song, message) {
         }
         */
     });
-};
+}

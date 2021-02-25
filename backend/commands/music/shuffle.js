@@ -1,5 +1,8 @@
 import { canModifyQueue } from "../utils/canModifyQueue.js";
+import {success} from '../../utils/messages.js';
+
 import QueueNonexistentError from '../../errors/QueueNonexistentError.js';
+
 
 export default {
     name: "shuffle",
@@ -22,6 +25,6 @@ export default {
         }
         queue.songs = songs;
         message.client.queue.set(message.guild.id, queue);
-        queue.textChannel.send(`${message.author} 🔀 shuffled the queue`).catch(console.error);
+        queue.textChannel.send(success({desc: `🔀 Shuffled the queue`}));
     }
 };

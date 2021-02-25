@@ -1,5 +1,3 @@
-import MissingArgumentError from '../../errors/MissingArgumentError.js';
-
 export default {
     name: 'say',
     description: 'Repeats your message.',

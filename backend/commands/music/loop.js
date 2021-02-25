@@ -1,7 +1,7 @@
 import { canModifyQueue } from "../utils/canModifyQueue.js";
+import {success} from '../../utils/messages.js';
 
 // Errors
-import ActionUntakeableError from '../../errors/ActionUntakeableError.js';
 import QueueNonexistentError from '../../errors/QueueNonexistentError.js';
 
 
@@ -21,6 +21,6 @@ export default {
 
         // toggle from false to true and reverse
         queue.loop = !queue.loop;
-        return queue.textChannel.send(`Loop is now ${queue.loop ? "**on**" : "**off**"}`)
+        return queue.textChannel.send(success({desc: `Loop set to ${queue.loop ? "**on**" : "**off**"}`}))
     }
 };
