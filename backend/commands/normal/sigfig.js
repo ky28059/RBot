@@ -22,17 +22,19 @@ export default {
 
         let [whole, dec] = num.split('.');
         if (dec !== undefined) {
-            // If a decimal point exists and the number is not 0, everything is significant
+            // If a decimal point exists and the number is not 0, everything past the decimal point is significant
             if (Number(whole)) {
+                let decimal = dec === '' ? '' : `**${dec}**`; // Sad but necessary to make sure no formatting errors occur with numbers like 400.
+
                 let {text, significant} = parseTrailingZeroes(whole, true, false);
-                return message.channel.send(`${text}.**${dec}**${exponent}, ${significant + dec.length} significant figure(s)`);
+                return message.channel.send(`${text}.${decimal}${exponent}, ${significant + dec.length} significant figure(s)`);
             }
 
             // Otherwise, preceding zeros are insignificant
             let {text, significant} = parseTrailingZeroes(dec, true, false);
             return message.channel.send(`${whole}.${text}${exponent}, ${significant} significant figure(s)`);
         }
-        
+
         // For integers, both preceding and succeeding zeros are insignificant
         let {text, significant} = parseTrailingZeroes(num, true, true);
         message.channel.send(`${text}${exponent}, ${significant} significant figure(s)`);
