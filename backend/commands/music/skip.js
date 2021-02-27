@@ -5,8 +5,8 @@ import QueueNonexistentError from '../../errors/QueueNonexistentError.js';
 
 
 export default {
-    name: "skip",
-    aliases: ["s"],
+    name: 'skip',
+    aliases: ['s'],
     description: 'Skips the currently playing song.',
     examples: 'skip',
     guildOnly: true,

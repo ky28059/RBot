@@ -1,17 +1,17 @@
-import { play } from "../utils/play.js";
-import { youtubeAPIKey } from "../../auth.js";
+import { play } from '../utils/play.js';
+import { youtubeAPIKey } from '../../auth.js';
 
-import ytdl from "ytdl-core";
-import YouTubeAPI from "simple-youtube-api";
+import ytdl from 'ytdl-core';
+import YouTubeAPI from 'simple-youtube-api';
 const youtube = new YouTubeAPI(youtubeAPIKey);
-//import scdl from "soundcloud-downloader";
+//import scdl from 'soundcloud-downloader';
 
 import {success} from '../../utils/messages.js';
 
 
 export default {
-    name: "play",
-    aliases: ["p"],
+    name: 'play',
+    aliases: ['p'],
     description: 'Plays music from youtube.',
     pattern: '<Video>',
     examples: ['play Never Gonna Give You Up', 'play https://www.youtube.com/watch?v=dQw4w9WgXcQ'],
@@ -22,15 +22,15 @@ export default {
 
         const serverQueue = message.client.queue.get(message.guild.id);
         if (!channel)
-            return message.reply("You need to join a voice channel first!");
+            return message.reply('You need to join a voice channel first!');
         if (serverQueue && channel !== message.guild.me.voice.channel)
             return message.reply(`You must be in the same channel as ${message.client.user}`);
 
         const permissions = channel.permissionsFor(message.client.user);
-        if (!permissions.has("CONNECT"))
-            return message.reply("Cannot connect to voice channel, missing permissions");
-        if (!permissions.has("SPEAK"))
-            return message.reply("I cannot speak in this voice channel, make sure I have the proper permissions!");
+        if (!permissions.has('CONNECT'))
+            return message.reply('Cannot connect to voice channel, missing permissions');
+        if (!permissions.has('SPEAK'))
+            return message.reply('I cannot speak in this voice channel, make sure I have the proper permissions!');
 
         const video = parsed.video;
 
@@ -44,9 +44,9 @@ export default {
         // Start the playlist if playlist url was provided
         /*
         if (!videoPattern.test(video) && playlistPattern.test(video)) {
-            return message.client.commands.get("playlist").execute(message, args);
-        } else if (scdl.isValidUrl(url) && url.includes("/sets/")) {
-            return message.client.commands.get("playlist").execute(message, args);
+            return message.client.commands.get('playlist').execute(message, args);
+        } else if (scdl.isValidUrl(url) && url.includes('/sets/')) {
+            return message.client.commands.get('playlist').execute(message, args);
         } */
 
         const queueConstruct = {
@@ -79,8 +79,8 @@ export default {
                 };
             } catch (error) {
                 if (error.statusCode === 404)
-                    return message.reply("Could not find that Soundcloud track.").catch(console.error);
-                return message.reply("There was an error playing that Soundcloud track.").catch(console.error);
+                    return message.reply('Could not find that Soundcloud track.').catch(console.error);
+                return message.reply('There was an error playing that Soundcloud track.').catch(console.error);
             } */
         } else { // Otherwise, search for it
             try {
@@ -93,7 +93,7 @@ export default {
                     duration: songInfo.videoDetails.lengthSeconds
                 };
             } catch (error) {
-                return message.reply("No video was found with a matching title");
+                return message.reply('No video was found with a matching title');
             }
         }
 

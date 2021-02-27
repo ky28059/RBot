@@ -11,7 +11,8 @@ export default {
     execute(message, parsed, client) {
         message.channel.send(`Parsed arguments to this command: \`${JSON.stringify(parsed)}\``);
         message.channel.send(`
-            Custom parse: \`${JSON.stringify(parse(parsed.args, {name: 'test', pattern: parsed.pattern}, client, message.guild))}\`
+            Custom parse: \`${JSON.stringify(parse(parsed.args, 
+            {name: 'test', pattern: parsed.pattern}, client, message.guild))}\`
         `);
     }
 }

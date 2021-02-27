@@ -5,7 +5,7 @@ import QueueNonexistentError from '../../errors/QueueNonexistentError.js';
 
 
 export default {
-    name: "shuffle",
+    name: 'shuffle',
     description: 'Shuffles the queue.',
     usage: 'shuffle',
     examples: 'shuffle',

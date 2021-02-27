@@ -5,7 +5,7 @@ import QueueNonexistentError from '../../errors/QueueNonexistentError.js';
 
 
 export default {
-    name: "die",
+    name: 'die',
     description: 'Kills the music.',
     examples: 'die',
     guildOnly: true,

@@ -6,7 +6,7 @@ import QueueNonexistentError from '../../errors/QueueNonexistentError.js';
 
 
 export default {
-    name: "loop",
+    name: 'loop',
     aliases: ['l'],
     description: 'Toggles whether the bot will loop the queue.',
     examples: 'loop',

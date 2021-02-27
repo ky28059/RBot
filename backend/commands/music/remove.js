@@ -8,7 +8,7 @@ import QueueNonexistentError from '../../errors/QueueNonexistentError.js';
 
 
 export default {
-    name: "remove",
+    name: 'remove',
     description: 'Removes a song from the queue.',
     pattern: '[Number]',
     examples: 'remove 5',
