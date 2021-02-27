@@ -1,5 +1,5 @@
-// Unfortunately, I don't think node supports clearing the import() cache yet
-// So this command will continue to be dysfunctional until they do
+import {success} from '../../utils/messages.js';
+
 
 export default {
     name: 'reload',
@@ -8,9 +8,11 @@ export default {
     examples: 'reload',
     ownerOnly: true,
     async execute(message, parsed, client) {
-        if (!(message.author.id === client.ownerID)) return message.reply('you must be the bot owner to use this command!');
+        message.channel.send(success({desc: 'Reloading commands...'}));
 
-        await client.loadCommands();
-        message.channel.send('Commands reloaded!');
+        // Kill all shards, causing them to be respawned by the manager
+        // On spawn, they will reload their commands with the updated versions
+        // Most likely an unideal implementation but at least it works
+        await client.shard.broadcastEval('process.exit(1)');
     }
 }
