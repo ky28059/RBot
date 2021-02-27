@@ -10,7 +10,7 @@ export default {
     pattern: '[ServerIP]',
     examples: 'mcstatus hypixel.net',
     async execute(message, parsed) {
-        const server = parsed.ip;
+        const server = parsed.serverip;
         const source = await (await fetch(`https://mcsrvstat.us/server/${server}`)).text();
 
         const players = parse(source, '<td>Players</td>\n			<td>', ' - <a href="#" id="show_players"') || parse(source, '<td>Players</td>\n			<td>', '</td>', 0);

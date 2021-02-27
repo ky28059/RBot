@@ -10,4 +10,10 @@ const manager = new ShardingManager(
 
 manager.on('shardCreate', shard => console.log(`Launched shard ${shard.id}`));
 
-manager.spawn();
+manager.spawn().then(() => {
+    for (const [id, shard] of manager.shards) {
+        shard.on('message', message => {
+            if (message === 'terminate') process.exit(1);
+        })
+    }
+});
