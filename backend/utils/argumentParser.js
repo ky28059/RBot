@@ -92,6 +92,7 @@ export default function parse(argString, command, client, guild) {
 
             args.unshift(arg)
             returnObj[name.toLowerCase()] = args
+                .map(arg => arg.replace(/^"|"$/g, '')) // Sanitize quotes
                 .map(arg => matchSingular(arg, prefix, name, client, guild, command));
 
             return returnObj;
@@ -108,21 +109,21 @@ export default function parse(argString, command, client, guild) {
 function matchSingular(arg, prefix, name, client, guild, command) {
     switch (prefix) {
         case '@': // Users
-            let userID = arg.match(mentionRegex) ? arg.match(mentionRegex)[1] : arg;
+            let userID = arg.match(mentionRegex)?.[1] ?? arg;
 
             let user = client.users.cache.get(userID);
             if (!user) throw new IllegalArgumentError(command.name, `Field \`${name}\` must be a valid user`);
             return user;
 
         case '#': // Channels
-            let channelID = arg.match(channelRegex) ? arg.match(channelRegex)[1] : arg;
+            let channelID = arg.match(channelRegex)?.[1] ?? arg;
 
             let channel = client.channels.cache.get(channelID);
             if (!channel) throw new IllegalArgumentError(command.name, `Field \`${name}\` must be a valid channel`);
             return channel;
 
         case '&': // Roles
-            let roleID = arg.match(roleRegex) ? arg.match(roleRegex)[1] : arg;
+            let roleID = arg.match(roleRegex)?.[1] ?? arg;
 
             let role = guild.roles.cache.get(roleID);
             if (!role) throw new IllegalArgumentError(command.name, `Field \`${name}\` must be a valid role`);

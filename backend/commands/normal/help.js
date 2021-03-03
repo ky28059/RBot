@@ -4,7 +4,6 @@ import IllegalArgumentError from '../../errors/IllegalArgumentError.js';
 export default {
     name: 'help',
     description: 'Gets info about a command.',
-    usage: 'help [command name]',
     pattern: '[CommandName]?',
     examples: 'help censor',
     async execute(message, parsed, client, tag) {
@@ -150,7 +149,7 @@ export default {
         if (command.description) helpEmbed.setDescription(`${command.description}`);
         if (command.commandGroup) helpEmbed.addField('**Command Group:**', `${command.commandGroup}`);
         if (command.aliases) helpEmbed.addField('**Aliases:**', `${command.aliases.join(', ')}`);
-        helpEmbed.addField('**Usage:**', `${prefix}${command.name} ${command.pattern}`);
+        helpEmbed.addField('**Usage:**', `${prefix}${command.name} ${command.pattern || ''}`);
 
         // Better way of doing the following 2 fields?
         if (command.examples) {

@@ -10,6 +10,7 @@
     "discord.js": "^12.5.1",
     "ffmpeg-static": "^4.2.7",
     "fs": "0.0.1-security",
+    "mathjs": "^9.2.0",
     "node-fetch": "^2.6.1",
     "path": "^0.12.7",
     "sequelize": "^6.3.5",
