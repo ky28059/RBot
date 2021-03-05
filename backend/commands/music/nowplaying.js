@@ -1,5 +1,6 @@
-import { MessageEmbed } from "discord.js";
+import {nowPlaying} from '../../utils/messages.js';
 import QueueNonexistentError from '../../errors/QueueNonexistentError.js';
+
 
 export default {
     name: 'nowplaying',
@@ -13,12 +14,6 @@ export default {
             throw new QueueNonexistentError(this.name);
 
         const song = queue.songs[0];
-
-        const playingEmbed = new MessageEmbed()
-            .setTitle('Currently playing:')
-            .setDescription(`${song.title}\n${song.url}`)
-            .setColor('#F8AA2A');
-
-        message.channel.send(playingEmbed);
+        message.channel.send(nowPlaying(song));
     }
 };

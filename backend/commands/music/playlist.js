@@ -79,7 +79,8 @@ export default {
                 return {
                     title: video.title,
                     url: video.url,
-                    duration: video.durationSeconds
+                    duration: video.durationSeconds,
+                    queuedBy: message.author
                 };
             });
 

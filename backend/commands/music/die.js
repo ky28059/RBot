@@ -1,5 +1,5 @@
 import { canModifyQueue } from "../utils/canModifyQueue.js";
-import {success} from '../../utils/messages.js';
+import {die} from '../../utils/messages.js';
 
 import QueueNonexistentError from '../../errors/QueueNonexistentError.js';
 
@@ -20,7 +20,7 @@ export default {
 
         queue.songs = [];
         queue.connection.dispatcher.end();
-        queue.textChannel.send(success({desc: `⏹ Music queue ended`}));
+        queue.textChannel.send(die());
 
         await message.guild.me.voice.channel.leave();
     }

@@ -14,7 +14,7 @@ export default {
     examples: 'remove 5',
     guildOnly: true,
     execute(message, parsed) {
-        const num = parsed.number;
+        let num = parsed.number;
         const queue = message.client.queue.get(message.guild.id);
 
         if (!queue)
@@ -23,7 +23,8 @@ export default {
             // shaky
             throw new ActionUntakeableError(this.name, 'User must join the voice channel first');
 
-        if (isNaN(num))
+        num = Number(num);
+        if (!num)
             throw new IllegalArgumentError(this.name, 'Field `Number` must be a valid integer');
 
         const song = queue.songs.splice(num - 1, 1);

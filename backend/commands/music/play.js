@@ -67,7 +67,8 @@ export default {
             song = {
                 title: songInfo.videoDetails.title,
                 url: songInfo.videoDetails.video_url,
-                duration: songInfo.videoDetails.lengthSeconds
+                duration: songInfo.videoDetails.lengthSeconds,
+                queuedBy: message.author
             };
         /* } else if (scRegex.test(url)) {
             try {
@@ -90,7 +91,8 @@ export default {
                 song = {
                     title: songInfo.videoDetails.title,
                     url: songInfo.videoDetails.video_url,
-                    duration: songInfo.videoDetails.lengthSeconds
+                    duration: songInfo.videoDetails.lengthSeconds,
+                    queuedBy: message.author
                 };
             } catch (error) {
                 return message.reply('No video was found with a matching title');
@@ -110,9 +112,9 @@ export default {
             await queueConstruct.connection.voice.setSelfDeaf(true);
             await play(queueConstruct.songs[0], message);
         } catch (error) {
-            console.log(error);
             message.client.queue.delete(message.guild.id);
             await channel.leave();
+            throw error;
         }
     }
 };

@@ -13,18 +13,18 @@ export default {
         if (!queue)
             throw new QueueNonexistentError(this.name);
 
-        const description = queue.songs.map((song, index) => `${index + 1}. ${escapeMarkdown(song.title)}`);
+        const description = queue.songs.map((song, index) => `${index + 1}) ${escapeMarkdown(song.title)} : ${song.duration}`);
 
         let queueEmbed = new MessageEmbed()
             .setTitle('Music Queue')
             .setDescription(description)
             .setColor('#F8AA2A');
 
-        const splitDescription = splitMessage(description, {
+        const splitDescription = splitMessage(`\`\`\`elm\n${description.join('\n')}\n\`\`\``, {
             maxLength: 2048,
             char: '\n',
-            prepend: '',
-            append: ''
+            prepend: '```elm\n',
+            append: '```'
         });
 
         splitDescription.forEach(async (m) => {
