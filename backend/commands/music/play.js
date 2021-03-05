@@ -33,21 +33,21 @@ export default {
             return message.reply('I cannot speak in this voice channel, make sure I have the proper permissions!');
 
         const video = parsed.video;
+        const url = video.split(/ +/g)[0];
 
         const videoPattern = /^(https?:\/\/)?(www\.)?(m\.)?(youtube\.com|youtu\.?be)\/.+$/gi;
         const playlistPattern = /^.*(list=)([^#&?]*).*/gi;
         //const scRegex = /^https?:\/\/(soundcloud\.com)\/(.*)$/; // TODO: soundcloud
 
-        const urlValid = videoPattern.test(video);
+        const urlValid = videoPattern.test(url);
 
-        // TODO: playlists
         // Start the playlist if playlist url was provided
-        /*
-        if (!videoPattern.test(video) && playlistPattern.test(video)) {
+        if (!videoPattern.test(url) && playlistPattern.test(url)) {
+            return message.client.commands.get('playlist').execute(message, {playlist: url});
+        }/* else if (scdl.isValidUrl(url) && url.includes('/sets/')) {
             return message.client.commands.get('playlist').execute(message, args);
-        } else if (scdl.isValidUrl(url) && url.includes('/sets/')) {
-            return message.client.commands.get('playlist').execute(message, args);
-        } */
+        }
+        */
 
         const queueConstruct = {
             textChannel: message.channel,
@@ -63,7 +63,7 @@ export default {
         let song = null;
 
         if (urlValid) { // If the argument provided was a valid URL
-            songInfo = await ytdl.getInfo(video);
+            songInfo = await ytdl.getInfo(url);
             song = {
                 title: songInfo.videoDetails.title,
                 url: songInfo.videoDetails.video_url,
