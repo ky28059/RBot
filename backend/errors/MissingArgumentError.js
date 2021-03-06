@@ -1,7 +1,7 @@
 import ArgumentError from './ArgumentError.js';
 
 
-// Represents when required arguments are not passed to a command
+// Thrown when required arguments are not passed to a command
 export default class MissingArgumentError extends ArgumentError {
     constructor (commandName, field) {
         super(commandName, `Missing field \`${field}\` to \`${commandName}\``);

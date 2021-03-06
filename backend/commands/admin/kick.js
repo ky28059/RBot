@@ -3,6 +3,7 @@ import {log} from "../utils/logger.js";
 // Errors
 import IllegalArgumentError from '../../errors/IllegalArgumentError.js';
 import ActionUntakeableError from '../../errors/ActionUntakeableError.js';
+import ActionOnSelfError from '../../errors/ActionOnSelfError.js';
 
 
 export default {
@@ -18,7 +19,7 @@ export default {
         const target = guild.member(parsed.target);
 
         if (target.user.id === message.author.id)
-            throw new IllegalArgumentError(this.name, '`Target` cannot be yourself');
+            throw new ActionOnSelfError(this.name, 'Target');
         if (!target.kickable)
             throw new ActionUntakeableError(this.name, `${target} too high in hierarchy, unable to kick`);
 

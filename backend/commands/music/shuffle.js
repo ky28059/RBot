@@ -7,7 +7,6 @@ import QueueNonexistentError from '../../errors/QueueNonexistentError.js';
 export default {
     name: 'shuffle',
     description: 'Shuffles the queue.',
-    usage: 'shuffle',
     examples: 'shuffle',
     guildOnly: true,
     execute(message) {

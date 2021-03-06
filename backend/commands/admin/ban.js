@@ -1,6 +1,10 @@
 import {log} from "../utils/logger.js";
-import IllegalArgumentError from '../../errors/IllegalArgumentError.js';
+
+// Errors
 import ActionUntakeableError from '../../errors/ActionUntakeableError.js';
+import IntegerConversionError from '../../errors/IntegerConversionError.js';
+import ActionOnSelfError from '../../errors/ActionOnSelfError.js';
+import IntegerRangeError from '../../errors/IntegerRangeError.js';
 
 
 export default {
@@ -20,12 +24,16 @@ export default {
         if (!reason) reason = "No reason provided"; // Default reason
         if (!days) days = 0; // Default days
 
+        days = Number(days);
+        if (isNaN(days) || days % 1 !== 0)
+            throw new IntegerConversionError(this.name, 'Days');
+        if (days < 0 || days > 7)
+            throw new IntegerRangeError(this.name, 'Days', 0, 7);
+
         if (target.user.id === message.author.id)
-            throw new IllegalArgumentError(this.name, '`Target` cannot be yourself');
+            throw new ActionOnSelfError(this.name, 'Target');
         if (!target.bannable)
             throw new ActionUntakeableError(this.name, `${target} too high in hierarchy, unable to ban`);
-        if (days < 0 || days > 7)
-            throw new IllegalArgumentError(this.name, '`Days` must be between 0 and 7');
 
         await target.ban({days: days, reason: reason});
 

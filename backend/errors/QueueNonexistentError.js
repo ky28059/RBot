@@ -1,7 +1,7 @@
 import CommandError from './CommandError.js';
 
 
-// Represents an error finding the arguments for a command
+// Thrown when a queue requiring command is used when the queue does not exist
 export default class QueueNonexistentError extends CommandError {
     constructor (commandName) {
         super(commandName, 'Server queue nonexistent');

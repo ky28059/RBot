@@ -1,4 +1,5 @@
-import IllegalArgumentError from '../../errors/IllegalArgumentError.js';
+import NumberConversionError from '../../errors/NumberConversionError.js';
+import IntegerRangeError from '../../errors/IntegerRangeError.js';
 
 
 export default {
@@ -10,9 +11,9 @@ export default {
         let { number } = parsed;
 
         if (isNaN(number))
-            throw new IllegalArgumentError(this.name, 'Field `Number` must be a valid number');
+            throw new NumberConversionError(this.name, 'Number');
         if (Number(number) > Number.MAX_SAFE_INTEGER)
-            throw new IllegalArgumentError(this.name, 'Field `Number` cannot exceed the JS maximum safe integer');
+            throw new IntegerRangeError(this.name, 'Number', undefined, 'the JS maximum safe integer');
 
         // Since e is never significant, ignore it for the calculations and add it in at the end
         let [num, expt] = number.split('e');

@@ -8,6 +8,10 @@ const youtube = new YouTubeAPI(youtubeAPIKey);
 
 import {success} from '../../utils/messages.js';
 
+// Errors
+import MemberNotInVCError from '../../errors/MemberNotInVCError.js';
+import MusicAlreadyBoundError from '../../errors/MusicAlreadyBoundError.js';
+
 
 export default {
     name: 'play',
@@ -19,18 +23,19 @@ export default {
     clientPermReqs: 'CONNECT',
     async execute(message, parsed) {
         const { channel } = message.member.voice;
-
         const serverQueue = message.client.queue.get(message.guild.id);
+
         if (!channel)
-            return message.reply('You need to join a voice channel first!');
-        if (serverQueue && channel !== message.guild.me.voice.channel)
-            return message.reply(`You must be in the same channel as ${message.client.user}`);
+            throw new MemberNotInVCError(this.name);
 
         const permissions = channel.permissionsFor(message.client.user);
         if (!permissions.has('CONNECT'))
             return message.reply('Cannot connect to voice channel, missing permissions');
         if (!permissions.has('SPEAK'))
             return message.reply('I cannot speak in this voice channel, make sure I have the proper permissions!');
+
+        if (serverQueue && channel !== message.guild.me.voice.channel)
+            throw new MusicAlreadyBoundError(this.name, message.guild.me.voice.channel, channel);
 
         const video = parsed.video;
         const url = video.split(/ +/g)[0];

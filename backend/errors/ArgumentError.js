@@ -1,7 +1,7 @@
 import CommandError from './CommandError.js';
 
 
-// Represents an error finding the arguments for a command
+// Represents an error in the arguments of a command
 export default class ArgumentError extends CommandError {
     constructor (commandName, message) {
         super(commandName, message);

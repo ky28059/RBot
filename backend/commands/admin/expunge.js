@@ -1,5 +1,6 @@
 // Errors
-import IllegalArgumentError from '../../errors/IllegalArgumentError.js';
+import IntegerConversionError from '../../errors/IntegerConversionError.js';
+import IntegerRangeError from '../../errors/IntegerRangeError.js';
 
 
 export default {
@@ -13,10 +14,10 @@ export default {
     async execute(message, parsed) {
         let count = Number(parsed.count);
 
-        if (!count)
-            throw new IllegalArgumentError(this.name, '`Count` must be a valid integer');
+        if (isNaN(count) || count % 1 !== 0)
+            throw new IntegerConversionError(this.name, 'Count');
         if (count < 1 || count > 100)
-            throw new IllegalArgumentError(this.name, '`Count` must be between 1 and 100');
+            throw new IntegerRangeError(this.name, 'Count', 1, 100);
 
         const fetched = await message.channel.messages.fetch({limit: count + 1});
         fetched.array().forEach(message =>

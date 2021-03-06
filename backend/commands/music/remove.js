@@ -2,9 +2,10 @@ import { canModifyQueue } from "../utils/canModifyQueue.js";
 import {success} from '../../utils/messages.js';
 
 // Errors
-import IllegalArgumentError from '../../errors/IllegalArgumentError.js';
 import ActionUntakeableError from '../../errors/ActionUntakeableError.js';
 import QueueNonexistentError from '../../errors/QueueNonexistentError.js';
+import IntegerConversionError from '../../errors/IntegerConversionError.js';
+import IntegerRangeError from '../../errors/IntegerRangeError.js';
 
 
 export default {
@@ -24,8 +25,10 @@ export default {
             throw new ActionUntakeableError(this.name, 'User must join the voice channel first');
 
         num = Number(num);
-        if (!num)
-            throw new IllegalArgumentError(this.name, 'Field `Number` must be a valid integer');
+        if (isNaN(num) || num % 1 !== 0)
+            throw new IntegerConversionError(this.name, 'Number');
+        if (num < 1)
+            throw new IntegerRangeError(this.name, 'Number', 1);
 
         const song = queue.songs.splice(num - 1, 1);
         queue.textChannel.send(success({desc: `❌ Song **${song[0].title}** was removed from the queue`}));
