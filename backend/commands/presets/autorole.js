@@ -42,7 +42,7 @@ export default {
                 throw new IllegalArgumentError(this.name, `\`${action}\` not a valid action`);
         }
 
-        await log(client, guild, tag, 0xf6b40c, message.author.tag, message.author.avatarURL(),
+        await log(client, guild, tag.logchannel, 0xf6b40c, message.author.tag, message.author.avatarURL(),
             `**${role} has been ${action === 'add' ? 'added to' : 'removed from'} this server's autorole by ${message.author} in ${message.channel}**\n[Jump to message](${message.url})`);
         message.channel.send(success({desc: `${role} ${action === 'add' ? 'added to' : 'removed from'} server autorole`}));
     }

@@ -1,5 +1,5 @@
 import {splitMessage} from 'discord.js';
-import IllegalArgumentError from '../../errors/IllegalArgumentError.js';
+import IntegerRangeError from '../../errors/IntegerRangeError.js';
 
 
 export default {
@@ -15,29 +15,23 @@ export default {
         // Support dnd notation like "3d8"
         if (sides) {
             let dndNotation = sides.split('d');
-            if (dndNotation.length > 1) {
-                dice = dndNotation[0];
-                sides = dndNotation[1];
-            }
+            if (dndNotation.length > 1) [dice, sides] = dndNotation;
         }
-        if (!dice || !Number(dice)) dice = 1;
-        if (!sides || !Number(sides)) sides = 6;
+        if (isNaN(dice)) dice = 1;
+        if (isNaN(sides)) sides = 6;
 
         // Prevent spam somewhat
-        if (dice > 300) throw new IllegalArgumentError(this.name, 'Field `Dice` cannot exceed 300');
+        if (dice > 300 || dice < 0) throw new IntegerRangeError(this.name, 'Dice', 0, 300);
 
         let rolls = [];
         for (let i = 0; i < dice; i++) {
-            let roll = Math.floor(Math.random() * Math.floor(sides)) + 1;
+            let roll = Math.ceil(Math.random() * Math.floor(sides));
             rolls.push(roll);
         }
 
         if (rolls.length === 1) return message.channel.send(`Rolled a **${sides}** sided die and got **${rolls[0]}**!`);
 
-        let total = 0;
-        rolls.forEach(roll => total += roll);
-
-
+        let total = rolls.reduce((a, b) => a + b);
         const splitDescription = splitMessage(`Rolled **${dice}** **${sides}** sided die and got **[${rolls.join(', ')}]**, for a total of **${total}**!`, {
             maxLength: 2000,
             char: ' ',

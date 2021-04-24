@@ -2,9 +2,7 @@ import { ShardingManager } from 'discord.js';
 import { token } from './auth.js';
 
 
-const manager = new ShardingManager(
-    './bot.js',
-    {
+const manager = new ShardingManager('./bot.js', {
         token: token
     });
 

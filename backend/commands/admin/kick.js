@@ -28,7 +28,7 @@ export default {
 
         await target.kick(reason);
 
-        await log(client, guild, tag, 0x7f0000, target.user.tag, target.user.avatarURL(), `**${target.user} has been kicked by ${message.author} for the reason:**\n${reason}`);
+        await log(client, guild, tag.logchannel, 0x7f0000, target.user.tag, target.user.avatarURL(), `**${target.user} has been kicked by ${message.author} for the reason:**\n${reason}`);
         await message.react('👌');
     }
 }

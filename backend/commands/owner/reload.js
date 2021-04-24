@@ -8,7 +8,7 @@ export default {
     examples: 'reload',
     ownerOnly: true,
     async execute(message, parsed, client) {
-        message.channel.send(success({desc: 'Reloading commands...'}));
+        await message.channel.send(success({desc: 'Reloading commands...'}));
 
         // Kill all shards, causing them to be respawned by the manager
         // On spawn, they will reload their commands with the updated versions

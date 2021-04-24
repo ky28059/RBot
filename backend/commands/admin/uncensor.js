@@ -2,48 +2,45 @@ import {isInField, removeFromField} from '../../utils/tokenManager.js';
 import {log} from "../utils/logger.js";
 
 // Errors
-import MissingArgumentError from '../../errors/MissingArgumentError.js';
 import IllegalArgumentError from '../../errors/IllegalArgumentError.js';
 
 
 export default {
     name: 'uncensor',
-    description: 'Uncensor a user.',
-    usage: 'uncensor @[user]',
+    description: 'Uncensor a user or word.',
+    pattern: '[Target] [...Rest]?',
     examples: 'uncensor @example',
     guildOnly: true,
     permReqs: 'KICK_MEMBERS',
     async execute(message, parsed, client, tag) {
         const guild = message.guild;
-        const userTarget = parsed.userTarget;
+        const target = client.users.cache.get(parsed.target.match(/^<@!?(\d+)>$/)?.[1] ?? parsed.target);
 
         // Uncensorship of users
-        if (userTarget) {
-            if (!isInField(tag, 'censored_users', userTarget.id))
+        if (target) {
+            if (!isInField(tag, 'censored_users', target.id))
                 // This being an IllegalArgumentError is shaky at best
-                throw new IllegalArgumentError(this.name, `${userTarget} was not censored`);
+                throw new IllegalArgumentError(this.name, `${target} was not censored`);
 
-            await removeFromField(tag, 'censored_users', userTarget.id);
-            await log(client, guild, tag, 0x7f0000, userTarget.tag, userTarget.avatarURL(), `**${userTarget} was uncensored by ${message.author} in ${message.channel}**\n[Jump to message](${message.url})`);
-            return message.channel.send(`Now uncensoring ${userTarget.tag}!`);
+            await removeFromField(tag, 'censored_users', target.id);
+            await log(client, guild, tag.logchannel, 0x7f0000, target.tag, target.avatarURL(), `**${target} was uncensored by ${message.author} in ${message.channel}**\n[Jump to message](${message.url})`);
+            return message.channel.send(`Now uncensoring ${target.tag}!`);
         }
 
         // Uncensorship of words
-        if (parsed.first) {
-            let uncensored = [];
+        parsed.rest.push(parsed.target);
+        let uncensored = [];
 
-            for (let uncensorPhrase of parsed.raw) {
-                if (!isInField(tag, 'censored_words', uncensorPhrase))
-                    // Once again, shaky at best
-                    throw new IllegalArgumentError(this.name, `\`${uncensorPhrase}\` was not censored`);
-                if (uncensored.includes(uncensorPhrase))
-                    throw new IllegalArgumentError(this.name, `Attempt to uncensor \`${uncensorPhrase}\` twice`);
-                uncensored.push(uncensorPhrase);
-            }
-            await removeFromField(tag, 'censored_words', uncensored);
-            return message.channel.send(`Now uncensoring the mention of \`[${uncensored.join(', ')}]\`!`);
+        for (let uncensorPhrase of parsed.rest) {
+            if (!isInField(tag, 'censored_words', uncensorPhrase))
+                // Once again, shaky at best
+                throw new IllegalArgumentError(this.name, `\`${uncensorPhrase}\` was not censored`);
+            if (uncensored.includes(uncensorPhrase))
+                throw new IllegalArgumentError(this.name, `Attempt to uncensor \`${uncensorPhrase}\` twice`);
+            uncensored.push(uncensorPhrase);
         }
 
-        throw new MissingArgumentError(this.name, 'Target');
+        await removeFromField(tag, 'censored_words', uncensored);
+        return message.channel.send(`Now uncensoring the mention of \`[${uncensored.join(', ')}]\`!`);
     }
 }

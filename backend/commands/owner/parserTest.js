@@ -5,8 +5,8 @@ export default {
     name: 'parserTest',
     aliases: ['ptest'],
     description: 'Tests the RBot Argument Parser.',
-    pattern: '[Pattern] <Args>',
-    examples: 'parserTest "[Field1] [Field2]? <Field3>" one two three four',
+    pattern: '[Pattern] <Args>?',
+    examples: 'parserTest "[Field1] @[Field2] <Field3>?" one two three four',
     ownerOnly: true,
     execute(message, parsed, client) {
         message.channel.send(`Parsed arguments to this command: \`${JSON.stringify(parsed)}\``);

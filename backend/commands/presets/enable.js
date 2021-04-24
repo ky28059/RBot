@@ -34,7 +34,7 @@ export default {
         }
 
         await removeFromField(tag, 'disabled_commands', enables);
-        await log(client, guild, tag, 0xf6b40c, message.author.tag, message.author.avatarURL(),
+        await log(client, guild, tag.logchannel, 0xf6b40c, message.author.tag, message.author.avatarURL(),
             `**Commands [${enables.join(', ')}] were reenabled by ${message.author} in ${message.channel}**\n[Jump to message](${message.url})`);
         message.channel.send(`Reenabling \`[${enables.join(', ')}]\`!`);
     }

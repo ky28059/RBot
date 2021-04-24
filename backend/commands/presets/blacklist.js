@@ -43,7 +43,7 @@ export default {
                 throw new IllegalArgumentError(`\`${action}\` not a valid action`);
         }
 
-        await log(client, guild, tag, 0x7f0000, target.tag, target.avatarURL(),
+        await log(client, guild, tag.logchannel, 0x7f0000, target.tag, target.avatarURL(),
             `**${target} has been ${action === 'add' ? 'added to' : 'removed from'} this server's blacklist by ${message.author} in ${message.channel}**\n[Jump to message](${message.url})`);
         message.channel.send(success({desc: `${target} ${action === 'add' ? 'added to' : 'removed from'} server blacklist`}));
     }
