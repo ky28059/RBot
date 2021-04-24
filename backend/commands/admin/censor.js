@@ -33,10 +33,11 @@ export default {
         }
 
         // Censorship of words
-        parsed.rest.push(parsed.target);
+        let phrases = [parsed.target];
+        if (parsed.rest) phrases = phrases.concat(parsed.rest);
         let censored = [];
 
-        for (let censorPhrase of parsed.rest) {
+        for (let censorPhrase of phrases) {
             if (isInField(tag, 'censored_words', censorPhrase))
                 // Once again, shaky at best
                 throw new IllegalArgumentError(this.name, `\`${censorPhrase}\` is already censored`);

@@ -28,10 +28,11 @@ export default {
         }
 
         // Uncensorship of words
-        parsed.rest.push(parsed.target);
+        let phrases = [parsed.target];
+        if (parsed.rest) phrases = phrases.concat(parsed.rest);
         let uncensored = [];
 
-        for (let uncensorPhrase of parsed.rest) {
+        for (let uncensorPhrase of phrases) {
             if (!isInField(tag, 'censored_words', uncensorPhrase))
                 // Once again, shaky at best
                 throw new IllegalArgumentError(this.name, `\`${uncensorPhrase}\` was not censored`);
