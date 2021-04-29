@@ -5,6 +5,8 @@
 
 
 // Updating tags
+
+// Update a tag by either creating it if it doesn't exist or running checks on it if it does
 export async function update(guild, client) {
     const tag = await client.GuildTags.findOne({ where: { guildID: guild.id } });
 
@@ -21,6 +23,7 @@ export async function update(guild, client) {
     await runTagChecks(tag, guild, client);
 }
 
+// Run tag checks to ensure token cleanliness
 async function runTagChecks(tag, guild, client) {
     const warn = (message) => console.error(`Token error in Guild ${guild} (${guild.id}): ${message}`);
 
@@ -53,22 +56,41 @@ async function runTagChecks(tag, guild, client) {
 
 
 // Modifying / checking against string tags
-export function isInField(tag, field, query) {
+
+// Checks whether an argument is contained by a given tag field
+export function isInField(tag, field, query, joiner) {
     if (typeof tag[field] !== 'string')
         return console.error('Attempted to run string field function on non string field!');
 
-    const keys = tag[field].split(' ');
+    const keys = tag[field].split(joiner ?? ' ');
 
     if (Array.isArray(query)) {
-        // If query is an array, filter query to see if any words are included in key
-        return !!query.filter(q => keys.includes(q)).length;
+        // If query is an array, check queries to see if any words are included in key
+        return query.some(q => keys.includes(q));
     } else {
         // Else, check if query is included in key
         return keys.includes(query);
     }
 }
 
-export async function addToField(tag, field, additions) {
+// Checks whether an argument contains a given tag field
+export function containsField(tag, field, query, joiner) {
+    if (typeof tag[field] !== 'string')
+        return console.error('Attempted to run string field function on non string field!');
+
+    const keys = tag[field].split(joiner ?? ' ');
+
+    if (Array.isArray(query)) {
+        // If query is an array, check every key against every query
+        return keys.some(key => query.some(q => q.includes(key)));
+    } else {
+        // Else, check every key against query
+        return keys.some(key => query.includes(key));
+    }
+}
+
+// Adds the given argument to a tag field
+export async function addToField(tag, field, additions, joiner) {
     if (typeof tag[field] !== 'string')
         return console.error('Attempted to run string field function on non string field!');
 
@@ -87,17 +109,18 @@ export async function addToField(tag, field, additions) {
         keys.push(additions);
     }
 
-    tag[field] = keys.join(' ');
+    tag[field] = keys.join(joiner ?? ' ');
     await tag.save();
 }
 
-export async function removeFromField(tag, field, removals) {
+// Removes the given argument from a tag field
+export async function removeFromField(tag, field, removals, joiner) {
     if (typeof tag[field] !== 'string')
         return console.error('Attempted to run string field function on on string field!');
 
     let keys;
     if (tag[field]) { // To prevent the default '' from being added to the array
-        keys = tag[field].split(' ');
+        keys = tag[field].split(joiner ?? ' ');
     } else {
         keys = [];
     }

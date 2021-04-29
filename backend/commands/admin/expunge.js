@@ -16,8 +16,8 @@ export default {
 
         if (isNaN(count) || count % 1 !== 0)
             throw new IntegerConversionError(this.name, 'Count');
-        if (count < 1 || count > 100)
-            throw new IntegerRangeError(this.name, 'Count', 1, 100);
+        if (count < 1 || count > 99)
+            throw new IntegerRangeError(this.name, 'Count', 1, 99);
 
         const fetched = await message.channel.messages.fetch({limit: count + 1});
         fetched.array().forEach(message =>

@@ -33,8 +33,8 @@ export default {
                     value: censoredUsers ? censoredUsers.trim().split(' ').join(', ') : 'No one'
                 },
                 {
-                    name: 'Censored Words:',
-                    value: censoredWords ? censoredWords.trim().split(' ').join(', ') : 'Nothing'
+                    name: 'Censored Phrases:',
+                    value: censoredWords ? censoredWords.trim().split('ҩ').join('\n') : 'Nothing'
                 },
                 {
                     name: 'Blacklist:',

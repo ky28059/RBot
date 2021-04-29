@@ -9,7 +9,7 @@ export default {
     name: 'censor',
     description: 'Censor a user (delete their messages when sent) or word (delete messages containing that word).',
     pattern: '[Target] [...Rest]?',
-    examples: ['censor @example', 'censor Tiananmen', 'censor Tiananmen CCP'],
+    examples: ['censor @example', 'censor "Tiananmen Square"', 'censor "Tiananmen Square" "Winnie the Pooh"'],
     guildOnly: true,
     permReqs: 'KICK_MEMBERS',
     clientPermReqs: 'MANAGE_MESSAGES',
@@ -46,7 +46,7 @@ export default {
             censored.push(censorPhrase);
         }
 
-        await addToField(tag, 'censored_words', censored);
+        await addToField(tag, 'censored_words', censored, 'ҩ');
         await message.channel.send(`Now censoring the mention of \`[${censored.join(', ')}]\`!`);
     }
 }

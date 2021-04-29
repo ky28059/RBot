@@ -9,7 +9,7 @@ import {token} from './auth.js';
 // Utils
 import {log} from "./commands/utils/logger.js";
 import parse from './utils/argumentParser.js';
-import {update, isInField} from './utils/tokenManager.js';
+import {update, isInField, containsField} from './utils/tokenManager.js';
 import {truncateMessage} from './commands/utils/messageTruncator.js';
 
 // Messages
@@ -113,7 +113,7 @@ client.on('message', async message => {
         // Handles censorship
         if (
             (tag.censored_users && isInField(tag, 'censored_users', message.author.id)
-            || (tag.censored_words && isInField(tag, 'censored_words', message.content.split(' '))))
+            || (tag.censored_words && containsField(tag, 'censored_words', message.content, 'ҩ')))
             && !member.hasPermission('ADMINISTRATOR') // Admin override
         ) {
             await message.delete()

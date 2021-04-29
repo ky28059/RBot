@@ -41,7 +41,7 @@ export default {
             uncensored.push(uncensorPhrase);
         }
 
-        await removeFromField(tag, 'censored_words', uncensored);
+        await removeFromField(tag, 'censored_words', uncensored, 'ҩ');
         return message.channel.send(`Now uncensoring the mention of \`[${uncensored.join(', ')}]\`!`);
     }
 }
