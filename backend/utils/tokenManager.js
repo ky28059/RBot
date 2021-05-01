@@ -96,7 +96,7 @@ export async function addToField(tag, field, additions, joiner) {
 
     let keys; // Better way of doing this?
     if (tag[field]) { // To prevent the default '' from being added to the array
-        keys = tag[field].split(' ');
+        keys = tag[field].split(joiner ?? ' ');
     } else {
         keys = [];
     }
@@ -134,6 +134,6 @@ export async function removeFromField(tag, field, removals, joiner) {
         filter = key => key !== removals;
     }
 
-    tag[field] = keys.filter(filter).join(' ');
+    tag[field] = keys.filter(filter).join(joiner ?? ' ');
     await tag.save();
 }

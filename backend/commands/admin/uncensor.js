@@ -33,7 +33,7 @@ export default {
         let uncensored = [];
 
         for (let uncensorPhrase of phrases) {
-            if (!isInField(tag, 'censored_words', uncensorPhrase))
+            if (!isInField(tag, 'censored_words', uncensorPhrase, 'ҩ'))
                 // Once again, shaky at best
                 throw new IllegalArgumentError(this.name, `\`${uncensorPhrase}\` was not censored`);
             if (uncensored.includes(uncensorPhrase))
