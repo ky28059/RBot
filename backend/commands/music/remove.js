@@ -1,11 +1,11 @@
-import { canModifyQueue } from "../utils/canModifyQueue.js";
-import {success} from '../../utils/messages.js';
+import { canModifyQueue } from "../utils/canModifyQueue.ts";
+import {success} from '../../utils/messages.ts';
 
 // Errors
-import ActionUntakeableError from '../../errors/ActionUntakeableError.js';
-import QueueNonexistentError from '../../errors/QueueNonexistentError.js';
-import IntegerConversionError from '../../errors/IntegerConversionError.js';
-import IntegerRangeError from '../../errors/IntegerRangeError.js';
+import ActionUntakeableError from '../../errors/ActionUntakeableError.ts';
+import QueueNonexistentError from '../../errors/QueueNonexistentError.ts';
+import IntegerConversionError from '../../errors/IntegerConversionError.ts';
+import IntegerRangeError from '../../errors/IntegerRangeError.ts';
 
 
 export default {

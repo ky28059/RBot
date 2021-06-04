@@ -1,0 +1,20 @@
+import {Command} from '../../types/Command';
+import {MessageEmbed} from 'discord.js';
+
+
+export default {
+    name: 'avatar',
+    aliases: ['icon', 'pfp'],
+    description: 'Fetches the discord avatar of the specified user, or yourself if no user was given.',
+    pattern: '@[Target]?',
+    examples: 'avatar @RBot',
+    async execute(message, parsed) {
+        const avatarTarget = parsed.target || message.author;
+        const avatarEmbed = new MessageEmbed()
+            .setColor(0x333333)
+            .setTitle(avatarTarget.username)
+            .setImage(avatarTarget.avatarURL({size: 4096, dynamic: true, format: 'png'}))
+            .setFooter(`Requested by ${message.author.tag}`);
+        await message.channel.send(avatarEmbed);
+    }
+} as Command;

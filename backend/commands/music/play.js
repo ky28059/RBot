@@ -1,16 +1,16 @@
 import { play } from '../utils/play.js';
-import { youtubeAPIKey } from '../../auth.js';
+import { youtubeAPIKey } from '../../auth.ts';
 
 import ytdl from 'ytdl-core';
 import YouTubeAPI from 'simple-youtube-api';
 const youtube = new YouTubeAPI(youtubeAPIKey);
 //import scdl from 'soundcloud-downloader';
 
-import {success} from '../../utils/messages.js';
+import {success} from '../../utils/messages.ts';
 
 // Errors
-import MemberNotInVCError from '../../errors/MemberNotInVCError.js';
-import MusicAlreadyBoundError from '../../errors/MusicAlreadyBoundError.js';
+import MemberNotInVCError from '../../errors/MemberNotInVCError.ts';
+import MusicAlreadyBoundError from '../../errors/MusicAlreadyBoundError.ts';
 
 
 export default {

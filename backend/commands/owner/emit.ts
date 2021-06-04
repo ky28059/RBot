@@ -1,0 +1,26 @@
+import {Command} from '../../types/Command';
+
+export default {
+    name: 'emit',
+    description: 'Emits an event to be detected by the client (for testing purposes).',
+    pattern: '[Event]',
+    examples: 'emit leave',
+    guildOnly: true,
+    ownerOnly: true,
+    async execute(message, parsed, client) {
+        const event = parsed.event;
+
+        switch (event) {
+            case 'join':
+                client.emit('guildMemberAdd', message.member!);
+                break;
+            case 'leave':
+                client.emit('guildMemberRemove', message.member!);
+                break;
+            case 'delete':
+                client.emit('messageDelete', message);
+                break;
+        }
+        await message.channel.send('Signal emitted!');
+    }
+} as Command;

@@ -1,5 +1,5 @@
 import { MessageEmbed, splitMessage, escapeMarkdown } from "discord.js";
-import QueueNonexistentError from '../../errors/QueueNonexistentError.js';
+import QueueNonexistentError from '../../errors/QueueNonexistentError.ts';
 
 
 export default {

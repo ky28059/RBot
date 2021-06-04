@@ -1,8 +1,8 @@
 import ytdlDiscord from "ytdl-core-discord";
-import { canModifyQueue } from './canModifyQueue.js';
+import { canModifyQueue } from './canModifyQueue.ts';
 //import scdl from "soundcloud-downloader";
 
-import {nowPlaying, loop, skip, die, success} from '../../utils/messages.js';
+import {nowPlaying, loop, skip, die, success} from '../../utils/messages.ts';
 
 
 export async function play(song, message) {

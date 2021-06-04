@@ -1,4 +1,4 @@
-import IllegalArgumentError from '../../errors/IllegalArgumentError.js';
+import IllegalArgumentError from '../../errors/IllegalArgumentError.ts';
 
 export default {
     name: 'toggle',

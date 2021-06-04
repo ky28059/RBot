@@ -1,5 +1,5 @@
-import {nowPlaying} from '../../utils/messages.js';
-import QueueNonexistentError from '../../errors/QueueNonexistentError.js';
+import {nowPlaying} from '../../utils/messages.ts';
+import QueueNonexistentError from '../../errors/QueueNonexistentError.ts';
 
 
 export default {

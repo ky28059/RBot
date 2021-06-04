@@ -1,9 +1,9 @@
-import {isInField, addToField, removeFromField} from '../../utils/tokenManager.js';
-import {log} from '../utils/logger.js';
-import {success} from '../../utils/messages.js';
+import {isInField, addToField, removeFromField} from '../../utils/tokenManager.ts';
+import {log} from '../utils/logger.ts';
+import {success} from '../../utils/messages.ts';
 
 // Errors
-import IllegalArgumentError from '../../errors/IllegalArgumentError.js';
+import IllegalArgumentError from '../../errors/IllegalArgumentError.ts';
 
 
 export default {

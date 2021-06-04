@@ -1,7 +1,7 @@
-import { canModifyQueue } from "../utils/canModifyQueue.js";
-import {die} from '../../utils/messages.js';
+import { canModifyQueue } from "../utils/canModifyQueue.ts";
+import {die} from '../../utils/messages.ts';
 
-import QueueNonexistentError from '../../errors/QueueNonexistentError.js';
+import QueueNonexistentError from '../../errors/QueueNonexistentError.ts';
 
 
 export default {
