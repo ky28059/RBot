@@ -125,8 +125,9 @@ client.on('message', async message => {
     }
 
     if (message.content.substring(0, prefix.length) === prefix) {
-        const args = message.content.slice(prefix.length).trim().split(/ +/g); // removes the prefix, then the spaces, then splits into array
-        const commandName = args.shift().toLowerCase();
+        // Splits content string by first chunk of whitespace, preserving whitespace in arguments
+        const [cmd, argString] = message.content.slice(prefix.length).trim().split(/(?<=^\S+)\s+/);
+        const commandName = cmd.toLowerCase();
 
         if (message.guild
             && tag.disabled_commands
@@ -149,7 +150,7 @@ client.on('message', async message => {
             return message.reply(err('OWNER_ONLY', 'Owner only command cannot be invoked by non owner'));
 
         try {
-            const parsed = parse(args.join(' '), command, client, guild); // ArgString needs to be the raw string content
+            const parsed = parse(argString, command, client, guild);
             await command.execute(message, parsed, client, tag);
         } catch (e) {
             // If the error was a result of bad code, log it
