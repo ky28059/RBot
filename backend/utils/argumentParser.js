@@ -67,7 +67,7 @@ export default function parse(argString, command, client, guild) {
         }
 
         let arg = args.shift();
-        index = argString.indexOf(arg, index);
+        index = argString.indexOf(arg, index) + arg.length;
 
         // Special case for <Rest> patterns
         // Can probably be simplified
@@ -80,7 +80,7 @@ export default function parse(argString, command, client, guild) {
             if (i !== patterns.length - 1)
                 console.warn(`Bad pattern in ${command.name}, field <${name}> is not the last field`);
 
-            returnObj[name.toLowerCase()] = argString.substring(index);
+            returnObj[name.toLowerCase()] = argString.substring(index - arg.length);
 
             return returnObj;
         }
