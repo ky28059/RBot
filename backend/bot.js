@@ -144,7 +144,7 @@ client.on('message', async message => {
             return message.reply(err('DM_ERROR', 'Guild only command cannot be executed inside DMs'));
         if (command.permReqs && !member.hasPermission(command.permReqs))
             return message.reply(err('USER_PERMS_MISSING', `User lacks permissions: \`${command.permReqs}\``));
-        if (command.clientPermReqs && !guild.member(client.user).hasPermission(command.clientPermReqs))
+        if (command.clientPermReqs && !guild.me.hasPermission(command.clientPermReqs))
             return message.reply(err('CLIENT_PERMS_MISSING', `Client lacks permissions: \`${command.clientPermReqs}\``));
         if (command.ownerOnly && message.author.id !== client.ownerID)
             return message.reply(err('OWNER_ONLY', 'Owner only command cannot be invoked by non owner'));
