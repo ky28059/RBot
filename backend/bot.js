@@ -150,7 +150,7 @@ client.on('message', async message => {
             return message.reply(err('OWNER_ONLY', 'Owner only command cannot be invoked by non owner'));
 
         try {
-            const parsed = parse(argString, command, client, guild);
+            const parsed = parse(argString ?? "", command, client, guild);
             await command.execute(message, parsed, client, tag);
         } catch (e) {
             // If the error was a result of bad code, log it

@@ -42,6 +42,7 @@ const roleRegex = /^<@&(\d+)>$/;
 
 export default function parse(argString, command, client, guild) {
     const returnObj = {};
+    let index = 0; // Current index in the string for <Rest> patterns
 
     // Get argument patterns if they exist, return if the command takes in no arguments or if patterns are missing
     if (!command.pattern) return;
@@ -66,6 +67,7 @@ export default function parse(argString, command, client, guild) {
         }
 
         let arg = args.shift();
+        index = argString.indexOf(arg, index);
 
         // Special case for <Rest> patterns
         // Can probably be simplified
@@ -78,8 +80,7 @@ export default function parse(argString, command, client, guild) {
             if (i !== patterns.length - 1)
                 console.warn(`Bad pattern in ${command.name}, field <${name}> is not the last field`);
 
-            args.unshift(arg)
-            returnObj[name.toLowerCase()] = args.join(' ');
+            returnObj[name.toLowerCase()] = argString.substring(index);
 
             return returnObj;
         }
