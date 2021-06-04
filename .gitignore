@@ -4,6 +4,7 @@ node_modules
 .DS_Store
 
 # Auth keys
+auth.ts
 auth.js
 
 # Server Presets
