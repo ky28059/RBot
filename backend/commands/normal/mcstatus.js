@@ -1,6 +1,5 @@
 import {MessageEmbed} from 'discord.js';
 import fetch from 'node-fetch';
-import {parse} from '../utils/stringParser.js';
 
 
 export default {
@@ -13,8 +12,8 @@ export default {
         const server = parsed.serverip;
         const source = await (await fetch(`https://mcsrvstat.us/server/${server}`)).text();
 
-        const players = parse(source, '<td>Players</td>\n			<td>', ' - <a href="#" id="show_players"') || parse(source, '<td>Players</td>\n			<td>', '</td>', 0);
-        const version = parse(source, '<td>Version</td>\n			<td>', '</td>', 0);
+        const players = source.match(/<td>Players<\/td>\s+<td>\s(.+)(?: - <a href="#" id="show_players"|<\/td>)/)[1];
+        const version = source.match(/<td>Version<\/td>\s+<td>\s(.+)<\/td>/)[1];
 
         const serverEmbed = new MessageEmbed()
             .setColor(0x333333)
