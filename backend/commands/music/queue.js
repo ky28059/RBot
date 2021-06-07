@@ -1,4 +1,5 @@
-import { MessageEmbed, splitMessage, escapeMarkdown } from "discord.js";
+import { MessageEmbed, splitMessage, escapeMarkdown } from 'discord.js';
+import {pagedMessage} from '../../utils/messageUtils.js';
 import QueueNonexistentError from '../../errors/QueueNonexistentError.js';
 
 
@@ -8,7 +9,7 @@ export default {
     description: 'Displays the current music queue.',
     examples: 'queue',
     guildOnly: true,
-    execute(message) {
+    async execute(message) {
         const queue = message.client.queue.get(message.guild.id);
         if (!queue)
             throw new QueueNonexistentError(this.name);
@@ -27,9 +28,6 @@ export default {
             append: '```'
         });
 
-        splitDescription.forEach(async (m) => {
-            queueEmbed.setDescription(m);
-            message.channel.send(queueEmbed);
-        });
+        await pagedMessage(message, splitDescription.map(m => new MessageEmbed(queueEmbed).setDescription(m)));
     }
 };
