@@ -20,6 +20,6 @@
     "ytdl-core-discord": "^1.2.5"
   },
   "scripts": {
-    "run": "node index.js"
+    "start": "node index.js"
   }
 }

@@ -47,10 +47,9 @@ client.GuildTags = loadGuilds(sequelize, Sequelize);
 
 // Dynamic command handling
 client.commands = new Discord.Collection();
+client.submodules = ['admin', 'music', 'normal', 'owner', 'presets'];
 client.loadCommands = async function() {
-    const dirnames = ['admin', 'music', 'normal', 'owner', 'presets'];
-
-    for (let dir of dirnames) {
+    for (let dir of client.submodules) {
         const commands = fs.readdirSync(`./commands/${dir}`).filter(file => file.endsWith('.js'));
 
         for (let file of commands) {

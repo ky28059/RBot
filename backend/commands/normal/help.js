@@ -4,7 +4,7 @@ import IllegalArgumentError from '../../errors/IllegalArgumentError.js';
 export default {
     name: 'help',
     description: 'Gets info about a command.',
-    pattern: '[CommandName]?',
+    pattern: '[Command]?',
     examples: 'help censor',
     async execute(message, parsed, client, tag) {
         /*
@@ -114,7 +114,11 @@ export default {
         collector.on('end', () => helpMessage.reactions.removeAll());
         */
         const commands = client.commands;
-        const name = parsed.commandname;
+        const name = parsed.command;
+
+        let prefix = '!';
+        const guild = message.guild;
+        if (guild) prefix = tag.prefix;
 
         // If there were no arguments given
         if (!name) {
@@ -122,10 +126,12 @@ export default {
             const commandListEmbed = new MessageEmbed()
                 .setColor(0x333333)
                 .setTitle('Command List')
-                .setDescription(
-                    client.commands.array().map(command => command.name).join(', ')
-                )
+                .setDescription(`Use \`${prefix}help [Command]\` for information about a command.`)
                 .setFooter(`Requested by ${message.author.tag}`);
+
+            for (const module of client.submodules)
+                commandListEmbed.addField(module,
+                    client.commands.array().filter(cmd => cmd.commandGroup === module).map(cmd => cmd.name).join(', '), true);
 
             return message.channel.send(commandListEmbed);
         }
@@ -135,12 +141,6 @@ export default {
         if (!command) throw new IllegalArgumentError(this.name, `Command \`${name}\` not a valid command`);
 
         // If there were arguments given and the argument was a valid command
-        let prefix = '!';
-        const guild = message.guild;
-        if (guild) {
-            prefix = tag.prefix;
-        }
-
         const helpEmbed = new MessageEmbed()
             .setColor(0x333333)
             .setTitle(`${command.name}`)
