@@ -1,4 +1,4 @@
-import {MessageEmbed} from 'discord.js';
+import {MessageAttachment, MessageEmbed} from 'discord.js';
 import fetch from 'node-fetch';
 
 
@@ -19,12 +19,20 @@ export default {
             serverEmbed.setAuthor('Server not found.');
         } else {
             serverEmbed
-                .setAuthor(server)
+                .setTitle(server)
                 .setDescription(res.motd.clean.join('\n'))
                 .addField('Players:', `${res.players.online} / ${res.players.max}`, true)
                 .addField('Version:', res.version, true)
                 .setFooter(`Requested by ${message.author.tag}`);
 
+            if (res.icon) {
+                // Convert data URI into image stream
+                const imageStream = Buffer.from(res.icon.split(",")[1], 'base64');
+                const attachment = new MessageAttachment(imageStream, 'icon.png');
+                serverEmbed
+                    .attachFiles([attachment])
+                    .setThumbnail('attachment://icon.png');
+            }
             if (res.players.list) serverEmbed.addField('Player List:', res.players.list.join(', '));
         }
 
