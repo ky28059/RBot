@@ -10,20 +10,23 @@ export default {
     examples: 'mcstatus hypixel.net',
     async execute(message, parsed) {
         const server = parsed.serverip;
-        const source = await (await fetch(`https://mcsrvstat.us/server/${server}`)).text();
-
-        const players = source.match(/<td>Players<\/td>\s+<td>\s(.+)(?: - <a href="#" id="show_players"|<\/td>)/)?.[1];
-        const version = source.match(/<td>Version<\/td>\s+<td>\s(.+)<\/td>/)?.[1];
+        const res = await (await fetch(`https://api.mcsrvstat.us/2/${server}`)).json();
 
         const serverEmbed = new MessageEmbed()
             .setColor(0x333333);
 
-        if (!players || !version) serverEmbed
-            .setAuthor('Server not found.')
-        else serverEmbed
-            .setAuthor(server)
-            .setDescription(`**Players:** ${players}\n**Version:** ${version}`)
-            .setFooter(`Requested by ${message.author.tag}`);
+        if (!res.online) {
+            serverEmbed.setAuthor('Server not found.');
+        } else {
+            serverEmbed
+                .setAuthor(server)
+                .setDescription(res.motd.clean.join('\n'))
+                .addField('Players:', `${res.players.online} / ${res.players.max}`, true)
+                .addField('Version:', res.version, true)
+                .setFooter(`Requested by ${message.author.tag}`);
+
+            if (res.players.list) serverEmbed.addField('Player List:', res.players.list.join(', '));
+        }
 
         message.channel.send(serverEmbed);
     }
