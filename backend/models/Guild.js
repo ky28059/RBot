@@ -1,65 +1,72 @@
-// Guild presets
+// Represents a Guild Presets object in the SQL database
+// This contains presets data, like custom prefix, disabled commands, censorship, etc.
 
-export default function load(sequelize, Sequelize) {
-    return sequelize.define('guilds', {
+import sql from 'sequelize';
+const {Model, DataTypes} = sql;
+
+
+class Guild extends Model {}
+
+export default (sequelize) => {
+    return Guild.init({
         guildID: {
-            type: Sequelize.STRING,
+            type: DataTypes.STRING,
             unique: true,
         },
         prefix: {
-            type: Sequelize.STRING,
+            type: DataTypes.STRING,
             defaultValue: '!',
         },
         logchannel: {
-            type: Sequelize.STRING,
+            type: DataTypes.STRING,
             defaultValue: '',
         },
 
         disabled_commands: {
-            type: Sequelize.STRING,
+            type: DataTypes.STRING,
             defaultValue: '',
         },
         censored_users: {
-            type: Sequelize.STRING,
+            type: DataTypes.STRING,
             defaultValue: '',
         },
         censored_words: {
-            type: Sequelize.STRING,
+            type: DataTypes.STRING,
             defaultValue: '',
         },
         blacklist: {
-            type: Sequelize.STRING,
+            type: DataTypes.STRING,
             defaultValue: '',
         },
         autoroles: {
-            type: Sequelize.STRING,
+            type: DataTypes.STRING,
             defaultValue: '',
         },
 
         // Logging
         log_message_delete: {
-            type: Sequelize.BOOLEAN,
+            type: DataTypes.BOOLEAN,
             defaultValue: false,
         },
         log_message_delete_bulk: {
-            type: Sequelize.BOOLEAN,
+            type: DataTypes.BOOLEAN,
             defaultValue: false,
         },
         log_message_edit: {
-            type: Sequelize.BOOLEAN,
+            type: DataTypes.BOOLEAN,
             defaultValue: false,
         },
         log_member_join: {
-            type: Sequelize.BOOLEAN,
+            type: DataTypes.BOOLEAN,
             defaultValue: false,
         },
         log_member_leave: {
-            type: Sequelize.BOOLEAN,
+            type: DataTypes.BOOLEAN,
             defaultValue: false,
         },
         log_nickname_change: {
-            type: Sequelize.BOOLEAN,
+            type: DataTypes.BOOLEAN,
             defaultValue: false,
         },
-    });
+    }, {sequelize})
 }

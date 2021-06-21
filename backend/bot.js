@@ -1,13 +1,14 @@
 // Libraries
 import Discord, {MessageEmbed} from 'discord.js';
-import Sequelize from 'sequelize';
+import {Sequelize} from 'sequelize';
+import yargs from 'yargs';
 import fs from 'fs';
 
 // Auth
 import {token} from './auth.js';
 
 // Utils
-import {log} from "./commands/utils/logger.js";
+import {log} from './commands/utils/logger.js';
 import parse from './utils/argumentParser.js';
 import {update, isInField, containsField} from './utils/tokenManager.js';
 import {truncateMessage} from './commands/utils/messageTruncator.js';
@@ -16,9 +17,12 @@ import {truncateMessage} from './commands/utils/messageTruncator.js';
 import {err} from './utils/messages.js';
 import CommandError from './errors/CommandError.js';
 
-// Models
+// Database
+import {offload, onload} from './utils/JSONOffloader.js';
 import loadGuilds from './models/Guild.js';
 
+
+const flags = yargs(process.argv.slice(2)).argv;
 
 const client = new Discord.Client({
     ws: {
@@ -42,7 +46,7 @@ const sequelize = new Sequelize('database', 'user', 'password', {
     logging: false,
     storage: 'database.sqlite',
 });
-client.GuildTags = loadGuilds(sequelize, Sequelize);
+client.GuildTags = loadGuilds(sequelize);
 
 
 // Dynamic command handling
@@ -71,7 +75,11 @@ const talkedRecently = new Set(); // For global cooldowns; consider switching to
 // Run initial stuff
 client.once('ready', async () => {
     await client.loadCommands(); // Load commands
-    client.GuildTags.sync(); // Sync database
+    if (flags.offload) await offload(client.GuildTags);
+
+    await sequelize.sync(); // Sync database
+
+    if (flags.onload) await onload(client.GuildTags);
     console.log(`Logged in as ${client.user.tag}!`);
     await client.user.setActivity('!help', {type: "LISTENING"});
 });

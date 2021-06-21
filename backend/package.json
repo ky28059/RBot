@@ -16,10 +16,13 @@
     "sequelize": "^6.3.5",
     "simple-youtube-api": "^5.2.1",
     "sqlite3": "^5.0.0",
+    "yargs": "^17.0.1",
     "ytdl-core": "^4.5.0",
     "ytdl-core-discord": "^1.2.5"
   },
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "offload": "node index.js --offload",
+    "onload": "node index.js --onload"
   }
 }

@@ -4,12 +4,13 @@ import fetch from 'node-fetch';
 
 export default {
     name: 'mcstatus',
-    aliases: ['status'],
+    aliases: ['server'],
     description: 'Gets server info of the specified Minecraft server.',
     pattern: '[ServerIP]',
     examples: 'mcstatus hypixel.net',
     async execute(message, parsed) {
         const server = parsed.serverip;
+        // https://api.mcsrvstat.us/
         const res = await (await fetch(`https://api.mcsrvstat.us/2/${server}`)).json();
 
         const serverEmbed = new MessageEmbed()
