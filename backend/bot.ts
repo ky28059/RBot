@@ -1,7 +1,9 @@
 // Libraries
 import {Guild, MessageEmbed, PermissionResolvable, TextChannel} from 'discord.js';
 import {Sequelize} from 'sequelize';
-import fs from 'fs';
+import yargs from 'yargs';
+import {promises} from 'fs';
+const {readdir} = promises;
 
 // Auth
 import {token} from './auth';
@@ -16,13 +18,16 @@ import {truncateMessage} from './commands/utils/messageTruncator';
 import {err} from './utils/messages';
 import CommandError from './errors/CommandError';
 
-// Models
-import loadGuilds, {GuildInstance} from './models/Guild.js';
+// Database
+import {offload, onload} from './utils/JSONOffloader';
+import loadGuilds, {Guild as GuildInstance} from './models/Guild';
 
 // Types
 import RBot from './types/RBot';
 import {Command} from './types/Command';
 
+
+const flags = yargs(process.argv.slice(2)).argv;
 
 const client = new RBot({
     ws: {
@@ -51,16 +56,14 @@ client.GuildTags = loadGuilds(database);
 
 // Keeping definition here for fs pathing
 client.loadCommands = async function() {
-    const dirnames = ['admin', 'music', 'normal', 'owner', 'presets'];
-
-    for (let dir of dirnames) {
-        const commands = fs.readdirSync(`./commands/${dir}`).filter(file => file.endsWith('.ts'));
+    for (let dir of this.submodules) {
+        const commands = (await readdir(`./commands/${dir}`)).filter(file => file.endsWith('.ts'));
 
         for (let file of commands) {
             const imported = await import(`./commands/${dir}/${file}`);
             const command = imported.default as Command; // Required because of default exports
             command.commandGroup = dir; // Dynamic commandgroups
-            client.commands.set(command.name, command);
+            this.commands.set(command.name, command);
         }
     }
     console.log('Commands loaded!');
@@ -73,7 +76,13 @@ const talkedRecently = new Set(); // For global cooldowns; consider switching to
 // Run initial stuff
 client.once('ready', async () => {
     await client.loadCommands(); // Load commands
-    await client.GuildTags.sync(); // Sync database
+    //@ts-ignore
+    if (flags.offload) await offload();
+
+    await database.sync(); // Sync database
+
+    //@ts-ignore
+    if (flags.onload) await onload();
     console.log(`Logged in as ${client.user!.tag}!`);
     await client.user!.setActivity('!help', {type: "LISTENING"});
 });
@@ -128,9 +137,9 @@ client.on('message', async message => {
     }
 
     if (message.content.substring(0, prefix.length) === prefix) {
-        const args = message.content.slice(prefix.length).trim().split(/ +/g); // removes the prefix, then the spaces, then splits into array
-        const commandName = args.shift()?.toLowerCase();
-        if (!commandName) return;
+        // Splits content string by first chunk of whitespace, preserving whitespace in arguments
+        const [cmd, argString] = message.content.slice(prefix.length).trim().split(/(?<=^\S+)\s+/);
+        const commandName = cmd.toLowerCase();
 
         if (message.guild
             && tag!.disabled_commands
@@ -153,7 +162,7 @@ client.on('message', async message => {
             return message.reply(err('OWNER_ONLY', 'Owner only command cannot be invoked by non owner'));
 
         try {
-            const parsed = parse(args.join(' '), command, client, guild); // ArgString needs to be the raw string content
+            const parsed = parse(argString ?? "", command, client, guild);
             await command.execute(message, parsed, client, tag);
         } catch (e) {
             // If the error was a result of bad code, log it

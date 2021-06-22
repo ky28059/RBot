@@ -3,8 +3,10 @@ import { token } from './auth';
 
 
 const manager = new ShardingManager('./bot.ts', {
-        token: token
-    });
+    // Persist flags downwards
+    shardArgs: process.argv.slice(2),
+    token: token
+});
 
 manager.on('shardCreate', shard => console.log(`Launched shard ${shard.id}`));
 

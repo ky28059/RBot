@@ -1,8 +1,11 @@
+// Represents a Guild Presets object in the SQL database
+// This contains presets data, like custom prefix, disabled commands, censorship, etc.
+// https://sequelize.org/master/manual/typescript.html
+
 import {Sequelize, DataTypes, Optional, Model} from 'sequelize';
 
-// Guild presets
 
-interface Guild {
+interface GuildAttributes {
     guildID: string;
     prefix: string;
     logchannel: string;
@@ -21,18 +24,34 @@ interface Guild {
     log_nickname_change: boolean;
 }
 
-// Some fields are optional when calling UserModel.create() or UserModel.build()
-interface GuildCreationAttributes extends Optional<Guild,
+interface GuildCreationAttributes extends Optional<GuildAttributes,
     'prefix' | 'logchannel' | 'disabled_commands' | 'censored_users' | 'censored_words' | 'blacklist' | 'autoroles' |
     'log_message_delete' | 'log_message_delete_bulk' | 'log_message_edit' | 'log_member_join' | 'log_member_leave' | 'log_nickname_change'> {}
 
-export interface GuildInstance
-    extends Model<Guild, GuildCreationAttributes>,
-        Guild {}
+class Guild extends Model<GuildAttributes, GuildCreationAttributes> implements GuildAttributes {
+    public guildID!: string;
+    public prefix!: string;
+    public logchannel!: string;
 
+    public disabled_commands!: string;
+    public censored_users!: string;
+    public censored_words!: string;
+    public blacklist!: string;
+    public autoroles!: string;
 
-export default function load(sequelize: Sequelize) {
-    return sequelize.define<GuildInstance>('guilds', {
+    public log_message_delete!: boolean;
+    public log_message_delete_bulk!: boolean;
+    public log_message_edit!: boolean;
+    public log_member_join!: boolean;
+    public log_member_leave!: boolean;
+    public log_nickname_change!: boolean;
+
+    public readonly createdAt!: Date;
+    public readonly updatedAt!: Date;
+}
+
+export default (sequelize: Sequelize) => {
+    return Guild.init({
         guildID: {
             type: DataTypes.STRING,
             unique: true,
@@ -92,5 +111,5 @@ export default function load(sequelize: Sequelize) {
             type: DataTypes.BOOLEAN,
             defaultValue: false,
         },
-    });
+    }, {sequelize})
 }

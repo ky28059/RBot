@@ -1,12 +1,13 @@
 import {Command} from '../../types/Command';
 import fetch from 'node-fetch';
 import {MessageEmbed, Util} from 'discord.js';
+import {pagedMessage} from '../../utils/messageUtils';
 
 
 export default {
     name: 'fetch',
     aliases: ['grab'],
-    description: 'Fetches plaintext HTML from a website link. It is highly recommended to use this in a spam channel if you care about message history',
+    description: 'Fetches plaintext HTML from a website link.',
     pattern: '[URL]',
     examples: 'fetch https://google.com',
     async execute(message, parsed) {
@@ -25,9 +26,6 @@ export default {
             append: '...'
         });
 
-        splitDescription.forEach(async (m) => {
-            fetchEmbed.setDescription(`\`\`\`html\n${m}\`\`\``);
-            message.channel.send(fetchEmbed);
-        });
+        await pagedMessage(message, splitDescription.map(m => new MessageEmbed(fetchEmbed).setDescription(`\`\`\`html\n${m}\`\`\``)));
     }
 } as Command;

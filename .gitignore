@@ -9,3 +9,4 @@ auth.js
 
 # Server Presets
 database.sqlite
+tokens

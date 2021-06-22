@@ -45,6 +45,7 @@ const roleRegex = /^<@&(\d+)>$/;
 
 export default function parse(argString: string, command: Command, client: RBot, guild: Guild | null) {
     const returnObj: any = {};
+    let index = 0; // Current index in the string for <Rest> patterns
 
     // Get argument patterns if they exist, return if the command takes in no arguments or if patterns are missing
     if (!command.pattern) return;
@@ -61,16 +62,16 @@ export default function parse(argString: string, command: Command, client: RBot,
         // @ts-ignore
         const { name, bracket, prefix, repeating, optional } = pattern.groups;
 
-
-        let arg = args?.shift();
-
         // If no args were provided, or if none remain
-        if (!args || !arg) {
+        if (!args || !args.length) {
             // Throw MissingArgumentError if a required argument is not found
             if (!optional) throw new MissingArgumentError(command.name, name);
             // Break the loop as no arguments remaining means no more parsing can be done
             break;
         }
+
+        let arg = args.shift()!;
+        index = argString.indexOf(arg, index) + arg.length;
 
         // Special case for <Rest> patterns
         // Can probably be simplified
@@ -83,8 +84,7 @@ export default function parse(argString: string, command: Command, client: RBot,
             if (i !== patterns.length - 1)
                 console.warn(`Bad pattern in ${command.name}, field <${name}> is not the last field`);
 
-            args.unshift(arg)
-            returnObj[name.toLowerCase()] = args.join(' ');
+            returnObj[name.toLowerCase()] = argString.substring(index - arg.length);
 
             return returnObj;
         }
