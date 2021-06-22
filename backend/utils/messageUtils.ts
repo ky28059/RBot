@@ -1,4 +1,7 @@
-export async function pagedMessage(message, pages) {
+import {Message, MessageEmbed, MessageReaction, User} from 'discord.js';
+
+
+export async function pagedMessage(message: Message, pages: (string | MessageEmbed)[]) {
     if (!pages.length) return;
     if (pages.length === 1) return message.channel.send(pages[0]);
 
@@ -8,7 +11,7 @@ export async function pagedMessage(message, pages) {
     await pagedMessage.react('▶️');
     await pagedMessage.react('⏭️');
 
-    const filter = (reaction, user) =>
+    const filter = (reaction: MessageReaction, user: User) =>
         ['⏮️', '◀️', '▶️', '⏭️'].includes(reaction.emoji.name) && user.id === message.author.id;
     const collector = pagedMessage.createReactionCollector(filter, {time: 30000});
 

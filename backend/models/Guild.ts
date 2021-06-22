@@ -28,7 +28,7 @@ interface GuildCreationAttributes extends Optional<GuildAttributes,
     'prefix' | 'logchannel' | 'disabled_commands' | 'censored_users' | 'censored_words' | 'blacklist' | 'autoroles' |
     'log_message_delete' | 'log_message_delete_bulk' | 'log_message_edit' | 'log_member_join' | 'log_member_leave' | 'log_nickname_change'> {}
 
-class Guild extends Model<GuildAttributes, GuildCreationAttributes> implements GuildAttributes {
+export class Guild extends Model<GuildAttributes, GuildCreationAttributes> implements GuildAttributes {
     public guildID!: string;
     public prefix!: string;
     public logchannel!: string;
@@ -51,7 +51,7 @@ class Guild extends Model<GuildAttributes, GuildCreationAttributes> implements G
 }
 
 export default (sequelize: Sequelize) => {
-    return Guild.init({
+    Guild.init({
         guildID: {
             type: DataTypes.STRING,
             unique: true,
@@ -112,4 +112,6 @@ export default (sequelize: Sequelize) => {
             defaultValue: false,
         },
     }, {sequelize})
+
+    return Guild;
 }

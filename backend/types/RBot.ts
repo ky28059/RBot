@@ -1,7 +1,6 @@
 import {Client, Collection} from 'discord.js';
 import {Command} from './Command';
-import {Model, ModelCtor, Sequelize} from "sequelize";
-import {GuildInstance} from "../models/Guild";
+import {Guild} from '../models/Guild';
 
 
 export default class RBot extends Client {
@@ -10,9 +9,10 @@ export default class RBot extends Client {
     queue = new Map(); // For music commands
 
     // Dynamic command handling
+    submodules = ['admin', 'music', 'normal', 'owner', 'presets'];
     commands = new Collection<string, Command>();
     async loadCommands() {}
 
     // Sequelize
-    GuildTags: ModelCtor<GuildInstance> = ;
+    GuildTags!: typeof Guild;
 }
