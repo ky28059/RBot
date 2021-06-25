@@ -6,7 +6,7 @@ import {writeFile, readFile, readdir} from 'fs/promises';
 
 
 export async function offload(tags) {
-    (await tags.findAll()).forEach(tag => writeFile(`./tokens/${tag.guildID}.json`, JSON.stringify(tag)))
+    (await tags.findAll()).forEach(tag => writeFile(`./tokens/${tag.guildID}.json`, JSON.stringify(tag)));
 }
 
 export async function onload(tags) {

@@ -12,7 +12,7 @@ export default {
             .setColor(0x333333)
             .setTitle(joke.setup)
             .setDescription(joke.punchline)
-            .setFooter(`Joke number ${joke.id}, requested by ${message.author.tag}`)
+            .setFooter(`Joke #${joke.id}, requested by ${message.author.tag}`)
 
         message.channel.send(jokeEmbed);
     }
