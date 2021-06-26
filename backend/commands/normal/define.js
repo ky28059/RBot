@@ -1,6 +1,7 @@
 import fetch from 'node-fetch';
-import {MessageEmbed} from 'discord.js';
 import he from 'he';
+import {MessageEmbed} from 'discord.js';
+import {pagedMessage} from '../../utils/messageUtils.js';
 
 
 export default {
@@ -21,29 +22,37 @@ export default {
         }
 
         dictionaryEmbed
-            .setTitle(word)
             .setURL(`https://en.wiktionary.org/wiki/${word.replace(/ /g, '_')}`)
             .setFooter(`Requested by ${message.author.tag}`);
 
         // The structure of the API response seems to be
-        // { en: [ ...partsOfSpeech ] }
+        // { en?: [ ...partsOfSpeech ], fr?: [ ...partsOfSpeech ], ja?: [ ...partsOfSpeech ], ... }
         // { partOfSpeech: ..., language: ..., definitions: [ ...definitions ] }
         // { definition: ..., parsedExamples?: [ ...examples ], examples?: [ ...examples ] }
         // { example: ... }
-        // which is parsed by the loop into partsOfSpeech field titles and definition / example field values
-        for (const definition of res.en) {
-            let desc = definition.definitions.map((def, i) => {
-                let str = `${i + 1}. ${cleanWiktionaryHTMLString(def.definition)}`;
-                if (def.parsedExamples)
-                    str += '\n' + def.parsedExamples.map(ex => '> ' + cleanWiktionaryHTMLString(ex.example)).join('\n');
-                return str;
-            }).join('\n');
+        // which is parsed by the loop into language specific pages, partsOfSpeech field titles
+        // and definition / example field values
 
-            // TODO: handle description length overflow
-            dictionaryEmbed.addField(definition.partOfSpeech, desc);
+        const pages = [];
+        for (const lang of Object.keys(res)) {
+            const langEmbed = new MessageEmbed(dictionaryEmbed)
+                .setTitle(`${word} (${lang})`);
+
+            for (const definition of res[lang]) {
+                let desc = definition.definitions.map((def, i) => {
+                    let str = `${i + 1}. ${cleanWiktionaryHTMLString(def.definition)}`;
+                    if (def.parsedExamples)
+                        str += '\n' + def.parsedExamples.map(ex => '> ' + cleanWiktionaryHTMLString(ex.example)).join('\n');
+                    return str;
+                }).join('\n');
+
+                // TODO: handle description length overflow
+                langEmbed.addField(definition.partOfSpeech, desc);
+            }
+            pages.push(langEmbed);
         }
 
-        await message.channel.send(dictionaryEmbed);
+        await pagedMessage(message, pages);
     }
 }
 
@@ -53,6 +62,7 @@ function cleanWiktionaryHTMLString(str) {
         .replace(/<\/?i[^>]*>/g, '*') // replace <i> with markdown italics
         .replace(/<\/?b[^>]*>/g, '**') // replace <b> with markdown bold
         .replace(/<a[^>]+href="([^"]+)"[^>]*>([^<]+)<\/a>/g, '[$2](https://en.wiktionary.org$1)') // replace <a> with markdown link, href in <a>s are assumed to be relative
+        .replace(/<link[^>]*>/g, '') // remove <link>, hackily allowing <li> parsing to work
         .replace(/<li[^>]*>/g, '-') // replace leading <li> with dash
         .replace(/<\/?\w+[^>]*>/g, '') // remove all other html elements (<span>, <ol> and <li>, etc.)
 }

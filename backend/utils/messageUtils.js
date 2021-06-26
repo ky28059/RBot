@@ -19,7 +19,7 @@ export async function pagedMessage(message, pages) {
                 pagedMessage.edit(pages[0]);
                 break;
             case '◀️':
-                index = (index - 1) % pages.length;
+                index = index === 0 ? pages.length - 1 : index - 1;
                 pagedMessage.edit(pages[index]);
                 break;
             case '▶️':
