@@ -16,19 +16,19 @@ export async function pagedMessage(message, pages) {
     collector.on('collect', reaction => {
         switch (reaction.emoji.name) {
             case '⏮️':
-                pagedMessage.edit(pages[0]);
+                index = 0;
                 break;
             case '◀️':
                 index = index === 0 ? pages.length - 1 : index - 1;
-                pagedMessage.edit(pages[index]);
                 break;
             case '▶️':
                 index = (index + 1) % pages.length;
-                pagedMessage.edit(pages[index]);
                 break;
             case '⏭️':
-                pagedMessage.edit(pages[pages.length - 1])
+                index = pages.length - 1;
                 break;
         }
+        pagedMessage.edit(pages[index]);
+        reaction.users.remove(message.author);
     });
 }

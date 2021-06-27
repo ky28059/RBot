@@ -11,7 +11,8 @@ export default {
     examples: ['define bespoke', 'define mole hill'],
     async execute(message, parsed) {
         const word = parsed.word.toLowerCase();
-        const res = await (await fetch(`https://en.wiktionary.org/api/rest_v1/page/definition/${word.replace(/ /g, '_')}`)).json();
+        const page = encodeURIComponent(word.replace(/ /g, '_'));
+        const res = await (await fetch(`https://en.wiktionary.org/api/rest_v1/page/definition/${page}`)).json();
 
         const dictionaryEmbed = new MessageEmbed()
             .setColor(0x333333)
@@ -22,7 +23,7 @@ export default {
         }
 
         dictionaryEmbed
-            .setURL(`https://en.wiktionary.org/wiki/${word.replace(/ /g, '_')}`)
+            .setURL(`https://en.wiktionary.org/wiki/${page}`)
             .setFooter(`Requested by ${message.author.tag}`);
 
         // The structure of the API response seems to be
