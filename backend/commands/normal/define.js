@@ -10,13 +10,23 @@ export default {
     pattern: '<Word>',
     examples: ['define bespoke', 'define mole hill'],
     async execute(message, parsed) {
-        const word = parsed.word.toLowerCase();
-        const page = encodeURIComponent(word.replace(/ /g, '_'));
-        const res = await (await fetch(`https://en.wiktionary.org/api/rest_v1/page/definition/${page}`)).json();
+        let word = parsed.word;
+
+        // Try once with exact supplied word (allows matching of pages like Markov_chain where capitalization matters)
+        let page = encodeURIComponent(word.replace(/ /g, '_'));
+        let res = await (await fetch(`https://en.wiktionary.org/api/rest_v1/page/definition/${page}`)).json();
+
+        // Try again with lowercased query (allows "Bespoke" to match the actual page, "bespoke")
+        if (res.title === 'Not found.') {
+            word = word.toLowerCase();
+            page = page.toLowerCase();
+            res = await (await fetch(`https://en.wiktionary.org/api/rest_v1/page/definition/${page}`)).json();
+        }
 
         const dictionaryEmbed = new MessageEmbed()
             .setColor(0x333333)
 
+        // If still not found, assume the word does not exist
         if (res.title === 'Not found.') {
             dictionaryEmbed.setAuthor('Word not found.');
             return message.channel.send(dictionaryEmbed);
