@@ -26,9 +26,10 @@ export default {
         const dictionaryEmbed = new MessageEmbed()
             .setColor(0x333333)
 
-        // If still not found, assume the word does not exist
-        if (res.title === 'Not found.') {
-            dictionaryEmbed.setAuthor('Word not found.');
+        // If still not found (or some other error occurs), assume the word does not exist
+        // Sometimes res.title is omitted from the error response (???) so also check for res.detail
+        if (res.title || res.detail) {
+            dictionaryEmbed.setAuthor(res.title ?? res.detail);
             return message.channel.send(dictionaryEmbed);
         }
 
@@ -53,7 +54,11 @@ export default {
                 let desc = definition.definitions.map((def, i) => {
                     let str = `${i + 1}. ${cleanWiktionaryHTMLString(def.definition)}`;
                     if (def.parsedExamples)
-                        str += '\n' + def.parsedExamples.map(ex => '> ' + cleanWiktionaryHTMLString(ex.example)).join('\n');
+                        str += '\n' + def.parsedExamples.map(ex => {
+                            // Check if the entire example is parsed away by the cleaning function before returning it as valid
+                            const parsed = cleanWiktionaryHTMLString(ex.example);
+                            if (parsed) return '> ' + parsed;
+                        }).join('\n');
                     return str;
                 }).join('\n');
 

@@ -1,4 +1,4 @@
-import {MessageAttachment, MessageEmbed} from 'discord.js';
+import {MessageAttachment, MessageEmbed, escapeMarkdown} from 'discord.js';
 import fetch from 'node-fetch';
 
 
@@ -34,7 +34,7 @@ export default {
                     .attachFiles([attachment])
                     .setThumbnail('attachment://icon.png');
             }
-            if (res.players.list) serverEmbed.addField('Player List:', res.players.list.join(', '));
+            if (res.players.list) serverEmbed.addField('Player List:', escapeMarkdown(res.players.list.join(', ')));
         }
 
         message.channel.send(serverEmbed);
