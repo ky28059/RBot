@@ -1,6 +1,5 @@
 import {Message, MessageEmbed, Util} from 'discord.js';
 import {AudioPlayerStatus, AudioResource} from '@discordjs/voice';
-import {RBot} from '../../bot';
 import {Track} from '../utils/track';
 import {pagedMessage} from '../../utils/messageUtils';
 
@@ -13,8 +12,8 @@ export default {
     description: 'Displays the current music queue.',
     examples: 'queue',
     guildOnly: true,
-    async execute(message: Message, parsed: {}, client: RBot) {
-        const subscription = client.subscriptions.get(message.guild!.id);
+    async execute(message: Message, parsed: {}) {
+        const subscription = message.client.subscriptions.get(message.guild!.id);
 
         if (!subscription) throw new QueueNonexistentError(this.name);
 

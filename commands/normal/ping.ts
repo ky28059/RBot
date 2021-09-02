@@ -1,11 +1,13 @@
-import {Message} from 'discord.js';
+import {CommandInteraction, Message} from 'discord.js';
+import {SlashCommandBuilder} from '@discordjs/builders';
 
 export default {
-    name: 'ping',
-    description: 'Gets latency.',
-    examples: 'ping',
-    async execute(message: Message) {
-        let m = await message.channel.send('Ping?');
-        await m.edit(`Pong! Latency is ${m.createdTimestamp - message.createdTimestamp}ms. API Latency is ${Math.round(message.client.ws.ping)}ms`);
+    data: new SlashCommandBuilder()
+        .setName('ping')
+        .setDescription('Gets the latency of the bot.'),
+    async execute(interaction: CommandInteraction) {
+        const m = await interaction.followUp('Ping?');
+        if (!(m instanceof Message)) return interaction.editReply('Pong!');
+        await interaction.editReply(`Pong! Latency is ${m.createdTimestamp - interaction.createdTimestamp}ms. API Latency is ${Math.round(interaction.client.ws.ping)}ms`);
     }
 }

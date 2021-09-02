@@ -1,4 +1,8 @@
-import {Client, Message, MessageEmbed, Collection, Guild, PermissionResolvable, TextChannel, Snowflake} from 'discord.js';
+import {
+    Client, Message, MessageEmbed, Collection, Guild,
+    PermissionResolvable, TextChannel, Snowflake, CommandInteraction
+} from 'discord.js';
+import {SlashCommandBuilder} from "@discordjs/builders";
 import {MusicSubscription} from './commands/utils/subscription';
 import {Sequelize} from 'sequelize';
 import yargs from 'yargs';
@@ -28,41 +32,41 @@ const flags = yargs(process.argv.slice(2)).options({
     offload: { type: 'boolean', default: false },
 }).parseSync();
 
-type Command = {
+// Fields common to both old and new command syntaxes
+// Preconditions are still kept in slash commands for abstraction purposes
+type BaseCommand = {
+    isSlashCommand?: boolean,
+    guildOnly?: boolean,
+    ownerOnly?: boolean,
+    permReqs?: PermissionResolvable,
+    clientPermReqs?: PermissionResolvable,
+    execute: (message: Message | CommandInteraction, parsed: any, tag: GuildPresets | undefined) => Promise<void>
+}
+// Old text based command detail syntax
+export type Command = BaseCommand & {
     name: string,
     commandGroup: string,
     aliases?: string[],
     description: string,
     pattern?: string,
-    examples: string | string[],
-    guildOnly?: boolean,
-    ownerOnly?: boolean,
-    permReqs?: PermissionResolvable,
-    clientPermReqs?: PermissionResolvable,
-    execute: (message: Message, parsed: any, client: RBot, tag: GuildPresets | undefined) => Promise<void>
+    examples?: string | string[],
 }
-export class RBot extends Client {
-    commands: Collection<string, Command> = new Collection()
-    submodules: string[] = ['admin', 'music', 'normal', 'owner', 'presets']
-    ownerID: string = '355534246439419904' // For owner only commands
-    subscriptions: Map<Snowflake, MusicSubscription> = new Map()
+// New slash command command detail syntax
+export type SlashCommand = BaseCommand & {
+    data: SlashCommandBuilder,
+}
 
-    // Dynamic command handling
-    async loadCommands() {
-        for (let dir of this.submodules) {
-            const commands = fs.readdirSync(`./commands/${dir}`).filter(file => file.endsWith('.ts'));
-
-            for (let file of commands) {
-                let command = await import(`./commands/${dir}/${file}`);
-                command = command.default; // Required because of default exports
-                command.commandGroup = dir; // Dynamic commandgroups
-                this.commands.set(command.name, command);
-            }
-        }
-        console.log('Commands loaded!');
+declare module "discord.js" {
+    interface Client {
+        commands: Collection<string, Command>,
+        submodules: string[],
+        ownerID: Snowflake,
+        subscriptions: Map<Snowflake, MusicSubscription>,
+        loadCommands(): Promise<void>
     }
 }
-const client = new RBot({
+
+const client = new Client({
     intents: [
         "GUILDS",
         "GUILD_MESSAGES",
@@ -75,6 +79,61 @@ const client = new RBot({
     ],
     presence: {activities: [{name: '!help', type: "LISTENING"}]}
 });
+
+client.commands = new Collection();
+client.submodules = ['admin', 'music', 'normal', 'owner', 'presets'];
+client.ownerID = '355534246439419904'; // For owner only commands
+client.subscriptions = new Map(); // For music commands
+
+// Dynamic command handling
+client.loadCommands = async () => {
+    for (let dir of client.submodules) {
+        const commands = fs.readdirSync(`./commands/${dir}`).filter(file => file.endsWith('.ts'));
+
+        for (let file of commands) {
+            let command = (await import(`./commands/${dir}/${file.substring(0, file.length - 3)}`)).default as Command | SlashCommand;
+
+            // Convert slash commands to text-based syntax
+            if ('data' in command) {
+                command = {
+                    isSlashCommand: true,
+                    name: command.data.name,
+                    commandGroup: dir,
+                    description: command.data.description,
+                    pattern: command.data.options.map(arg => {
+                        const data = arg.toJSON();
+                        let prefix = '';
+
+                        switch (data.type) {
+                            case 6:
+                                prefix = '@';
+                                break;
+                            case 7:
+                                prefix = '#';
+                                break;
+                            case 8:
+                                prefix = '&';
+                                break;
+                        }
+
+                        return `${prefix}[${data.name}]${data.required ? '' : '?'}`
+                    }).join(' '),
+                    guildOnly: command.guildOnly,
+                    ownerOnly: command.ownerOnly,
+                    permReqs: command.permReqs,
+                    clientPermReqs: command.clientPermReqs,
+                    execute: command.execute
+                }
+            } else {
+                command.commandGroup = dir; // Dynamic command groups
+            }
+
+            client.commands.set(command.name, command);
+        }
+    }
+    console.log('Commands loaded!');
+}
+
 
 // Models
 const sequelize = new Sequelize('database', 'user', 'password', {
@@ -191,7 +250,7 @@ client.on('messageCreate', async message => {
 
         try {
             const parsed = parse(argString ?? '', command, client, guild);
-            await command.execute(message, parsed, client, tag);
+            await command.execute(message, parsed, tag);
         } catch (e) {
             // If the error was a result of bad code, log it
             if (!(e instanceof CommandError)) {

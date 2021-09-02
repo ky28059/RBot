@@ -2,7 +2,6 @@ import {Message, StageChannel} from 'discord.js';
 import {entersState, joinVoiceChannel, VoiceConnectionStatus} from '@discordjs/voice';
 import {Track} from '../utils/track';
 import {MusicSubscription} from '../utils/subscription';
-import {RBot} from '../../bot';
 
 import {success} from '../../utils/messages.js';
 
@@ -19,9 +18,9 @@ export default {
     examples: ['play Never Gonna Give You Up', 'play https://www.youtube.com/watch?v=dQw4w9WgXcQ'],
     guildOnly: true,
     clientPermReqs: 'CONNECT',
-    async execute(message: Message, parsed: {video: string}, client: RBot) {
+    async execute(message: Message, parsed: {video: string}) {
         const { channel } = message.member!.voice;
-        let subscription = client.subscriptions.get(message.guild!.id);
+        let subscription = message.client.subscriptions.get(message.guild!.id);
 
         if (!channel) throw new MemberNotInVCError(this.name);
 
@@ -46,7 +45,7 @@ export default {
                     }),
                 );
                 subscription.voiceConnection.on('error', console.warn);
-                client.subscriptions.set(message.guild!.id, subscription);
+                message.client.subscriptions.set(message.guild!.id, subscription);
             }
         }
 

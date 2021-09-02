@@ -1,23 +1,26 @@
 import fetch from 'node-fetch';
-import {Message, MessageEmbed, Util} from 'discord.js';
+import {CommandInteraction, Message, MessageEmbed, Util} from 'discord.js';
+import {SlashCommandBuilder} from '@discordjs/builders';
 const {splitMessage} = Util;
-import {pagedMessage} from '../../utils/messageUtils.js';
+import {author, pagedMessage} from '../../utils/messageUtils.js';
 
 
 export default {
-    name: 'fetch',
-    aliases: ['grab'],
-    description: 'Fetches plaintext HTML from a website link.',
-    pattern: '[URL]',
-    examples: 'fetch https://google.com',
-    async execute(message: Message, parsed: {url: string}) {
+    data: new SlashCommandBuilder()
+        .setName('fetch')
+        .setDescription('Fetches plaintext HTML from a website link.')
+        .addStringOption(option =>
+            option.setName('url')
+                .setDescription('The URL to fetch')
+                .setRequired(true)),
+    async execute(target: Message | CommandInteraction, parsed: {url: string}) {
         const url = parsed.url;
         let source = await (await fetch(url)).text() || '[No Source Found]';
 
         const fetchEmbed = new MessageEmbed()
             .setColor(0x333333)
             .setTitle('Fetched:')
-            .setFooter(`Requested by ${message.author.tag}`)
+            .setFooter(`Requested by ${author(target).tag}`)
 
         const splitDescription = splitMessage(source, {
             maxLength: 2048 - 12,
@@ -26,6 +29,6 @@ export default {
             append: '...'
         });
 
-        await pagedMessage(message, splitDescription.map(m => new MessageEmbed(fetchEmbed).setDescription(`\`\`\`html\n${m}\`\`\``)));
+        await pagedMessage(target, splitDescription.map(m => new MessageEmbed(fetchEmbed).setDescription(`\`\`\`html\n${m}\`\`\``)));
     }
 }

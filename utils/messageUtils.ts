@@ -1,8 +1,24 @@
-import {Message, MessageComponentInteraction, MessageEmbed, MessageActionRow, MessageButton, MessageSelectMenu} from 'discord.js';
+import {
+    CommandInteraction, Message, MessageEmbed,
+    MessageActionRow, MessageButton, MessageSelectMenu, MessageComponentInteraction, MessageOptions,
+} from 'discord.js';
 
-export async function pagedMessage(message: Message, pages: MessageEmbed[]) {
+
+// Replies to a message or interaction
+export async function reply(target: Message | CommandInteraction, content: string | MessageOptions) {
+    const callback = target instanceof CommandInteraction ? target.followUp : target.channel.send;
+    return callback(content);
+}
+
+// Returns the author of a message or interaction
+export function author(target: Message | CommandInteraction) {
+    return target instanceof CommandInteraction ? target.user : target.author;
+}
+
+// Utility for sending a lengthy, multi-paged embed message
+export async function pagedMessage(target: Message | CommandInteraction, pages: MessageEmbed[]) {
     if (!pages.length) return;
-    if (pages.length === 1) return message.channel.send({embeds: [pages[0]]});
+    if (pages.length === 1) return reply(target, {embeds: [pages[0]]});
 
     let index = 0;
     const buttonRow = new MessageActionRow()
@@ -47,13 +63,16 @@ export async function pagedMessage(message: Message, pages: MessageEmbed[]) {
                 .setStyle('SECONDARY'),
         );
 
-    const pagedMessage = await message.channel.send({embeds: [pages[0]], components: [buttonRow]});
-    const filter = (interaction: MessageComponentInteraction) =>
-        interaction.customId === 'button' && interaction.user.id === message.author.id;
+    const pagedMessage = await reply(target, {embeds: [pages[0]], components: [buttonRow]});
+    if (!('createMessageComponentCollector' in pagedMessage)) return;
+
+    const authorID = target instanceof CommandInteraction ? target.user.id : target.author.id;
+    const filter = (i: MessageComponentInteraction) =>
+        i.customId === 'button' && i.user.id === authorID;
     const collector = pagedMessage.createMessageComponentCollector({filter, time: 30000});
 
-    collector.on('collect', interaction => {
-        switch (interaction.customId) {
+    collector.on('collect', i => {
+        switch (i.customId) {
             case 'first':
                 index = 0;
                 break;

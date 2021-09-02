@@ -1,4 +1,3 @@
-import {RBot} from '../../bot';
 import {Message} from 'discord.js';
 import { canModifyQueue } from '../utils/canModifyQueue';
 import {shuffle} from '../../utils/messages';
@@ -11,8 +10,8 @@ export default {
     description: 'Shuffles the queue.',
     examples: 'shuffle',
     guildOnly: true,
-    async execute(message: Message, parsed: {}, client: RBot) {
-        const subscription = client.subscriptions.get(message.guild!.id);
+    async execute(message: Message) {
+        const subscription = message.client.subscriptions.get(message.guild!.id);
 
         if (!subscription) throw new QueueNonexistentError(this.name);
         if (!canModifyQueue(message.member!)) return;

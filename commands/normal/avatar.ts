@@ -1,18 +1,21 @@
-import {Message, MessageEmbed, User} from 'discord.js';
+import {Message, CommandInteraction, MessageEmbed, User} from 'discord.js';
+import {SlashCommandBuilder} from '@discordjs/builders';
+import {author, reply} from '../../utils/messageUtils';
 
 export default {
-    name: 'avatar',
-    aliases: ['icon', 'pfp'],
-    description: 'Fetches the discord avatar of the specified user, or yourself if no user was given.',
-    pattern: '@[Target]?',
-    examples: 'avatar @RBot',
-    execute(message: Message, parsed: {target: User}) {
-        const avatarTarget = parsed.target ?? message.author;
+    data: new SlashCommandBuilder()
+        .setName('avatar')
+        .setDescription('Fetches the discord avatar of the specified user, or yourself if no user was given.')
+        .addUserOption(option =>
+            option.setName('user')
+                .setDescription('The user to get the avatar of')),
+    async execute(target: Message | CommandInteraction, parsed: {user?: User}) {
+        const avatarTarget = parsed.user ?? author(target);
         const avatarEmbed = new MessageEmbed()
             .setColor(0x333333)
             .setTitle(avatarTarget.username)
             .setImage(avatarTarget.displayAvatarURL({size: 4096, dynamic: true, format: 'png'}))
-            .setFooter(`Requested by ${message.author.tag}`);
-        message.channel.send({embeds: [avatarEmbed]});
+            .setFooter(`Requested by ${author(target).tag}`);
+        await reply(target, {embeds: [avatarEmbed]});
     }
 }
