@@ -251,11 +251,13 @@ client.on('messageCreate', async message => {
         try {
             const parsed = parse(argString ?? '', command, client, guild);
             await command.execute(message, parsed, tag);
-        } catch (e) {
+        } catch (error) {
             // If the error was a result of bad code, log it
-            if (!(e instanceof CommandError)) {
-                console.error(`Error in command ${commandName} called in ${guild?.name ?? 'a DM'} at ${new Date()}: ${e}`);
+            if (!(error instanceof CommandError)) {
+                console.error(`Error in command ${commandName} called in ${guild?.name ?? 'a DM'} at ${new Date()}: ${error}`);
             }
+            const e = error as CommandError;
+            console.log(e.stack);
             await message.reply({embeds: [err(e.name, e.message)]});
         }
 

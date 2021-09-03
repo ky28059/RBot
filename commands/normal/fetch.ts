@@ -1,8 +1,7 @@
 import fetch from 'node-fetch';
 import {CommandInteraction, Message, MessageEmbed, Util} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
-const {splitMessage} = Util;
-import {author, pagedMessage} from '../../utils/messageUtils.js';
+import {author, pagedMessage} from '../../utils/messageUtils';
 
 
 export default {
@@ -22,7 +21,7 @@ export default {
             .setTitle('Fetched:')
             .setFooter(`Requested by ${author(target).tag}`)
 
-        const splitDescription = splitMessage(source, {
+        const splitDescription = Util.splitMessage(source, {
             maxLength: 2048 - 12,
             char: '',
             prepend: '...',

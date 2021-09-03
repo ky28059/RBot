@@ -3,16 +3,15 @@
 // ['hackban'].includes('ban') would be false as expected
 // Obviously, storing token data as arrays would be the most ideal, but I don't think sequelize supports that, so this will do for now
 
-import {Guild} from 'discord.js';
+import {Client, Guild} from 'discord.js';
 import {Guild as GuildPresets} from '../models/Guild';
-import {RBot} from "../bot";
 
 
 // Updating tags
 
 // Update a tag by either creating it if it doesn't exist or running checks on it if it does
 
-export async function update(guild: Guild, client) {
+export async function update(guild: Guild, client: Client) {
     const tag = await GuildPresets.findOne({ where: { guildID: guild.id } });
 
     if (!tag) {
@@ -29,7 +28,7 @@ export async function update(guild: Guild, client) {
 }
 
 // Run tag checks to ensure token cleanliness
-async function runTagChecks(tag: GuildPresets, guild, client: RBot) {
+async function runTagChecks(tag: GuildPresets, guild: Guild, client: Client) {
     const warn = (message: string) => console.error(`Token error in Guild ${guild} (${guild.id}): ${message}`);
 
     // Check if all disabled commands are actual existing commands
@@ -45,10 +44,13 @@ async function runTagChecks(tag: GuildPresets, guild, client: RBot) {
 
     // Check if channel fields have become invalid since their setting and reset if they have
     for (let field of ['logchannel']) { // List of channel dependent fields
+        // @ts-ignore
         if (tag[field]) {
+            // @ts-ignore
             const channel = client.channels.cache.get(tag[field]);
             if (!channel) {
                 warn(`Invalid ${field} - resetting field`);
+                // @ts-ignore
                 tag[field] = '';
             }
         }

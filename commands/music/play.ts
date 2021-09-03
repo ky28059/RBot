@@ -6,8 +6,8 @@ import {MusicSubscription} from '../utils/subscription';
 import {success} from '../../utils/messages.js';
 
 // Errors
-import MemberNotInVCError from '../../errors/MemberNotInVCError.js';
-import MusicAlreadyBoundError from '../../errors/MusicAlreadyBoundError.js';
+import MemberNotInVCError from '../../errors/MemberNotInVCError';
+import MusicAlreadyBoundError from '../../errors/MusicAlreadyBoundError';
 
 
 export default {

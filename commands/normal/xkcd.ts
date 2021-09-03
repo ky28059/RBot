@@ -1,7 +1,9 @@
-import {CommandInteraction, MessageEmbed} from 'discord.js';
+import {Message, CommandInteraction, MessageEmbed} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 import fetch from 'node-fetch';
+import {author, reply} from '../../utils/messageUtils';
 import IntegerRangeError from '../../errors/IntegerRangeError';
+
 
 export default {
     data: new SlashCommandBuilder()
@@ -10,8 +12,8 @@ export default {
         .addIntegerOption(option =>
             option.setName('comic')
                 .setDescription('The xkcd to send')),
-    async execute(interaction: CommandInteraction) {
-        let num = interaction.options.getInteger('comic')!;
+    async execute(target: Message | CommandInteraction, parsed: {comic: string}) {
+        let num = Number(parsed.comic);
         const max = (await (await fetch('https://xkcd.com/info.0.json')).json()).num;
 
         // If num is invalid
@@ -28,8 +30,8 @@ export default {
             .setURL(`https://xkcd.com/${num}/`)
             .setDescription(res.alt)
             .setImage(res.img)
-            .setFooter(`Comic #${num}, requested by ${interaction.user.tag}`);
+            .setFooter(`Comic #${num}, requested by ${author(target).tag}`);
 
-        await interaction.followUp({embeds: [xkcdEmbed]});
+        await reply(target, {embeds: [xkcdEmbed]});
     }
 }

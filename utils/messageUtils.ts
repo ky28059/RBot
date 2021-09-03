@@ -6,8 +6,9 @@ import {
 
 // Replies to a message or interaction
 export async function reply(target: Message | CommandInteraction, content: string | MessageOptions) {
-    const callback = target instanceof CommandInteraction ? target.followUp : target.channel.send;
-    return callback(content);
+    return target instanceof CommandInteraction
+        ? target.followUp(content)
+        : target.channel.send(content);
 }
 
 // Returns the author of a message or interaction

@@ -2,7 +2,7 @@ import {Message} from 'discord.js';
 import { canModifyQueue } from '../utils/canModifyQueue';
 import {skip} from '../../utils/messages';
 
-import QueueNonexistentError from '../../errors/QueueNonexistentError.js';
+import QueueNonexistentError from '../../errors/QueueNonexistentError';
 
 
 export default {

@@ -1,9 +1,10 @@
 import {MessageEmbed} from 'discord.js'
+import {Track} from '../commands/utils/track';
 
 
 const errEmbed = new MessageEmbed()
     .setColor(0xb50300)
-    .setFooter(new Date());
+    .setFooter(new Date().toISOString());
 
 const successEmbed = new MessageEmbed()
     .setColor(0xf6b40c)
@@ -31,8 +32,8 @@ export function success({title, desc}: {title?: string, desc?: string}) {
 
 
 // The Now Playing embed for music commands
-export function nowPlaying(song) {
-    return success({title: 'Now playing:', desc: `[${song.title}](${song.url}) [${song.queuedBy}]`});
+export function nowPlaying(song: Track) {
+    return success({title: 'Now playing:', desc: `[${song.title}](${song.url})`});
 }
 
 // The Loop embed for music commands

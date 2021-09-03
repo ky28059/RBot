@@ -30,7 +30,9 @@
     Commands whose arguments can be one of multiple patterns: set, censor, uncensor, technically roll would benefit from it as well
 */
 
-import {Guild} from 'discord.js';
+import {Client, Guild} from 'discord.js';
+import {Command} from '../bot';
+
 import MissingArgumentError from '../errors/MissingArgumentError';
 import IllegalArgumentError from '../errors/IllegalArgumentError';
 
@@ -41,8 +43,8 @@ const channelRegex = /^<#(\d+)>$/;
 const roleRegex = /^<@&(\d+)>$/;
 
 
-export default function parse(argString: string, command, client, guild: Guild | undefined) {
-    const returnObj = {};
+export default function parse(argString: string, command: Command, client: Client, guild: Guild | undefined) {
+    const returnObj: any = {};
     let index = 0; // Current index in the string for <Rest> patterns
 
     // Get argument patterns if they exist, return if the command takes in no arguments or if patterns are missing
@@ -56,7 +58,8 @@ export default function parse(argString: string, command, client, guild: Guild |
     // Go down the queue of args and attempt to match 1:1 to patterns
     for (let i = 0; i < patterns.length; i++) {
 
-        const pattern = patterns[i].match(/^(?<prefix>[@#&]?)(?<bracket>[<\[])(?<repeating>(?:\.{3})?)(?<name>\w+)[\]>](?<optional>\??)$/);
+        const pattern = patterns[i].match(/^(?<prefix>[@#&]?)(?<bracket>[<\[])(?<repeating>(?:\.{3})?)(?<name>\w+)[\]>](?<optional>\??)$/)!;
+        // @ts-ignore
         const { name, bracket, prefix, repeating, optional } = pattern.groups;
 
         // If no args were provided, or if none remain
@@ -108,7 +111,7 @@ export default function parse(argString: string, command, client, guild: Guild |
     return returnObj;
 }
 
-function matchSingular(arg, prefix, name, client, guild, command) {
+function matchSingular(arg: string, prefix: string, name: string, client: Client, guild: Guild | undefined, command: Command) {
     switch (prefix) {
         case '@': // Users
             let userID = arg.match(mentionRegex)?.[1] ?? arg;
@@ -127,6 +130,7 @@ function matchSingular(arg, prefix, name, client, guild, command) {
         case '&': // Roles
             let roleID = arg.match(roleRegex)?.[1] ?? arg;
 
+            if (!guild) return;
             let role = guild.roles.cache.get(roleID);
             if (!role) throw new IllegalArgumentError(command.name, `Field \`${name}\` must be a valid role`);
             return role;
