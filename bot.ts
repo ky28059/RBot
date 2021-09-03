@@ -36,6 +36,8 @@ const flags = yargs(process.argv.slice(2)).options({
 // Preconditions are still kept in slash commands for abstraction purposes
 type BaseCommand = {
     isSlashCommand?: boolean,
+    commandGroup: string,
+    examples?: string | string[],
     guildOnly?: boolean,
     ownerOnly?: boolean,
     permReqs?: PermissionResolvable,
@@ -45,11 +47,9 @@ type BaseCommand = {
 // Old text based command detail syntax
 export type Command = BaseCommand & {
     name: string,
-    commandGroup: string,
     aliases?: string[],
     description: string,
     pattern?: string,
-    examples?: string | string[],
 }
 // New slash command command detail syntax
 export type SlashCommand = BaseCommand & {

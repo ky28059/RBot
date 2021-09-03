@@ -1,13 +1,17 @@
 import {CommandInteraction, Message, MessageEmbed} from 'discord.js';
+import {SlashCommandBuilder} from '@discordjs/builders';
 import {Guild} from '../../models/Guild';
 import {author, reply} from '../../utils/messageUtils';
 import IllegalArgumentError from '../../errors/IllegalArgumentError';
 
 
 export default {
-    name: 'help',
-    description: 'Gets info about a command.',
-    pattern: '[Command]?',
+    data: new SlashCommandBuilder()
+        .setName('help')
+        .setDescription('Gets info about a command, or sends a command list.')
+        .addStringOption(option =>
+            option.setName('command')
+                .setDescription('The command to get info about')),
     examples: 'help censor',
     async execute(message: Message | CommandInteraction, parsed: {command?: string}, tag: Guild) {
         const client = message.client;
@@ -39,7 +43,8 @@ export default {
 
         // If there were arguments given
         const command = commands.get(name.toLowerCase()) || commands.find(c => !!c.aliases && c.aliases.includes(name));
-        if (!command) throw new IllegalArgumentError(this.name, `Command \`${name}\` not a valid command`);
+        if (!command)
+            throw new IllegalArgumentError('help', `Command \`${name}\` not a valid command`);
 
         // If there were arguments given and the argument was a valid command
         const helpEmbed = new MessageEmbed()

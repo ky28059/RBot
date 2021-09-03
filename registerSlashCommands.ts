@@ -6,15 +6,16 @@ import {Command, SlashCommand} from './bot';
 
 const commands: Object[] = []; // better type perhaps
 (async () => {
-    console.log('Importing command files');
-
     for (let dir of ['admin', 'music', 'normal', 'owner', 'presets']) {
         const commandFiles = fs.readdirSync(`./commands/${dir}`).filter(file => file.endsWith('.ts'));
 
         // Only push slash commands
         for (const file of commandFiles) {
             const command = (await import(`./commands/${dir}/${file.substring(0, file.length - 3)}`)).default as Command | SlashCommand
-            if ('data' in command) commands.push(command.data.toJSON());
+            if ('data' in command) {
+                commands.push(command.data.toJSON());
+                console.log(`[PUSHED] ${command.data.name}`);
+            }
         }
     }
 
