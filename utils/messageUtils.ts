@@ -7,7 +7,7 @@ import {
 // Replies to a message or interaction
 export async function reply(target: Message | CommandInteraction, content: string | MessageOptions) {
     return target instanceof CommandInteraction
-        ? target.followUp(content)
+        ? target.reply({...(typeof content === 'string' ? {content: content} : content), fetchReply: true})
         : target.channel.send(content);
 }
 

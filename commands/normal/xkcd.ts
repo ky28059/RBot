@@ -12,8 +12,8 @@ export default {
         .addIntegerOption(option =>
             option.setName('comic')
                 .setDescription('The xkcd to send')),
-    async execute(target: Message | CommandInteraction, parsed: {comic: string}) {
-        let num = Number(parsed.comic);
+    async execute(target: Message | CommandInteraction, parsed: {comic: number}) {
+        let num = parsed.comic;
         const max = (await (await fetch('https://xkcd.com/info.0.json')).json()).num;
 
         // If num is invalid

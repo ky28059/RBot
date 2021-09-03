@@ -1,6 +1,6 @@
 import {
     Client, Message, MessageEmbed, Collection, Guild,
-    PermissionResolvable, TextChannel, Snowflake, CommandInteraction
+    PermissionResolvable, TextChannel, Snowflake, CommandInteraction, GuildMember
 } from 'discord.js';
 import {SlashCommandBuilder} from "@discordjs/builders";
 import {MusicSubscription} from './commands/utils/subscription';
@@ -103,8 +103,13 @@ client.loadCommands = async () => {
                     pattern: command.data.options.map(arg => {
                         const data = arg.toJSON();
                         let prefix = '';
+                        let bracket = '[]'
 
                         switch (data.type) {
+                            case 4:
+                            case 10:
+                                bracket = '()'
+                                break;
                             case 6:
                                 prefix = '@';
                                 break;
@@ -116,7 +121,7 @@ client.loadCommands = async () => {
                                 break;
                         }
 
-                        return `${prefix}[${data.name}]${data.required ? '' : '?'}`
+                        return `${prefix}${bracket[0]}${data.name}${bracket[1]}${data.required ? '' : '?'}`
                     }).join(' '),
                     guildOnly: command.guildOnly,
                     ownerOnly: command.ownerOnly,
@@ -181,11 +186,10 @@ client.on('messageCreate', async message => {
     let prefix = '!';
     let tag;
     let member;
-    let guild: Guild | undefined;
+    let guild = message.guild;
 
-    if (message.guild) {
+    if (guild) {
         // Server specific Tag reliant things (censorship, custom prefix)
-        guild = message.guild;
         member = guild.members.cache.get(message.author.id)!;
 
         await update(guild, client);
@@ -249,7 +253,7 @@ client.on('messageCreate', async message => {
         }
 
         try {
-            const parsed = parse(argString ?? '', command, client, guild);
+            const parsed = parse(argString ?? '', command, client, guild ?? undefined);
             await command.execute(message, parsed, tag);
         } catch (error) {
             // If the error was a result of bad code, log it
@@ -269,6 +273,67 @@ client.on('messageCreate', async message => {
         }, 1000);
     }
 });
+
+client.on('interactionCreate', async interaction => {
+    if (!interaction.isCommand()) return;
+
+    const command = client.commands.get(interaction.commandName);
+    if (!command || !command.isSlashCommand) return;
+
+    const guild = interaction.guild;
+    let tag;
+    if (guild) {
+        tag = (await GuildPresets.findOne({ where: { guildID: guild.id } }))!;
+
+        if (tag.disabled_commands && isInField(tag, 'disabled_commands', interaction.commandName)) {
+            // Handles command disabling
+            const embed = err('DISABLED_ERROR', 'Invoked command disabled in current server');
+            await interaction.reply({embeds: [embed]});
+            return;
+        }
+    }
+
+    // List of conditions to check before executing command
+    if (command.guildOnly && interaction.channel!.type === 'DM') {
+        const embed = err('DM_ERROR', 'Guild only command cannot be executed inside DMs');
+        await interaction.reply({embeds: [embed]});
+        return;
+    } else if (command.permReqs && interaction.member instanceof GuildMember && !interaction.member.permissions.has(command.permReqs)) {
+        const embed = err('USER_PERMS_MISSING', `User lacks permissions: \`${command.permReqs}\``);
+        await interaction.reply({embeds: [embed]});
+        return;
+    } else if (command.clientPermReqs && !guild?.me?.permissions.has(command.clientPermReqs)) {
+        const embed = err('CLIENT_PERMS_MISSING', `Client lacks permissions: \`${command.clientPermReqs}\``);
+        await interaction.reply({embeds: [embed]});
+        return;
+    } else if (command.ownerOnly && interaction.user.id !== client.ownerID) {
+        const embed = err('OWNER_ONLY', 'Owner only command cannot be invoked by non owner');
+        await interaction.reply({embeds: [embed]});
+        return;
+    }
+
+    try {
+        // Construct parsed arguments
+        const parsed: any = {};
+        for (const option of interaction.options.data) {
+            const type = option.type;
+            parsed[option.name] =
+                type === 'USER' ? option.user
+                : type === 'CHANNEL' ? option.channel
+                : type === 'ROLE' ? option.role
+                : option.value
+        }
+        await command.execute(interaction, parsed, tag);
+    } catch (error) {
+        // If the error was a result of bad code, log it
+        if (!(error instanceof CommandError)) {
+            console.error(`Error in command ${interaction.commandName} called in ${guild?.name ?? 'a DM'} at ${new Date()}: ${error}`);
+        }
+        const e = error as CommandError;
+        console.log(e.stack);
+        await interaction.reply({embeds: [err(e.name, e.message)]});
+    }
+})
 
 
 // Bot logs the following events:

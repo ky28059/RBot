@@ -5,19 +5,22 @@ import fs from 'fs';
 import {Command, SlashCommand} from './bot';
 
 const commands: Object[] = []; // better type perhaps
-const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
-
-const clientId = '123456789012345678';
-
-// Only push slash commands
-for (const file of commandFiles) {
-    import(`./commands/${file}`)
-        .then((command: Command | SlashCommand) => 'data' in command && commands.push(command.data.toJSON()));
-}
-
-const rest = new REST({ version: '9' }).setToken(token);
-
 (async () => {
+    console.log('Importing command files');
+
+    for (let dir of ['admin', 'music', 'normal', 'owner', 'presets']) {
+        const commandFiles = fs.readdirSync(`./commands/${dir}`).filter(file => file.endsWith('.ts'));
+
+        // Only push slash commands
+        for (const file of commandFiles) {
+            const command = (await import(`./commands/${dir}/${file.substring(0, file.length - 3)}`)).default as Command | SlashCommand
+            if ('data' in command) commands.push(command.data.toJSON());
+        }
+    }
+
+    const clientId = '684587440777986090';
+    const rest = new REST({ version: '9' }).setToken(token);
+
     try {
         console.log('Started refreshing application (/) commands.');
 
@@ -31,3 +34,4 @@ const rest = new REST({ version: '9' }).setToken(token);
         console.error(error);
     }
 })();
+

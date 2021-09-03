@@ -3,6 +3,7 @@
 
     Parser Syntax:
     [field] = String field
+    (field) = Number field
     [field]? = Optional field
     [...field] = Repeating field
     @[user] = Mention field
@@ -35,6 +36,7 @@ import {Command} from '../bot';
 
 import MissingArgumentError from '../errors/MissingArgumentError';
 import IllegalArgumentError from '../errors/IllegalArgumentError';
+import NumberConversionError from '../errors/NumberConversionError';
 
 
 // Regexes to get ID from mention (<@!someid> => someid)
@@ -58,7 +60,7 @@ export default function parse(argString: string, command: Command, client: Clien
     // Go down the queue of args and attempt to match 1:1 to patterns
     for (let i = 0; i < patterns.length; i++) {
 
-        const pattern = patterns[i].match(/^(?<prefix>[@#&]?)(?<bracket>[<\[])(?<repeating>(?:\.{3})?)(?<name>\w+)[\]>](?<optional>\??)$/)!;
+        const pattern = patterns[i].match(/^(?<prefix>[@#&]?)(?<bracket>[<\[(])(?<repeating>(?:\.{3})?)(?<name>\w+)[)\]>](?<optional>\??)$/)!;
         // @ts-ignore
         const { name, bracket, prefix, repeating, optional } = pattern.groups;
 
@@ -98,20 +100,25 @@ export default function parse(argString: string, command: Command, client: Clien
             args.unshift(arg)
             returnObj[name.toLowerCase()] = args
                 .map(arg => arg.replace(/^"|"$/g, '')) // Sanitize quotes
-                .map(arg => matchSingular(arg, prefix, name, client, guild, command));
+                .map(arg => matchSingular(arg, prefix, bracket, name, client, guild, command));
 
             return returnObj;
         }
 
         // Otherwise, match arg based on prefix
         arg = arg.replace(/^"|"$/g, ''); // Sanitize quotes
-        returnObj[name.toLowerCase()] = matchSingular(arg, prefix, name, client, guild, command);
+        returnObj[name.toLowerCase()] = matchSingular(arg, prefix, bracket, name, client, guild, command);
     }
 
     return returnObj;
 }
 
-function matchSingular(arg: string, prefix: string, name: string, client: Client, guild: Guild | undefined, command: Command) {
+function matchSingular(arg: string, prefix: string, bracket: string, name: string, client: Client, guild: Guild | undefined, command: Command) {
+    if (bracket === '(') { // Numbers
+        const num = Number(arg);
+        if (isNaN(num)) throw new NumberConversionError(command.name, name);
+        return num;
+    }
     switch (prefix) {
         case '@': // Users
             let userID = arg.match(mentionRegex)?.[1] ?? arg;

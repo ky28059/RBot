@@ -33,6 +33,7 @@
   },
   "scripts": {
     "start": "ts-node index.ts",
+    "registerSlashCommands": "ts-node registerSlashCommands.ts",
     "withoutSharding": "ts-node bot.ts",
     "offload": "ts-node index.ts --offload",
     "onload": "ts-node index.ts --onload"
