@@ -9,13 +9,13 @@ export default {
     description: 'Gets info about a command.',
     pattern: '[Command]?',
     examples: 'help censor',
-    async execute(target: Message | CommandInteraction, parsed: {command?: string}, tag: Guild) {
-        const client = target.client;
+    async execute(message: Message | CommandInteraction, parsed: {command?: string}, tag: Guild) {
+        const client = message.client;
         const commands = client.commands;
         const name = parsed.command;
 
         let prefix = '!';
-        const guild = target.guild;
+        const guild = message.guild;
         if (guild) prefix = tag.prefix;
 
         // If there were no arguments given
@@ -25,7 +25,7 @@ export default {
                 .setColor(0x333333)
                 .setTitle('Command List')
                 .setDescription(`Use \`${prefix}help [Command]\` for information about a command.`)
-                .setFooter(`Requested by ${author(target).tag}`);
+                .setFooter(`Requested by ${author(message).tag}`);
 
             for (const module of client.submodules)
                 commandListEmbed.addField(module,
@@ -34,7 +34,7 @@ export default {
                         .map(cmd => cmd.name)
                         .join(', '), true);
 
-            return reply(target, {embeds: [commandListEmbed]});
+            return reply(message, {embeds: [commandListEmbed]});
         }
 
         // If there were arguments given
@@ -45,7 +45,7 @@ export default {
         const helpEmbed = new MessageEmbed()
             .setColor(0x333333)
             .setTitle(`${command.name}`)
-            .setFooter(`Requested by ${author(target).tag}`);
+            .setFooter(`Requested by ${author(message).tag}`);
 
         if (command.description) helpEmbed.setDescription(`${command.description}`);
         if (command.commandGroup) helpEmbed.addField('**Command Group:**', `${command.commandGroup}`);
@@ -57,6 +57,6 @@ export default {
         if (command.permReqs) helpEmbed.addField('**Permissions Required:**',
             Array.isArray(command.permReqs) ? command.permReqs.join(', ') : command.permReqs.toString());
 
-        await reply(target, {embeds: [helpEmbed]});
+        await reply(message, {embeds: [helpEmbed]});
     }
 }

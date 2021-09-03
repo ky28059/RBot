@@ -1,14 +1,18 @@
-import {Message, MessageAttachment, MessageEmbed, Util} from 'discord.js';
+import {CommandInteraction, Message, MessageAttachment, MessageEmbed, Util} from 'discord.js';
+import {SlashCommandBuilder} from '@discordjs/builders';
 import fetch from 'node-fetch';
+import {author, reply} from '../../utils/messageUtils';
 
 
 export default {
-    name: 'mcstatus',
-    aliases: ['server'],
-    description: 'Gets server info of the specified Minecraft server.',
-    pattern: '[ServerIP]',
-    examples: 'mcstatus hypixel.net',
-    async execute(message: Message, parsed: {serverip: string}) {
+    data: new SlashCommandBuilder()
+        .setName('server')
+        .setDescription('Gets info about the specified Minecraft server.')
+        .addStringOption(option =>
+            option.setName('serverip')
+                .setDescription('The IP of the server to fetch')
+                .setRequired(true)),
+    async execute(message: Message | CommandInteraction, parsed: {serverip: string}) {
         const server = parsed.serverip;
         // https://api.mcsrvstat.us/
         const res = await (await fetch(`https://api.mcsrvstat.us/2/${server}`)).json();
@@ -25,7 +29,7 @@ export default {
                 .setDescription(res.motd.clean.join('\n'))
                 .addField('Players:', `${res.players.online} / ${res.players.max}`, true)
                 .addField('Version:', res.version, true)
-                .setFooter(`Requested by ${message.author.tag}`);
+                .setFooter(`Requested by ${author(message).tag}`);
 
             if (res.icon) {
                 // Convert data URI into image stream
@@ -37,6 +41,6 @@ export default {
                 serverEmbed.addField('Player List:', Util.escapeMarkdown(res.players.list.join(', ')));
         }
 
-        message.channel.send({files: attachment && [attachment], embeds: [serverEmbed]});
+        await reply(message, {files: attachment && [attachment], embeds: [serverEmbed]});
     }
 }

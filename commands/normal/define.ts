@@ -30,7 +30,7 @@ export default {
             option.setName('word')
                 .setDescription('The word to define')
                 .setRequired(true)),
-    async execute(target: Message | CommandInteraction, parsed: {word: string}) {
+    async execute(message: Message | CommandInteraction, parsed: {word: string}) {
         let word = parsed.word;
 
         // Try once with exact supplied word (allows matching of pages like Markov_chain where capitalization matters)
@@ -52,12 +52,12 @@ export default {
         // Sometimes res.title is omitted from the error response (???) so also check for res.detail
         if ('title' in res || 'detail' in res) {
             dictionaryEmbed.setAuthor(res.title ?? res.detail);
-            return reply(target, {embeds: [dictionaryEmbed]});
+            return reply(message, {embeds: [dictionaryEmbed]});
         }
 
         dictionaryEmbed
             .setURL(`https://en.wiktionary.org/wiki/${page}`)
-            .setFooter(`Requested by ${author(target).tag}`);
+            .setFooter(`Requested by ${author(message).tag}`);
 
         const pages = [];
         for (const lang of Object.keys(res)) {
@@ -83,7 +83,7 @@ export default {
             pages.push(langEmbed);
         }
 
-        await pagedMessage(target, pages);
+        await pagedMessage(message, pages);
     }
 }
 

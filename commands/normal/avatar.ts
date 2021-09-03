@@ -9,13 +9,13 @@ export default {
         .addUserOption(option =>
             option.setName('user')
                 .setDescription('The user to get the avatar of')),
-    async execute(target: Message | CommandInteraction, parsed: {user?: User}) {
-        const avatarTarget = parsed.user ?? author(target);
+    async execute(message: Message | CommandInteraction, parsed: {user?: User}) {
+        const avatarTarget = parsed.user ?? author(message);
         const avatarEmbed = new MessageEmbed()
             .setColor(0x333333)
             .setTitle(avatarTarget.username)
             .setImage(avatarTarget.displayAvatarURL({size: 4096, dynamic: true, format: 'png'}))
-            .setFooter(`Requested by ${author(target).tag}`);
-        await reply(target, {embeds: [avatarEmbed]});
+            .setFooter(`Requested by ${author(message).tag}`);
+        await reply(message, {embeds: [avatarEmbed]});
     }
 }

@@ -12,14 +12,14 @@ export default {
             option.setName('url')
                 .setDescription('The URL to fetch')
                 .setRequired(true)),
-    async execute(target: Message | CommandInteraction, parsed: {url: string}) {
+    async execute(message: Message | CommandInteraction, parsed: {url: string}) {
         const url = parsed.url;
         let source = await (await fetch(url)).text() || '[No Source Found]';
 
         const fetchEmbed = new MessageEmbed()
             .setColor(0x333333)
             .setTitle('Fetched:')
-            .setFooter(`Requested by ${author(target).tag}`)
+            .setFooter(`Requested by ${author(message).tag}`)
 
         const splitDescription = Util.splitMessage(source, {
             maxLength: 2048 - 12,
@@ -28,6 +28,6 @@ export default {
             append: '...'
         });
 
-        await pagedMessage(target, splitDescription.map(m => new MessageEmbed(fetchEmbed).setDescription(`\`\`\`html\n${m}\`\`\``)));
+        await pagedMessage(message, splitDescription.map(m => new MessageEmbed(fetchEmbed).setDescription(`\`\`\`html\n${m}\`\`\``)));
     }
 }
