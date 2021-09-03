@@ -51,7 +51,7 @@ export async function pagedMessage(target: Message | CommandInteraction, pages: 
             */
             new MessageButton()
                 .setCustomId('counter')
-                .setLabel(String(index))
+                .setLabel(String(index + 1))
                 .setDisabled(true)
                 .setStyle('SECONDARY'),
             new MessageButton()
@@ -69,10 +69,13 @@ export async function pagedMessage(target: Message | CommandInteraction, pages: 
 
     const authorID = target instanceof CommandInteraction ? target.user.id : target.author.id;
     const filter = (i: MessageComponentInteraction) =>
-        i.customId === 'button' && i.user.id === authorID;
+        i.componentType === 'BUTTON' && i.user.id === authorID;
     const collector = pagedMessage.createMessageComponentCollector({filter, time: 30000});
 
     collector.on('collect', i => {
+        // Defer component loading to prevent "This interaction failed"
+        i.deferUpdate();
+
         switch (i.customId) {
             case 'first':
                 index = 0;
@@ -87,7 +90,7 @@ export async function pagedMessage(target: Message | CommandInteraction, pages: 
                 index = pages.length - 1;
                 break;
         }
-        (buttonRow.components.find(x => x.customId === 'counter') as MessageButton).setLabel(String(index));
+        (buttonRow.components.find(x => x.customId === 'counter') as MessageButton).setLabel(String(index + 1));
         pagedMessage.edit({embeds: [pages[index]], components: [buttonRow]});
     });
 }
