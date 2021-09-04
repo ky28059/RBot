@@ -2,7 +2,7 @@
  Unreliable Discord moderator bot, built using Discord.js 13 and Node 16!
  
 #### Invite Link:
- https://discord.com/oauth2/authorize?client_id=684587440777986090&scope=bot%20applications.commands&permissions=8
+ https://discord.com/oauth2/authorize?client_id=684587440777986090&scope=bot+applications.commands&permissions=8
 
 # Additional Info
  
