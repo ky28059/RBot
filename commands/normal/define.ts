@@ -3,6 +3,7 @@ import {SlashCommandBuilder} from '@discordjs/builders';
 import fetch from 'node-fetch';
 import he from 'he';
 import {author, pagedMessage, reply} from '../../utils/messageUtils';
+import {URL} from "url";
 
 
 // The structure of the API response seems to be
@@ -92,7 +93,8 @@ function cleanWiktionaryHTMLString(str: string) {
     return he.decode(str) // decode HTML entities
         .replace(/<\/?i[^>]*>/g, '*') // replace <i> with markdown italics
         .replace(/<\/?b[^>]*>/g, '**') // replace <b> with markdown bold
-        .replace(/<a[^>]+href="([^"]+)"[^>]*>([^<]+)<\/a>/g, '[$2](https://en.wiktionary.org$1)') // replace <a> with markdown link, href in <a>s are assumed to be relative
+        .replace(/<a[^>]+href="([^"]+)"[^>]*>([^<]+)<\/a>/g,
+            (match, url, text) => `[${text}](${new URL(url, 'https://en.wiktionary.org/')})`) // replace <a> with markdown link
         .replace(/<link[^>]*>/g, '') // remove <link>, hackily allowing <li> parsing to work
         .replace(/<li[^>]*>/g, '-') // replace leading <li> with dash
         .replace(/<\/?\w+[^>]*>/g, '') // remove all other html elements (<span>, <ol> and <li>, etc.)

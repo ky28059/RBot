@@ -1,18 +1,15 @@
 # RBot
- Unreliable Discord moderator bot, built using Discord.js and Node 14!
+ Unreliable Discord moderator bot, built using Discord.js 13 and Node 16!
  
 #### Invite Link:
- https://discord.com/oauth2/authorize?client_id=684587440777986090&scope=bot&permissions=8
-
+ https://discord.com/oauth2/authorize?client_id=684587440777986090&scope=bot%20applications.commands&permissions=8
 
 # Additional Info
  
 ### Folder Structure:
- The main directory is divided into two parts: /backend, which contains the code for the bot, and /frontend, which contains the code for the website.
+ Sharding is handled by `index.ts` while the logic to run the bot is handled by `bot.ts`.
 
- In /backend, index.js is the file you load to start the bot, while the source code for the bot itself is in bot.js. 
-
- Utilities specifically used by bot.js are in /utils.
+ Utilities specifically used by `bot.ts` are in /utils.
  
  The commands that RBot uses can be located in /commands, and are organized into several subgroups:
  
@@ -33,12 +30,12 @@
  
  - Install the node.js dependencies with `npm install`.
  
- - Create a file named "auth.js" (js because importing from json in Node 14 is weird) in the root folder that exports both your discord bot token ([obtained here](https://discord.com/developers/applications)) and Youtube API key ([follow instructions here](https://developers.google.com/youtube/v3/getting-started)). The resulting file should look something like this:
+ - Create a file named "auth.ts" in the root folder that exports both your discord bot token ([obtained here](https://discord.com/developers/applications)) and Youtube API key ([follow instructions here](https://developers.google.com/youtube/v3/getting-started)). The resulting file should look something like this:
  ```js
  export const token = 'discord_token_here';
  export const youtubeAPIKey = 'youtube_API_key_here';
  ```
- - Update the owner id in bot.js with your own Discord ID. Though this step isn't *strictly* necessary (nothing will break if you skip this), without updating the id you will not be able to use owner only commands and DM forwarding.
+ - Update the owner id in bot.ts with your own Discord ID. Though this step isn't *strictly* necessary (nothing will break if you skip this), without updating the id you will not be able to use owner only commands and DM forwarding.
 
 After doing those things, you should be able to `node index.js` in the commandline and run the bot!
 
@@ -48,5 +45,4 @@ After doing those things, you should be able to `node index.js` in the commandli
  | Resource Name | Description |
  | ----------- | ----------- |
  | [Official discord.js guide](https://discordjs.guide/) | A neat guide that starts from the basics and covers almost everything you need to know for an efficient, functioning bot |
- | [discord.js documentation](https://discord.js.org/#/docs/main/stable/general/welcome) | Semi-self explanatory, the documentation for discord.js |
- | https://github.com/eritislami/evobot/ | A neat MIT licensed example of a music bot |
+ | [discord.js documentation](https://discord.js.org/#/docs/main/stable/general/welcome) | The documentation for discord.js |
