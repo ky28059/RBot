@@ -253,7 +253,7 @@ client.on('messageCreate', async message => {
         }
 
         try {
-            const parsed = parse(argString ?? '', command, client, guild ?? undefined);
+            const parsed = parse(argString ?? '', command, client, guild);
             await command.execute(message, parsed, tag);
         } catch (error) {
             // If the error was a result of bad code, log it

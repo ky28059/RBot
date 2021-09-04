@@ -45,7 +45,7 @@ const channelRegex = /^<#(\d+)>$/;
 const roleRegex = /^<@&(\d+)>$/;
 
 
-export default function parse(argString: string, command: Command, client: Client, guild: Guild | undefined) {
+export default function parse(argString: string, command: Command, client: Client, guild: Guild | null) {
     const returnObj: any = {};
     let index = 0; // Current index in the string for <Rest> patterns
 
@@ -113,7 +113,7 @@ export default function parse(argString: string, command: Command, client: Clien
     return returnObj;
 }
 
-function matchSingular(arg: string, prefix: string, bracket: string, name: string, client: Client, guild: Guild | undefined, command: Command) {
+function matchSingular(arg: string, prefix: string, bracket: string, name: string, client: Client, guild: Guild | null, command: Command) {
     if (bracket === '(') { // Numbers
         const num = Number(arg);
         if (isNaN(num)) throw new NumberConversionError(command.name, name);
