@@ -16,6 +16,18 @@ export function author(target: Message | CommandInteraction) {
     return target instanceof CommandInteraction ? target.user : target.author;
 }
 
+// Utility for slicing a string down to a set length
+export function truncate(string: string, len: number) {
+    if (string.length <= len) return string;
+
+    const diff = len - string.length;
+    // 24 is the length of truncateMessage without ${truncated}
+    const truncated = diff + 24 + String(diff + 24).length;
+    const truncateMessage = `\n[Truncated ${truncated} characters]`;
+
+    return string.slice(0, len - truncated) + truncateMessage;
+}
+
 // Utility for sending a lengthy, multi-paged embed message
 export async function pagedMessage(target: Message | CommandInteraction, pages: MessageEmbed[]) {
     if (!pages.length) return;

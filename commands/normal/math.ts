@@ -11,7 +11,7 @@ export default {
     description: 'Calculates a list of expressions using mathjs.',
     pattern: '[...Expressions]',
     examples: ['math "sqrt(3^2 + 4^2)"', 'math "x = 500" "x + 35"', 'math "f(x, y) = x^y" "f(2, 3)"'],
-    async execute(message: Message, parsed: {expressions: string}) {
+    async execute(message: Message, parsed: {expressions: string[]}) {
         if (!math.parser) return; // unsure why math is a partial
         const parser = math.parser();
 
@@ -24,7 +24,7 @@ export default {
             let parsed = parser.evaluate(expression);
 
             if (typeof parsed === 'function') parsed = '*Function definition*';
-            mathEmbed.addField(`\\> ${expression}`, parsed);
+            mathEmbed.addField(`\\> ${expression}`, String(parsed));
         }
 
         message.channel.send({embeds: [mathEmbed]});
