@@ -1,5 +1,5 @@
 import { canModifyQueue } from '../utils/canModifyQueue';
-import {Message} from 'discord.js';
+import {Message, VoiceChannel} from 'discord.js';
 import {die} from '../../utils/messages';
 
 import QueueNonexistentError from '../../errors/QueueNonexistentError';

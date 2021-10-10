@@ -91,11 +91,10 @@ export default {
 // Clean the unparsed API output into markdown-ready code
 function cleanWiktionaryHTMLString(str: string) {
     return he.decode(str) // decode HTML entities
-        .replace(/<\/?i[^>]*>/g, '*') // replace <i> with markdown italics
-        .replace(/<\/?b[^>]*>/g, '**') // replace <b> with markdown bold
-        .replace(/<a[^>]+href="([^"]+)"[^>]*>([^<]+)<\/a>/g,
-            (match, url, text) => `[${text}](${new URL(url, 'https://en.wiktionary.org/')})`) // replace <a> with markdown link
-        .replace(/<link[^>]*>/g, '') // remove <link>, hackily allowing <li> parsing to work
-        .replace(/<li[^>]*>/g, '-') // replace leading <li> with dash
+        .replace(/<\/?i(?:\s[^>]*)?>/g, '*') // replace <i> with markdown italics
+        .replace(/<\/?(?:b|strong)(?:\s[^>]*)?>/g, '**') // replace <b> and <strong> with markdown bold
+        .replace(/<a[^>]+href="([^"]+)"[^>]*>([^<]+)<\/a>/g, // replace <a> with markdown link with origin https://en.wiktionary.org/
+            (match, url, text) => `[${text}](${new URL(url, 'https://en.wiktionary.org/')})`)
+        .replace(/<li(?:\s[^>]*)?>/g, '-') // replace leading <li> with dash, making sure not to match <link>
         .replace(/<\/?\w+[^>]*>/g, '') // remove all other html elements (<span>, <ol> and <li>, etc.)
 }
