@@ -1,8 +1,10 @@
-import {isInField, removeFromField} from '../../utils/tokenManager.js';
-import {log} from "../utils/logger.js";
+import {isInField, removeFromField} from '../../utils/tokenManager';
+import {log} from "../utils/logger";
 
 // Errors
-import IllegalArgumentError from '../../errors/IllegalArgumentError.js';
+import IllegalArgumentError from '../../errors/IllegalArgumentError';
+import {Message} from 'discord.js';
+import {Guild} from '../../models/Guild';
 
 
 export default {
@@ -12,9 +14,9 @@ export default {
     examples: 'uncensor @example',
     guildOnly: true,
     permReqs: 'KICK_MEMBERS',
-    async execute(message, parsed, client, tag) {
-        const guild = message.guild;
-        const target = client.users.cache.get(parsed.target.match(/^<@!?(\d+)>$/)?.[1] ?? parsed.target);
+    async execute(message: Message, parsed: {target: string, rest?: string[]}, tag: Guild) {
+        const guild = message.guild!;
+        const target = message.client.users.cache.get(parsed.target.match(/^<@!?(\d+)>$/)?.[1] ?? parsed.target);
 
         // Uncensorship of users
         if (target) {
@@ -23,14 +25,17 @@ export default {
                 throw new IllegalArgumentError(this.name, `${target} was not censored`);
 
             await removeFromField(tag, 'censored_users', target.id);
-            await log(client, guild, tag.logchannel, 0x7f0000, target.tag, target.avatarURL(), `**${target} was uncensored by ${message.author} in ${message.channel}**\n[Jump to message](${message.url})`);
+            await log(message.client, guild, {
+                id: tag.logchannel, color: 0x7f0000, author: target.tag, authorIcon: target.displayAvatarURL(),
+                desc: `**${target} was uncensored by ${message.author} in ${message.channel}**\n[Jump to message](${message.url})`
+            });
             return message.channel.send(`Now uncensoring ${target.tag}!`);
         }
 
         // Uncensorship of words
         let phrases = [parsed.target];
         if (parsed.rest) phrases = phrases.concat(parsed.rest);
-        let uncensored = [];
+        let uncensored: string[] = [];
 
         for (let uncensorPhrase of phrases) {
             if (!isInField(tag, 'censored_words', uncensorPhrase, 'ҩ'))

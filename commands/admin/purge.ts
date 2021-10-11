@@ -1,11 +1,11 @@
 import {CommandInteraction, Message, User} from 'discord.js';
+import {SlashCommandBuilder} from '@discordjs/builders';
+import {reply} from '../../utils/messageUtils';
 import {success} from '../../utils/messages';
 
 // Errors
 import IntegerConversionError from '../../errors/IntegerConversionError';
 import IntegerRangeError from '../../errors/IntegerRangeError';
-import {reply} from "../../utils/messageUtils";
-import {SlashCommandBuilder} from "@discordjs/builders";
 
 
 export default {
@@ -23,8 +23,7 @@ export default {
     permReqs: 'MANAGE_MESSAGES',
     clientPermReqs: 'MANAGE_MESSAGES',
     async execute(message: Message | CommandInteraction, parsed: {count: number, target?: User}) {
-        let count = parsed.count;
-        const target = parsed.target;
+        const {count, target} = parsed;
 
         if (isNaN(count) || count % 1 !== 0)
             throw new IntegerConversionError('purge', 'Count');
@@ -34,14 +33,12 @@ export default {
         // Delete the original message so that more messages can be bulk deleted
         if (message instanceof Message) await message.delete()
 
-        let fetched = await message.channel!.messages.fetch({limit: count});
+        if (!message.channel) return;
+        let fetched = await message.channel.messages.fetch({limit: count});
+        if (target) fetched = fetched.filter(message => message.author.id === target.id); // Support purge by user
 
-        // Support purge by user
-        if (target)
-            fetched = fetched.filter(message => message.author.id === target.id);
-
-        if (!('bulkDelete' in message.channel!)) return;
-        await message.channel.bulkDelete(fetched)
-        await reply(message, {embeds: [success({desc: `Purged ${fetched.size} messages`})]})
+        if (!('bulkDelete' in message.channel)) return;
+        const deleted = await message.channel.bulkDelete(fetched, true);
+        await reply(message, {embeds: [success({desc: `Purged ${deleted.size} messages`})]});
     }
 }
