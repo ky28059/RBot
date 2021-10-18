@@ -449,7 +449,7 @@ client.on('guildMemberRemove', async (member) => {
 
     const leaveEmbed = new MessageEmbed()
         .setColor(0x333333)
-        .setAuthor('Member left the server', member.user?.displayAvatarURL())
+        .setAuthor('Member left the server', member.user?.displayAvatarURL({dynamic: true}))
         .setDescription(`${member.user} ${member.user?.tag ?? ''}`)
         .setFooter(`${new Date()}`);
 
