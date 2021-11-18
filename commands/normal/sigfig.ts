@@ -1,6 +1,5 @@
 import {Message} from 'discord.js';
 import NumberConversionError from '../../errors/NumberConversionError';
-import IntegerRangeError from '../../errors/IntegerRangeError';
 
 
 export default {
@@ -13,67 +12,24 @@ export default {
 
         if (isNaN(Number(number)))
             throw new NumberConversionError(this.name, 'Number');
-        if (Number(number) > Number.MAX_SAFE_INTEGER)
-            throw new IntegerRangeError(this.name, 'Number', undefined, 'the JS maximum safe integer');
 
         // Since e is never significant, ignore it for the calculations and add it in at the end
         let [num, expt] = number.split('e');
-        let exponent = expt !== undefined
-            ? `e${expt}`
-            : '';
+        let exponent = expt ? `e${expt}` : '';
 
-        let [whole, dec] = num.split('.');
-        if (dec !== undefined) {
-            // If a decimal point exists and the number is not 0, everything past the decimal point is significant
-            if (Number(whole)) {
-                let decimal = dec === '' ? '' : `**${dec}**`; // Sad but necessary to make sure no formatting errors occur with numbers like 400.
+        // Special case for 0 and variants (0.0)
+        if (Number(num) === 0)
+            return message.channel.send(`${number}, 0 significant figure(s).`);
 
-                let {text, significant} = parseTrailingZeroes(whole, true, false);
-                return message.channel.send(`${text}.${decimal}${exponent}, ${significant + dec.length} significant figure(s)`);
-            }
+        // Regex borrowed and modified from https://sheeptester.github.io/hello-world/sigfig
+        const [, before, sig, after, sig2, dot2, before3, sig3]
+            = num.match(/^-?(0*)(?:((?:[1-9][0-9]*)?[1-9])(0*)|([1-9][0-9]*(?:\.[0-9]+)?)(\.?)|\.(0*)([1-9][0-9]*))$/)!;
 
-            // Otherwise, preceding zeros are insignificant
-            let {text, significant} = parseTrailingZeroes(dec, true, false);
-            return message.channel.send(`${whole}.${text}${exponent}, ${significant} significant figure(s)`);
-        }
-
-        // For integers, both preceding and succeeding zeros are insignificant
-        let {text, significant} = parseTrailingZeroes(num, true, true);
-        message.channel.send(`${text}${exponent}, ${significant} significant figure(s)`);
+        if (sig) // Integers (first pattern) - 034500
+            return message.channel.send(`${before}**${sig}**${after}${exponent}, ${sig.length} significant figure(s).`);
+        if (sig2) // Decimals with nonzero left sides (second pattern) - 03.450
+            return message.channel.send(`${before}**${sig2}**${dot2}${exponent}, ${sig2.replace('.', '').length} significant figure(s).`);
+        if (sig3) // Decimals with zero left sides (third pattern) - 0.003450
+            return message.channel.send(`${before}.${before3}**${sig3}**${exponent}, ${sig3.replace('.', '').length} significant figure(s).`);
     }
-}
-
-const parseTrailingZeroes = (num: string, preceding: boolean, succeeding: boolean) => {
-    let temp = Number(num);
-    let left = 0, right = num.length; // Indexes for slicing
-
-    // Base case for 0 to prevent infinite loop
-    if (temp === 0) return {
-        text: num,
-        significant: 0
-    };
-
-    // If preceding zeros are insignificant
-    if (preceding) {
-        let zeros = num.match(/^0+/);
-        if (zeros) left = zeros[0].length;
-    }
-
-    // If succeeding zeros are insignificant
-    if (succeeding) {
-        // Loop until all trailing zeros have been sliced
-        while (temp % 10 === 0) {
-            temp /= 10;
-            right--;
-        }
-    }
-
-    let before = num.slice(0, left);
-    let significant = num.slice(left, right);
-    let after = num.slice(right);
-
-    return {
-        text: `${before}**${significant}**${after}`,
-        significant: significant.length
-    };
 }
