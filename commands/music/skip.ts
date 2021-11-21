@@ -1,4 +1,5 @@
-import {Message} from 'discord.js';
+import {CommandInteraction, GuildMember, Message} from 'discord.js';
+import {SlashCommandBuilder} from '@discordjs/builders';
 import { canModifyQueue } from '../utils/canModifyQueue';
 import {skip} from '../../utils/messages';
 
@@ -6,19 +7,21 @@ import QueueNonexistentError from '../../errors/QueueNonexistentError';
 
 
 export default {
-    name: 'skip',
+    data: new SlashCommandBuilder()
+        .setName('skip')
+        .setDescription('Skips the currently playing song.'),
     aliases: ['s'],
-    description: 'Skips the currently playing song.',
-    examples: 'skip',
     guildOnly: true,
-    async execute(message: Message) {
+    async execute(message: Message | CommandInteraction) {
+        if (!message.member || !(message.member instanceof GuildMember)) return;
+
         const subscription = message.client.subscriptions.get(message.guild!.id);
 
-        if (!subscription) throw new QueueNonexistentError(this.name);
-        if (!canModifyQueue(message.member!)) return;
+        if (!subscription) throw new QueueNonexistentError('skip');
+        if (!canModifyQueue(message.member)) return;
 
         // Calling .stop() on an AudioPlayer causes it to transition into the Idle state. Because of a state transition
-        // listener defined in music/subscription.ts, transitions into the Idle state mean the next track from the queue
+        // listener defined in `subscription.ts`, transitions into the Idle state mean the next track from the queue
         // will be loaded and played.
         subscription.audioPlayer.stop();
         await message.reply({embeds: [skip()]});

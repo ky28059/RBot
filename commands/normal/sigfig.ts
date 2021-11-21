@@ -27,9 +27,9 @@ export default {
 
         if (sig) // Integers (first pattern) - 034500
             return message.channel.send(`${before}**${sig}**${after}${exponent}, ${sig.length} significant figure(s).`);
-        if (sig2) // Decimals with nonzero left sides (second pattern) - 03.450
+        if (sig2) // Decimals with nonzero left sides (second pattern) - 03.450, 034500.
             return message.channel.send(`${before}**${sig2}**${dot2}${exponent}, ${sig2.replace('.', '').length} significant figure(s).`);
         if (sig3) // Decimals with zero left sides (third pattern) - 0.003450
-            return message.channel.send(`${before}.${before3}**${sig3}**${exponent}, ${sig3.replace('.', '').length} significant figure(s).`);
+            return message.channel.send(`${before}.${before3}**${sig3}**${exponent}, ${sig3.length} significant figure(s).`);
     }
 }

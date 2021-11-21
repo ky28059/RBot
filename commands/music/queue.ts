@@ -1,4 +1,5 @@
-import {Message, MessageEmbed, Util} from 'discord.js';
+import {CommandInteraction, Message, MessageEmbed, Util} from 'discord.js';
+import {SlashCommandBuilder} from '@discordjs/builders';
 import {AudioPlayerStatus, AudioResource} from '@discordjs/voice';
 import {Track} from '../utils/track';
 import {pagedMessage} from '../../utils/messageUtils';
@@ -7,21 +8,23 @@ import QueueNonexistentError from '../../errors/QueueNonexistentError';
 
 
 export default {
-    name: 'queue',
+    data: new SlashCommandBuilder()
+        .setName('queue')
+        .setDescription('Displays the current music queue.'),
     aliases: ['q'],
-    description: 'Displays the current music queue.',
-    examples: 'queue',
     guildOnly: true,
-    async execute(message: Message, parsed: {}) {
+    async execute(message: Message | CommandInteraction) {
         const subscription = message.client.subscriptions.get(message.guild!.id);
 
-        if (!subscription) throw new QueueNonexistentError(this.name);
+        if (!subscription) throw new QueueNonexistentError('queue');
 
         const current =
             subscription.audioPlayer.state.status === AudioPlayerStatus.Idle
                 ? `Nothing is currently playing!`
                 : `Playing **${(subscription.audioPlayer.state.resource as AudioResource<Track>).metadata.title}**`;
 
+        // TODO: make this look better and contain more information
+        // such as song length and "queued by"
         const description = subscription.queue
             .map((track, index) => `${index + 1}) ${Util.escapeMarkdown(track.title)}`)
 

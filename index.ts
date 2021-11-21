@@ -1,7 +1,8 @@
 import { ShardingManager } from 'discord.js';
-import { token } from './auth.js';
+import { token } from './auth';
 
 
+// Discord.js cannot shard typescript, so effectively sharding is dead
 const manager = new ShardingManager('./bot.ts', {
     // Persist flags downwards
     shardArgs: process.argv.slice(2),
