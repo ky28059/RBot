@@ -1,7 +1,7 @@
 import {CommandInteraction, GuildMember, Message, StageChannel} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 import {entersState, joinVoiceChannel, VoiceConnectionStatus} from '@discordjs/voice';
-import {reply} from '../../utils/messageUtils';
+import {author, reply} from '../../utils/messageUtils';
 import {Track} from '../utils/track';
 import {MusicSubscription} from '../utils/subscription';
 import {err, nowPlaying, success} from '../../utils/messages';
@@ -65,7 +65,7 @@ export default {
         await entersState(subscription.voiceConnection, VoiceConnectionStatus.Ready, 20e3);
 
         // Attempt to create a Track from the user's video URL
-        const track = await Track.from(url, {
+        const track = await Track.from(url, author(message).id, {
             onStart() {
                 message.channel?.send({embeds: [nowPlaying(track)]}).catch(console.warn);
             },

@@ -1,8 +1,9 @@
 import {CommandInteraction, Message, MessageEmbed, Util} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 import {AudioPlayerStatus, AudioResource} from '@discordjs/voice';
+import {pagedMessage, reply} from '../../utils/messageUtils';
 import {Track} from '../utils/track';
-import {pagedMessage} from '../../utils/messageUtils';
+import {success} from '../../utils/messages';
 
 import QueueNonexistentError from '../../errors/QueueNonexistentError';
 
@@ -18,18 +19,26 @@ export default {
 
         if (!subscription) throw new QueueNonexistentError('queue');
 
+        // TODO: do something with this
         const current =
             subscription.audioPlayer.state.status === AudioPlayerStatus.Idle
                 ? `Nothing is currently playing!`
                 : `Playing **${(subscription.audioPlayer.state.resource as AudioResource<Track>).metadata.title}**`;
 
-        // TODO: make this look better and contain more information
-        // such as song length and "queued by"
-        const description = subscription.queue
-            .map((track, index) => `${index + 1}) ${Util.escapeMarkdown(track.title)}`)
+        // If the queue is empty
+        if (!subscription.queue.length)
+            return reply(message, {embeds: [success({title: 'Queue', desc: 'Nothing is in the queue.'})]});
+
+        // TODO: make this look better
+        const description = subscription.queue.map((track, index) => {
+            const seconds = track.length % 60;
+            const minutes = (track.length - seconds) / 60;
+
+            return `${index + 1}) ${Util.escapeMarkdown(track.title)} ${minutes}:${seconds}`;
+        });
 
         let queueEmbed = new MessageEmbed()
-            .setTitle('Music Queue')
+            .setAuthor('Queue')
             .setColor('#F8AA2A');
 
         const splitDescription = Util.splitMessage(`\`\`\`elm\n${description.join('\n')}\n\`\`\``, {

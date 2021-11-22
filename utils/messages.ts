@@ -33,7 +33,7 @@ export function success({title, desc}: {title?: string, desc?: string}) {
 
 // The Now Playing embed for music commands
 export function nowPlaying(song: Track) {
-    return success({title: 'Now playing:', desc: `[${song.title}](${song.url})`});
+    return success({title: 'Now playing:', desc: `[${song.title}](${song.url}) [<@!${song.queuedBy}>]`});
 }
 
 // The Loop embed for music commands
