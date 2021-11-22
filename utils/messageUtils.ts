@@ -2,7 +2,7 @@ import {
     CommandInteraction, Message, MessageEmbed,
     MessageActionRow, MessageButton, MessageSelectMenu, MessageComponentInteraction, MessageOptions,
 } from 'discord.js';
-import {err} from "./messages";
+import {err} from './messages';
 
 
 // Replies to a message or interaction
