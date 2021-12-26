@@ -29,37 +29,29 @@ export default {
         const { channel } = message.member.voice;
         let subscription = message.client.subscriptions.get(message.guild!.id);
 
-        if (!channel) throw new MemberNotInVCError('play');
-
+        if (!channel)
+            throw new MemberNotInVCError('play');
         if (!channel.joinable)
             return reply(message, 'Cannot connect to voice channel, missing permissions');
         if (channel instanceof StageChannel || !channel.speakable)
             return reply(message, 'I cannot speak in this voice channel, make sure I have the proper permissions!');
-
-        if (subscription && channel !== message.guild!.me!.voice.channel)
-            throw new MusicAlreadyBoundError('play', message.guild!.me!.voice.channel!, channel);
+        if (subscription && message.guild!.me!.voice.channel && channel !== message.guild!.me!.voice.channel)
+            throw new MusicAlreadyBoundError('play', message.guild!.me!.voice.channel, channel);
 
         const url = parsed.url;
 
-        if (!subscription) {
-            if (message.member.voice.channel) {
-                const channel = message.member.voice.channel;
-                subscription = new MusicSubscription(
-                    joinVoiceChannel({
-                        channelId: channel.id,
-                        guildId: channel.guild.id,
-                        adapterCreator: channel.guild.voiceAdapterCreator,
-                    }),
-                );
-                subscription.voiceConnection.on('error', console.warn);
-                message.client.subscriptions.set(message.guild!.id, subscription);
-            }
-        }
-
-        // If there is no subscription, tell the user they need to join a channel.
-        if (!subscription) {
-            await reply(message, 'Join a voice channel and then try that again!');
-            return;
+        // If the subscription doesn't exist or if its VoiceConnection has been destroyed after a forced disconnect,
+        // create a new subscription and VoiceConnection by joining the channel
+        if (!subscription || !message.guild!.me!.voice.channel) {
+            subscription = new MusicSubscription(
+                joinVoiceChannel({
+                    channelId: channel.id,
+                    guildId: channel.guild.id,
+                    adapterCreator: channel.guild.voiceAdapterCreator,
+                }),
+            );
+            subscription.voiceConnection.on('error', console.warn);
+            message.client.subscriptions.set(message.guild!.id, subscription);
         }
 
         await entersState(subscription.voiceConnection, VoiceConnectionStatus.Ready, 20e3);

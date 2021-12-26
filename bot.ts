@@ -237,33 +237,34 @@ client.on('messageCreate', async message => {
         // List of conditions to check before executing command
         if (command.guildOnly && message.channel.type === 'DM') {
             const embed = err('DM_ERROR', 'Guild only command cannot be executed inside DMs');
-            await message.reply({embeds: [embed]});
+            await message.reply({embeds: [embed]}).catch();
             return;
         } else if (command.permReqs && !member?.permissions.has(command.permReqs)) {
             const embed = err('USER_PERMS_MISSING', `User lacks permissions: \`${command.permReqs}\``);
-            await message.reply({embeds: [embed]});
+            await message.reply({embeds: [embed]}).catch();
             return;
         } else if (command.clientPermReqs && !guild?.me?.permissions.has(command.clientPermReqs)) {
             const embed = err('CLIENT_PERMS_MISSING', `Client lacks permissions: \`${command.clientPermReqs}\``);
-            await message.reply({embeds: [embed]});
+            await message.reply({embeds: [embed]}).catch();
             return;
         } else if (command.ownerOnly && message.author.id !== client.ownerID) {
             const embed = err('OWNER_ONLY', 'Owner only command cannot be invoked by non owner');
-            await message.reply({embeds: [embed]});
+            await message.reply({embeds: [embed]}).catch();
             return;
         }
 
         try {
             const parsed = parse(argString ?? '', command, client, guild);
             await command.execute(message, parsed, tag);
-        } catch (error) {
+        } catch (e) {
+            if (!(e instanceof Error)) return;
+
             // If the error was a result of bad code, log it
-            if (!(error instanceof CommandError)) {
-                console.error(`Error in command ${commandName} called in ${guild?.name ?? 'a DM'} at ${new Date()}: ${error}`);
+            if (!(e instanceof CommandError)) {
+                console.error(`Error in command ${commandName} called in ${guild?.name ?? 'a DM'} at ${new Date()}: ${e}`);
+                console.error(e.stack);
             }
-            const e = error as CommandError;
-            console.log(e.stack);
-            await message.reply({embeds: [err(e.name, e.message)]});
+            await message.reply({embeds: [err(e.name, e.message)]}).catch();
         }
 
         // adds user to set if they have used a command recently
@@ -298,19 +299,19 @@ client.on('interactionCreate', async interaction => {
     // List of conditions to check before executing command
     if (command.guildOnly && interaction.channel!.type === 'DM') {
         const embed = err('DM_ERROR', 'Guild only command cannot be executed inside DMs');
-        await interaction.reply({embeds: [embed]});
+        await interaction.reply({embeds: [embed]}).catch();
         return;
     } else if (command.permReqs && interaction.member instanceof GuildMember && !interaction.member.permissions.has(command.permReqs)) {
         const embed = err('USER_PERMS_MISSING', `User lacks permissions: \`${command.permReqs}\``);
-        await interaction.reply({embeds: [embed]});
+        await interaction.reply({embeds: [embed]}).catch();
         return;
     } else if (command.clientPermReqs && !guild?.me?.permissions.has(command.clientPermReqs)) {
         const embed = err('CLIENT_PERMS_MISSING', `Client lacks permissions: \`${command.clientPermReqs}\``);
-        await interaction.reply({embeds: [embed]});
+        await interaction.reply({embeds: [embed]}).catch();
         return;
     } else if (command.ownerOnly && interaction.user.id !== client.ownerID) {
         const embed = err('OWNER_ONLY', 'Owner only command cannot be invoked by non owner');
-        await interaction.reply({embeds: [embed]});
+        await interaction.reply({embeds: [embed]}).catch();
         return;
     }
 
@@ -326,14 +327,15 @@ client.on('interactionCreate', async interaction => {
                 : option.value
         }
         await command.execute(interaction, parsed, tag);
-    } catch (error) {
+    } catch (e) {
+        if (!(e instanceof Error)) return;
+
         // If the error was a result of bad code, log it
-        if (!(error instanceof CommandError)) {
-            console.error(`Error in command ${interaction.commandName} called in ${guild?.name ?? 'a DM'} at ${new Date()}: ${error}`);
+        if (!(e instanceof CommandError)) {
+            console.error(`Error in command ${interaction.commandName} called in ${guild?.name ?? 'a DM'} at ${new Date()}: ${e}`);
+            console.error(e.stack);
         }
-        const e = error as CommandError;
-        console.log(e.stack);
-        await interaction.reply({embeds: [err(e.name, e.message)]});
+        await interaction.reply({embeds: [err(e.name, e.message)]}).catch();
     }
 })
 
