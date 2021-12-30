@@ -343,19 +343,24 @@ client.on('interactionCreate', async interaction => {
 // Bot logs the following events:
 
 client.on('messageDelete', async message => {
-    if (!message.guild) return; // Ignores DMs
-    if (message.author?.bot) return; // Bot ignores itself and other bots
+    if (!message.guild) return; // Ignore DMs
+    if (message.author?.bot) return; // Ignore other bots
 
-    const guild = message.guild;
-    const tag = (await GuildPresets.findOne({ where: { guildID: guild.id } }))!;
+    const tag = (await GuildPresets.findOne({ where: { guildID: message.guild.id } }))!;
 
     if (tag.censored_users && isInField(tag, 'censored_users', message.author?.id)) return; // prevents double logging of censored messages, probably better way of doing this
     if (!(tag.logchannel && tag.log_message_delete)) return;
 
-    let desc = truncate(`**Message by ${message.author} in ${message.channel} was deleted:**\n${message.content}`, 4096); // embed descriptions have a character limit of 4096
-    await log(client, guild, {
+    const desc = truncate(`**Message by ${message.author} in ${message.channel} was deleted:**\n${message.content ?? '*[Partial message]*'}`, 4096); // embed descriptions have a character limit of 4096
+
+    // Add attachments field if message attachments existed
+    const fields = message.attachments.size
+        ? [{name: 'Attachments:', value: message.attachments.map(a => a.name).join(', ')}]
+        : undefined;
+
+    await log(client, message.guild, {
         id: tag.logchannel, color: 0xb50300, author: message.author?.tag, authorIcon: message.author?.displayAvatarURL(),
-        desc: desc
+        desc, fields
     });
 });
 
@@ -373,30 +378,29 @@ client.on('messageDeleteBulk', async messages => {
 });
 
 client.on('messageUpdate', async (oldMessage, newMessage) => {
-    if (!oldMessage.guild) return; // Ignores DMs
-    if (oldMessage.author?.bot) return; // Bot ignores itself and other bots
-    if (oldMessage.content === newMessage.content) return; // fixes weird link preview glitch
+    if (!oldMessage.guild) return; // Ignore DMs
+    if (oldMessage.author?.bot) return; // Ignore other bots
+    if (oldMessage.content === newMessage.content) return; // Resolve glitches where old and new content are identical but an event is fired
 
-    const guild = oldMessage.guild;
-    const tag = (await GuildPresets.findOne({ where: { guildID: guild.id } }))!;
+    const tag = (await GuildPresets.findOne({ where: { guildID: oldMessage.guild.id } }))!;
     if (!(tag.logchannel && tag.log_message_edit)) return;
 
-    let desc = `**Message by ${oldMessage.author} in ${oldMessage.channel} was edited:** [Jump to message](${newMessage.url})`;
-    let truncatedBefore = truncate(oldMessage.content ?? '*Partial message*', 1024); // embed fields have a character limit of 1024
-    let truncatedAfter = truncate(newMessage.content ?? '*Partial message*', 1024);
-    let fields = [{name: 'Before:', value: truncatedBefore}, {name: 'After:', value: truncatedAfter}];
+    const desc = `**Message by ${oldMessage.author} in ${oldMessage.channel} was edited:** [Jump to message](${newMessage.url})`;
+    const fields = [
+        {name: 'Before:', value: truncate((oldMessage.content ?? '*[Partial message]*') || '*[Empty message]*', 1024)}, // embed fields have a character limit of 1024
+        {name: 'After:', value: truncate((newMessage.content ?? '*[Partial message]*') || '*[Empty message]*', 1024)}
+    ];
 
-    await log(client, guild, {
+    await log(client, oldMessage.guild, {
         id: tag.logchannel, color: 0xed7501, author: oldMessage.author?.tag, authorIcon: oldMessage.author?.displayAvatarURL(),
-        desc: desc, fields: fields
+        desc, fields
     });
 });
 
 client.on('guildMemberUpdate', async (oldMember, newMember) => { // TODO: finish this by adding role logging
-    if (oldMember.user?.bot) return;
+    if (oldMember.user?.bot) return; // Ignore bots
 
-    const guild = oldMember.guild;
-    const tag = (await GuildPresets.findOne({ where: { guildID: guild.id } }))!;
+    const tag = (await GuildPresets.findOne({ where: { guildID: oldMember.guild.id } }))!;
     if (!(tag.logchannel && tag.log_nickname_change)) return; // will have to update later if I wish to use this for more things than nickname changes
 
     // not sure how compatible this is with new log function
@@ -412,7 +416,8 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => { // TODO: finish
                 {name: 'Before:', value: oldMember.nickname || 'None'},
                 {name: 'After:', value: newMember.nickname || 'None'}
             );
-        (client.channels.cache.get(tag.logchannel) as TextChannel)?.send({embeds: [updateEmbed]}).catch(error => console.error(`guildMemberUpdate in ${guild} could not be logged because of ${error}!`));
+        (client.channels.cache.get(tag.logchannel) as TextChannel)?.send({embeds: [updateEmbed]})
+            .catch(error => console.error(`guildMemberUpdate in ${oldMember.guild} could not be logged because of ${error}!`));
     }
 });
 
