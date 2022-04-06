@@ -28,10 +28,10 @@
     "ytdl-core": "^4.9.2"
   },
   "scripts": {
-    "start": "ts-node index.ts",
+    "start": "ts-node bot.ts",
     "registerSlashCommands": "ts-node registerSlashCommands.ts",
     "withoutSharding": "ts-node bot.ts",
-    "offload": "ts-node index.ts --offload",
-    "onload": "ts-node index.ts --onload"
+    "offload": "ts-node bot.ts --offload",
+    "onload": "ts-node bot.ts --onload"
   }
 }
