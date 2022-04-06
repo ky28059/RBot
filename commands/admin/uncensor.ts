@@ -1,10 +1,12 @@
+import {Message} from 'discord.js';
+import {Guild} from '../../models/Guild';
+
+// Utilities
 import {isInField, removeFromField} from '../../utils/tokenManager';
-import {log} from "../utils/logger";
+import {log} from '../../utils/logger';
 
 // Errors
 import IllegalArgumentError from '../../errors/IllegalArgumentError';
-import {Message} from 'discord.js';
-import {Guild} from '../../models/Guild';
 
 
 export default {
@@ -16,6 +18,7 @@ export default {
     permReqs: 'KICK_MEMBERS',
     async execute(message: Message, parsed: {target: string, rest?: string[]}, tag: Guild) {
         const guild = message.guild!;
+        // TODO: think of a way to support multiple patterns so that this isn't necessary
         const target = message.client.users.cache.get(parsed.target.match(/^<@!?(\d+)>$/)?.[1] ?? parsed.target);
 
         // Uncensorship of users

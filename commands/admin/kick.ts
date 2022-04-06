@@ -1,7 +1,9 @@
 import {CommandInteraction, Message, User} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
-import {log} from '../utils/logger';
-import {author, reply} from '../../utils/messageUtils';
+
+// Utilities
+import {log} from '../../utils/logger';
+import {author, replyEmbed} from '../../utils/messageUtils';
 import {success} from '../../utils/messages';
 import {Guild} from '../../models/Guild';
 
@@ -15,13 +17,13 @@ export default {
     data: new SlashCommandBuilder()
         .setName('kick')
         .setDescription('Kick a user from this server.')
-        .addUserOption(option =>
-            option.setName('target')
-                .setDescription('The user to kick')
-                .setRequired(true))
-        .addStringOption(option =>
-            option.setName('reason')
-                .setDescription('The reason for the kick')),
+        .addUserOption(option => option
+            .setName('target')
+            .setDescription('The user to kick')
+            .setRequired(true))
+        .addStringOption(option => option
+            .setName('reason')
+            .setDescription('The reason for the kick')),
     examples: 'kick @example "Spamming in #general"',
     guildOnly: true,
     permReqs: 'KICK_MEMBERS',
@@ -44,6 +46,6 @@ export default {
             id: tag.logchannel, color: 0x7f0000, author: target.user.tag, authorIcon: target.user.displayAvatarURL(),
             desc: `**${target.user} has been kicked by ${author(message)} for the reason:**\n${reason}`
         });
-        await reply(message, {embeds: [success({desc: `Kicked ${target}`})]});
+        await replyEmbed(message, success({desc: `Kicked ${target}`}));
     }
 }

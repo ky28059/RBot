@@ -1,8 +1,12 @@
 import {CommandInteraction, GuildMember, Message} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
-import { canModifyQueue } from '../utils/canModifyQueue';
+
+// Utilities
+import {replyEmbed} from '../../utils/messageUtils';
+import { canModifyQueue } from '../../utils/canModifyQueue';
 import {skip} from '../../utils/messages';
 
+// Errors
 import QueueNonexistentError from '../../errors/QueueNonexistentError';
 
 
@@ -14,7 +18,6 @@ export default {
     guildOnly: true,
     async execute(message: Message | CommandInteraction) {
         if (!message.member || !(message.member instanceof GuildMember)) return;
-
         const subscription = message.client.subscriptions.get(message.guild!.id);
 
         if (!subscription) throw new QueueNonexistentError('skip');
@@ -24,6 +27,6 @@ export default {
         // listener defined in `subscription.ts`, transitions into the Idle state mean the next track from the queue
         // will be loaded and played.
         subscription.audioPlayer.stop();
-        await message.reply({embeds: [skip()]});
+        await replyEmbed(message, skip());
     }
 };

@@ -1,8 +1,12 @@
 import {CommandInteraction, GuildMember, Message} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
-import { canModifyQueue } from '../utils/canModifyQueue';
+
+// Utilities
+import {replyEmbed} from '../../utils/messageUtils';
+import { canModifyQueue } from '../../utils/canModifyQueue';
 import {die} from '../../utils/messages';
 
+// Errors
 import QueueNonexistentError from '../../errors/QueueNonexistentError';
 
 
@@ -18,11 +22,11 @@ export default {
         const subscription = message.client.subscriptions.get(message.guild!.id);
 
         if (!subscription) throw new QueueNonexistentError('disconnect');
-        if (!canModifyQueue(message.member!)) return;
+        if (!canModifyQueue(message.member)) return;
 
         subscription.voiceConnection.destroy();
         message.client.subscriptions.delete(message.guild!.id);
 
-        await message.reply({embeds: [die()]});
+        await replyEmbed(message, die());
     }
 };

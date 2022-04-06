@@ -1,5 +1,5 @@
 import {isInField, addToField, removeFromField} from '../../utils/tokenManager.js';
-import {log} from '../utils/logger.js';
+import {log} from '../../utils/logger.ts';
 import {success} from '../../utils/messages.js';
 
 // Errors

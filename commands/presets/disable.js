@@ -1,5 +1,5 @@
 import {isInField, addToField} from '../../utils/tokenManager.js';
-import {log} from '../utils/logger.js';
+import {log} from '../../utils/logger.ts';
 
 // Errors
 import IllegalArgumentError from '../../errors/IllegalArgumentError.js';

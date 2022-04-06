@@ -18,9 +18,7 @@ export default {
         const commands = client.commands;
         const name = parsed.command;
 
-        let prefix = '!';
-        const guild = message.guild;
-        if (guild) prefix = tag.prefix;
+        const prefix = tag?.prefix ?? '!';
 
         // If there were no arguments given
         if (!name) {

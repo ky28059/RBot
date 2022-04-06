@@ -1,6 +1,8 @@
 import {CommandInteraction, Message, User} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
-import {reply} from '../../utils/messageUtils';
+
+// Utilities
+import {replyEmbed} from '../../utils/messageUtils';
 import {success} from '../../utils/messages';
 
 // Errors
@@ -12,13 +14,13 @@ export default {
     data: new SlashCommandBuilder()
         .setName('expunge')
         .setDescription('Removes all reactions from the specified amount of messages in the channel.')
-        .addIntegerOption(option =>
-            option.setName('count')
-                .setDescription('The number of messages to expunge')
-                .setRequired(true))
-        .addUserOption(option =>
-            option.setName('target')
-                .setDescription('The person to expunge reactions from')),
+        .addIntegerOption(option => option
+            .setName('count')
+            .setDescription('The number of messages to expunge')
+            .setRequired(true))
+        .addUserOption(option => option
+            .setName('target')
+            .setDescription('The person to expunge reactions from')),
     examples: 'expunge 80',
     guildOnly: true,
     permReqs: 'MANAGE_MESSAGES',
@@ -35,11 +37,9 @@ export default {
         let fetched = await message.channel.messages.fetch({limit: count + 1})
         if (target) fetched = fetched.filter(message => message.author.id === target.id); // Support expunge by user
 
-        [...fetched.values()].forEach(message =>
-            message.reactions.cache.size > 0
-                ? message.reactions.removeAll()
-                : null
-        );
-        await reply(message, {embeds: [success({desc: `Expunged ${count} messages`})]})
+        [...fetched.values()].forEach(message => {
+            if (message.reactions.cache.size > 0) message.reactions.removeAll();
+        });
+        await replyEmbed(message, success({desc: `Expunged ${count} messages`}));
     }
 }

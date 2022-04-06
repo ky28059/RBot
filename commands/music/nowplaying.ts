@@ -1,10 +1,13 @@
 import {CommandInteraction, Message} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 import {AudioPlayerStatus, AudioResource} from '@discordjs/voice';
-import {reply} from '../../utils/messageUtils';
-import {Track} from '../utils/track';
+
+// Utilities
+import {reply, replyEmbed} from '../../utils/messageUtils';
+import {Track} from '../../utils/track';
 import {nowPlaying, success} from '../../utils/messages';
 
+// Errors
 import QueueNonexistentError from '../../errors/QueueNonexistentError';
 
 
@@ -21,9 +24,9 @@ export default {
 
         // If nothing is currently playing
         if (subscription.audioPlayer.state.status === AudioPlayerStatus.Idle)
-            return reply(message, {embeds: [success({desc: 'Nothing is playing!'})]})
+            return replyEmbed(message, success({desc: 'Nothing is playing!'}));
 
         const track = (subscription.audioPlayer.state.resource as AudioResource<Track>).metadata;
-        await reply(message, {embeds: [nowPlaying(track)]});
+        await replyEmbed(message, nowPlaying(track));
     }
 };

@@ -1,7 +1,9 @@
 import {Message} from 'discord.js';
 import {Guild} from '../../models/Guild';
+
+// Utilities
 import {isInField, addToField} from '../../utils/tokenManager';
-import {log} from '../utils/logger';
+import {log} from '../../utils/logger';
 
 // Errors
 import IllegalArgumentError from '../../errors/IllegalArgumentError';

@@ -1,6 +1,8 @@
 import {CommandInteraction, Message, User} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
-import {reply} from '../../utils/messageUtils';
+
+// Utilities
+import {replyEmbed} from '../../utils/messageUtils';
 import {success} from '../../utils/messages';
 
 // Errors
@@ -12,13 +14,13 @@ export default {
     data: new SlashCommandBuilder()
         .setName('purge')
         .setDescription('Bulk deletes the specified amount of messages in the channel, or only messages sent by a given user.')
-        .addIntegerOption(option =>
-            option.setName('count')
-                .setDescription('The number of messages to purge')
-                .setRequired(true))
-        .addUserOption(option =>
-            option.setName('target')
-                .setDescription('The person to delete messages from')),
+        .addIntegerOption(option => option
+            .setName('count')
+            .setDescription('The number of messages to purge')
+            .setRequired(true))
+        .addUserOption(option => option
+            .setName('target')
+            .setDescription('The person to delete messages from')),
     guildOnly: true,
     permReqs: 'MANAGE_MESSAGES',
     clientPermReqs: 'MANAGE_MESSAGES',
@@ -39,6 +41,6 @@ export default {
 
         if (!('bulkDelete' in message.channel)) return;
         const deleted = await message.channel.bulkDelete(fetched, true);
-        await reply(message, {embeds: [success({desc: `Purged ${deleted.size} messages`})]});
+        await replyEmbed(message, success({desc: `Purged ${deleted.size} messages`}));
     }
 }

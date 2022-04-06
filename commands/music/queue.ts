@@ -1,10 +1,13 @@
 import {CommandInteraction, Message, MessageEmbed, Util} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 import {AudioPlayerStatus, AudioResource} from '@discordjs/voice';
+
+// Utilities
 import {pagedMessage, reply} from '../../utils/messageUtils';
-import {Track} from '../utils/track';
+import {Track} from '../../utils/track';
 import {success} from '../../utils/messages';
 
+// Errors
 import QueueNonexistentError from '../../errors/QueueNonexistentError';
 
 
@@ -37,7 +40,7 @@ export default {
             return `${index + 1}) ${Util.escapeMarkdown(track.title)} ${minutes}:${seconds}`;
         });
 
-        let queueEmbed = new MessageEmbed()
+        const queueEmbed = new MessageEmbed()
             .setAuthor('Queue')
             .setColor('#F8AA2A');
 

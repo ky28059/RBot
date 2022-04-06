@@ -1,4 +1,4 @@
-import { canModifyQueue } from "../utils/canModifyQueue.js";
+import { canModifyQueue } from "../../utils/canModifyQueue.ts";
 import {success} from '../../utils/messages.js';
 
 // Errors

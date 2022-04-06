@@ -1,24 +1,27 @@
 import {CommandInteraction, GuildMember, Message, StageChannel} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 import {entersState, joinVoiceChannel, VoiceConnectionStatus} from '@discordjs/voice';
-import {author, reply} from '../../utils/messageUtils';
-import {Track} from '../utils/track';
-import {MusicSubscription} from '../utils/subscription';
+
+// Utilities
+import {author, replyEmbed} from '../../utils/messageUtils';
+import {Track} from '../../utils/track';
+import {MusicSubscription} from '../../utils/subscription';
 import {err, nowPlaying, success} from '../../utils/messages';
 
 // Errors
 import MemberNotInVCError from '../../errors/MemberNotInVCError';
 import MusicAlreadyBoundError from '../../errors/MusicAlreadyBoundError';
+import ActionUntakeableError from '../../errors/ActionUntakeableError';
 
 
 export default {
     data: new SlashCommandBuilder()
         .setName('play')
         .setDescription('Plays a video from youtube.')
-        .addStringOption(option =>
-            option.setName('url')
-                .setDescription('The video to play')
-                .setRequired(true)),
+        .addStringOption(option => option
+            .setName('url')
+            .setDescription('The video to play')
+            .setRequired(true)),
     aliases: ['p'],
     examples: ['play https://www.youtube.com/watch?v=dQw4w9WgXcQ'],
     guildOnly: true,
@@ -32,9 +35,9 @@ export default {
         if (!channel)
             throw new MemberNotInVCError('play');
         if (!channel.joinable)
-            return reply(message, 'Cannot connect to voice channel, missing permissions');
+            throw new ActionUntakeableError('play', `Cannot connect to channel \`${channel.name}\`, missing permissions`);
         if (channel instanceof StageChannel || !channel.speakable)
-            return reply(message, 'I cannot speak in this voice channel, make sure I have the proper permissions!');
+            throw new ActionUntakeableError('play', `Cannot speak in channel \`${channel.name}\`, missing permissions`);
         if (subscription && message.guild!.me!.voice.channel && channel !== message.guild!.me!.voice.channel)
             throw new MusicAlreadyBoundError('play', message.guild!.me!.voice.channel, channel);
 
@@ -70,6 +73,6 @@ export default {
 
         // Enqueue the track and reply a success message to the user
         subscription.enqueue(track);
-        await reply(message, {embeds: [success({desc: `Enqueued **${track.title}**`})]});
+        await replyEmbed(message, success({desc: `Enqueued **${track.title}**`}));
     }
 };
