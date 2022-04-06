@@ -1,5 +1,5 @@
 import {MessageEmbed} from 'discord.js'
-import {Track} from '../commands/utils/track';
+import {Track} from './track';
 
 
 const errEmbed = new MessageEmbed()

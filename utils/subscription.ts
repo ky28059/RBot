@@ -20,9 +20,13 @@ const wait = promisify(setTimeout);
 export class MusicSubscription {
     public readonly voiceConnection: VoiceConnection;
     public readonly audioPlayer: AudioPlayer;
+
     public queue: Track[];
     public queueLock = false;
     public readyLock = false;
+
+    public index = 0;
+    public queueLoop = false;
 
     public constructor(voiceConnection: VoiceConnection) {
         this.voiceConnection = voiceConnection;
@@ -103,8 +107,7 @@ export class MusicSubscription {
 
     /**
      * Adds a new Track to the queue.
-     *
-     * @param track The track to add to the queue
+     * @param track The track to add to the queue.
      */
     public enqueue(track: Track) {
         this.queue.push(track);
@@ -112,7 +115,7 @@ export class MusicSubscription {
     }
 
     /**
-     * Stops audio playback and empties the queue
+     * Stops audio playback and empties the queue.
      */
     public stop() {
         this.queueLock = true;
@@ -120,29 +123,33 @@ export class MusicSubscription {
         this.audioPlayer.stop(true);
     }
 
-    // Shuffles the queue
+    /**
+     * Shuffles the queue.
+     */
     public shuffle() {
         const songs = this.queue;
+        this.queueLock = true;
         for (let i = songs.length - 1; i > 1; i--) {
             let j = 1 + Math.floor(Math.random() * i);
             [songs[i], songs[j]] = [songs[j], songs[i]];
         }
         this.queue = songs;
+        this.queueLock = false;
     }
 
     /**
-     * Attempts to play a Track from the queue
+     * Attempts to play a Track from the queue.
      */
     private async processQueue(): Promise<void> {
-        // If the queue is locked (already being processed), is empty, or the audio player is already playing something, return
-        if (this.queueLock || this.audioPlayer.state.status !== AudioPlayerStatus.Idle || this.queue.length === 0) {
+        // If the queue is locked (already being processed), the end of the queue has been reached,
+        // or the audio player is already playing something, return.
+        if (this.queueLock || this.audioPlayer.state.status !== AudioPlayerStatus.Idle || this.index >= this.queue.length) {
             return;
         }
-        // Lock the queue to guarantee safe access
         this.queueLock = true;
 
-        // Take the first item from the queue. This is guaranteed to exist due to the non-empty check above.
-        const nextTrack = this.queue.shift()!;
+        // Take the next item from the queue. This is guaranteed to exist due to the non-empty check above.
+        const nextTrack = this.queue[this.index]!;
         try {
             // Attempt to convert the Track into an AudioResource (i.e. start streaming the video)
             const resource = await nextTrack.createAudioResource();
@@ -152,7 +159,13 @@ export class MusicSubscription {
             // If an error occurred, try the next item of the queue instead
             nextTrack.onError(error as Error);
             this.queueLock = false;
+            this.index++; // TODO: is there a better way to structure this so that this isn't repeated?
             return this.processQueue();
         }
+
+        // Increment index to play the next song the next time this is called.
+        // If we're looping, wrap index to start playing from the beginning
+        this.index++;
+        if (this.queueLoop) this.index %= this.queue.length;
     }
 }

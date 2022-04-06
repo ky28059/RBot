@@ -3,7 +3,7 @@ import {
     PermissionResolvable, TextChannel, Snowflake, CommandInteraction, GuildMember
 } from 'discord.js';
 import {SlashCommandBuilder} from "@discordjs/builders";
-import {MusicSubscription} from './commands/utils/subscription';
+import {MusicSubscription} from './utils/subscription';
 import {Sequelize} from 'sequelize';
 import yargs from 'yargs';
 import fs from 'fs';
@@ -12,7 +12,7 @@ import fs from 'fs';
 import {token} from './auth';
 
 // Utils
-import {log} from './commands/utils/logger';
+import {log} from './utils/logger';
 import parse from './utils/argumentParser';
 import {update, isInField, containsField} from './utils/tokenManager';
 import {truncate} from './utils/messageUtils';

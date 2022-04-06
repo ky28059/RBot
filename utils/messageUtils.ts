@@ -5,19 +5,24 @@ import {
 import {err} from './messages';
 
 
-// Replies to a message or interaction
+// Replies to a message or interaction.
 export async function reply(target: Message | CommandInteraction, content: string | MessageOptions) {
     return target instanceof CommandInteraction
-        ? target.reply({...(typeof content === 'string' ? {content: content} : content), fetchReply: true})
+        ? target.reply({...(typeof content === 'string' ? {content} : content), fetchReply: true})
         : target.channel.send(content);
 }
 
-// Returns the author of a message or interaction
+// Replies to a message or interaction with the specified embed.
+export async function replyEmbed(target: Message | CommandInteraction, embed: MessageEmbed) {
+    return reply(target, {embeds: [embed]})
+}
+
+// Returns the author of a message or interaction.
 export function author(target: Message | CommandInteraction) {
     return target instanceof CommandInteraction ? target.user : target.author;
 }
 
-// Utility for slicing a string down to a set length
+// Slices a string down to a set length.
 export function truncate(string: string, len: number) {
     if (string.length <= len) return string;
 
@@ -29,7 +34,7 @@ export function truncate(string: string, len: number) {
     return string.slice(0, len - truncated) + truncateMessage;
 }
 
-// Utility for sending a lengthy, multi-paged embed message
+// Sends a multi-embed, paginated message.
 export async function pagedMessage(target: Message | CommandInteraction, pages: MessageEmbed[]) {
     if (!pages.length) return;
     if (pages.length === 1) return reply(target, {embeds: [pages[0]]});
