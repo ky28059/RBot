@@ -26,6 +26,6 @@ export default {
 
         // Toggle the queue loop
         subscription.queueLoop = !subscription.queueLoop;
-        return replyEmbed(message, success({desc: `Loop set to **${subscription.queueLoop}**`}));
+        return replyEmbed(message, loop(subscription.queueLoop));
     }
 };

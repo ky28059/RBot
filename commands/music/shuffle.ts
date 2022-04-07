@@ -3,6 +3,7 @@ import {SlashCommandBuilder} from '@discordjs/builders';
 
 // Utilities
 import { canModifyQueue } from '../../utils/canModifyQueue';
+import {replyEmbed} from '../../utils/messageUtils';
 import {shuffle} from '../../utils/messages';
 
 // Errors
@@ -23,6 +24,6 @@ export default {
         if (!canModifyQueue(message.member)) return;
 
         subscription.shuffle();
-        await message.reply({embeds: [shuffle()]});
+        await replyEmbed(message, shuffle());
     }
 };

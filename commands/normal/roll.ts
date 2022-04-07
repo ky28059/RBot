@@ -14,7 +14,7 @@ export default {
 
         // Support dnd notation like "3d8"
         if (sides) {
-            let dndNotation = sides.split('d');
+            const dndNotation = sides.split('d');
             if (dndNotation.length > 1) [dice, sides] = dndNotation;
         }
 
@@ -24,7 +24,8 @@ export default {
         if (isNaN(sidesNum)) sidesNum = 6;
 
         // Prevent spam somewhat
-        if (diceNum > 300 || diceNum < 0) throw new IntegerRangeError(this.name, 'Dice', 0, 300);
+        if (diceNum > 300 || diceNum < 0)
+            throw new IntegerRangeError(this.name, 'Dice', 0, 300);
 
         let rolls = [];
         let total = 0;
@@ -34,7 +35,8 @@ export default {
             total += roll;
         }
 
-        if (rolls.length === 1) return message.channel.send(`Rolled a **${sidesNum}** sided die and got **${rolls[0]}**!`);
+        if (rolls.length === 1)
+            return message.channel.send(`Rolled a **${sidesNum}** sided die and got **${rolls[0]}**!`);
 
         const splitDescription = Util.splitMessage(`Rolled **${diceNum}** **${sidesNum}** sided die and got **[${rolls.join(', ')}]**, for a total of **${total}**!`, {
             maxLength: 2000,

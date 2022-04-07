@@ -73,6 +73,6 @@ export default {
 
         // Enqueue the track and reply a success message to the user
         subscription.enqueue(track);
-        await replyEmbed(message, success({desc: `Enqueued **${track.title}**`}));
+        await replyEmbed(message, success().setDescription(`Enqueued **${track.title}**`));
     }
 };

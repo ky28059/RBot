@@ -46,6 +46,6 @@ export default {
                 throw new IllegalArgumentError(this.name, `${field} not a valid token field; valid token fields: \`logchannel\`, \`prefix\``);
         }
         await tag.save();
-        message.channel.send({embeds: [success({desc: `\`${field}\` has been updated to \`${updated}\``})]});
+        message.channel.send({embeds: [success().setDescription(`\`${field}\` has been updated to \`${updated}\``)]});
     }
 }

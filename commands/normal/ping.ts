@@ -8,6 +8,7 @@ export default {
         .setDescription('Gets the latency of the bot.'),
     async execute(message: Message | CommandInteraction) {
         const m = await reply(message, 'Ping?');
+
         // APIMessage is only ever returned if message is a CommandInteraction
         if (!(m instanceof Message))
             return message instanceof CommandInteraction && message.editReply('Pong!');

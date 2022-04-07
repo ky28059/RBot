@@ -14,7 +14,7 @@ export default {
             return message.channel.send({embeds: [
                 err('UNSHARDED', 'Bot currently running in unsharded mode; cannot reload commands')]});
 
-        await message.channel.send({embeds: [success({desc: 'Reloading commands...'})]});
+        await message.channel.send({embeds: [success().setDescription('Reloading commands...')]});
 
         // Kill all shards, causing them to be respawned by the manager
         // On spawn, they will reload their commands with the updated versions

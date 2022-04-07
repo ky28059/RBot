@@ -1,21 +1,24 @@
-import {CommandInteraction, Message, MessageEmbed} from 'discord.js';
+import {CommandInteraction, Message} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 import fetch from 'node-fetch';
-import {author, reply} from '../../utils/messageUtils';
+
+// Utilities
+import {author, replyEmbed} from '../../utils/messageUtils';
+import {success} from '../../utils/messages';
+
 
 export default {
     data: new SlashCommandBuilder()
         .setName('joke')
         .setDescription('Tells a random joke from https://official-joke-api.appspot.com/.'),
     async execute(message: Message | CommandInteraction) {
-        let joke = await (await fetch('https://official-joke-api.appspot.com/random_joke')).json()
+        const joke = await (await fetch('https://official-joke-api.appspot.com/random_joke')).json()
 
-        const jokeEmbed = new MessageEmbed()
-            .setColor(0x333333)
+        const jokeEmbed = success()
             .setTitle(joke.setup)
             .setDescription(joke.punchline)
-            .setFooter(`Joke #${joke.id}, requested by ${author(message).tag}`)
+            .setFooter({text: `Joke #${joke.id}, requested by ${author(message).tag}`});
 
-        await reply(message, {embeds: [jokeEmbed]});
+        await replyEmbed(message, jokeEmbed);
     }
 }

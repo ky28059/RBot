@@ -1,7 +1,10 @@
-import {CommandInteraction, Message, MessageEmbed} from 'discord.js';
+import {CommandInteraction, Message} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 import {Guild} from '../../models/Guild';
-import {author, reply} from "../../utils/messageUtils";
+
+// Utilities
+import {author, replyEmbed} from '../../utils/messageUtils';
+import {requestedBy} from '../../utils/messages';
 
 
 export default {
@@ -14,8 +17,7 @@ export default {
         const {disabled_commands, autoroles, censored_users, censored_words, blacklist} = tag;
 
         // TODO: make this embed look better
-        const tokenEmbed = new MessageEmbed()
-            .setColor(0x333333)
+        const tokenEmbed = requestedBy(author(message))
             .setTitle('Presets:')
             .addFields([ // TODO: make a for each loop that adds available fields automatically so this command won't need to be manually updated
                 {name: 'Prefix:', value: tag.prefix || '!'},
@@ -46,9 +48,8 @@ export default {
                 {name: 'Nickname Changes', value: tag.log_nickname_change + '', inline: true},
                 {name: 'Member Joins', value: tag.log_member_join + '', inline: true},
                 {name: 'Member Leaves', value: tag.log_member_leave + '', inline: true}
-            ])
-            .setFooter(`Requested by ${author(message).tag}`);
+            ]);
 
-        await reply(message, {embeds: [tokenEmbed]});
+        await replyEmbed(message, tokenEmbed);
     }
 }

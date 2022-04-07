@@ -1,7 +1,12 @@
-import {CommandInteraction, Message, MessageEmbed} from 'discord.js';
+import {CommandInteraction, Message} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 import {Guild} from '../../models/Guild';
-import {author, reply} from '../../utils/messageUtils';
+
+// Utilities
+import {author, replyEmbed} from '../../utils/messageUtils';
+import {requestedBy} from '../../utils/messages';
+
+// Errors
 import IllegalArgumentError from '../../errors/IllegalArgumentError';
 
 
@@ -9,9 +14,9 @@ export default {
     data: new SlashCommandBuilder()
         .setName('help')
         .setDescription('Gets info about a command, or sends a command list.')
-        .addStringOption(option =>
-            option.setName('command')
-                .setDescription('The command to get info about')),
+        .addStringOption(option => option
+            .setName('command')
+            .setDescription('The command to get info about')),
     examples: 'help censor',
     async execute(message: Message | CommandInteraction, parsed: {command?: string}, tag: Guild) {
         const client = message.client;
@@ -23,11 +28,9 @@ export default {
         // If there were no arguments given
         if (!name) {
             // Return a list of all commands
-            const commandListEmbed = new MessageEmbed()
-                .setColor(0x333333)
+            const commandListEmbed = requestedBy(author(message))
                 .setTitle('Command List')
-                .setDescription(`Use \`${prefix}help [Command]\` for information about a command.`)
-                .setFooter({text: `Requested by ${author(message).tag}`});
+                .setDescription(`Use \`${prefix}help [Command]\` for information about a command.`);
 
             for (const module of client.submodules)
                 commandListEmbed.addField(module,
@@ -36,7 +39,7 @@ export default {
                         .map(cmd => cmd.name)
                         .join(', '), true);
 
-            return reply(message, {embeds: [commandListEmbed]});
+            return replyEmbed(message, commandListEmbed);
         }
 
         // If there were arguments given
@@ -44,22 +47,20 @@ export default {
         if (!command)
             throw new IllegalArgumentError('help', `Command \`${name}\` not a valid command`);
 
-        // If there were arguments given and the argument was a valid command
-        const helpEmbed = new MessageEmbed()
-            .setColor(0x333333)
-            .setTitle(`${command.name}`)
-            .setFooter(`Requested by ${author(message).tag}`);
+        // If there were arguments given and the argument was a valid command, display info about that command
+        const helpEmbed = requestedBy(author(message)).setTitle(`${command.name}`);
 
-        if (command.description) helpEmbed.setDescription(`${command.description}`);
-        if (command.commandGroup) helpEmbed.addField('**Command Group:**', `${command.commandGroup}`);
-        if (command.aliases) helpEmbed.addField('**Aliases:**', `${command.aliases.join(', ')}`);
+        if (command.description) helpEmbed.setDescription(command.description);
+        if (command.commandGroup) helpEmbed.addField('**Command Group:**', command.commandGroup);
+        if (command.aliases) helpEmbed.addField('**Aliases:**', command.aliases.join(', '));
         helpEmbed.addField('**Usage:**', `${prefix}${command.name} ${command.pattern || ''}`);
 
+        // TODO: these fields should really be arrays only to simplify parsing
         if (command.examples) helpEmbed.addField('**Examples:**',
             Array.isArray(command.examples) ? command.examples.map(example => prefix + example).join('\n') : prefix + command.examples);
         if (command.permReqs) helpEmbed.addField('**Permissions Required:**',
             Array.isArray(command.permReqs) ? command.permReqs.join(', ') : command.permReqs.toString());
 
-        await reply(message, {embeds: [helpEmbed]});
+        await replyEmbed(message, helpEmbed);
     }
 }

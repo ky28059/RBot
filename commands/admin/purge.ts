@@ -41,6 +41,7 @@ export default {
 
         if (!('bulkDelete' in message.channel)) return;
         const deleted = await message.channel.bulkDelete(fetched, true);
-        await replyEmbed(message, success({desc: `Purged ${deleted.size} messages`}));
+
+        await replyEmbed(message, success().setDescription(`Purged ${deleted.size} messages`));
     }
 }

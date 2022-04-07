@@ -24,7 +24,7 @@ export default {
 
         // If nothing is currently playing
         if (subscription.audioPlayer.state.status === AudioPlayerStatus.Idle)
-            return replyEmbed(message, success({desc: 'Nothing is playing!'}));
+            return replyEmbed(message, success().setDescription('Nothing is playing!'));
 
         const track = (subscription.audioPlayer.state.resource as AudioResource<Track>).metadata;
         await replyEmbed(message, nowPlaying(track));

@@ -58,6 +58,6 @@ export default {
             id: tag.logchannel, color: 0x7f0000, author: target.user.tag, authorIcon: target.user.displayAvatarURL(),
             desc: `**${target.user} has been banned by ${author(message)} for the reason:**\n${reason}`
         });
-        await replyEmbed(message, success({desc: `Banned ${target}`}));
+        await replyEmbed(message, success().setDescription(`Banned ${target}`));
     }
 }

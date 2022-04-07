@@ -40,6 +40,6 @@ export default {
         [...fetched.values()].forEach(message => {
             if (message.reactions.cache.size > 0) message.reactions.removeAll();
         });
-        await replyEmbed(message, success({desc: `Expunged ${count} messages`}));
+        await replyEmbed(message, success().setDescription(`Expunged ${count} messages`));
     }
 }

@@ -8,7 +8,7 @@ export default {
     examples: 'terminate',
     ownerOnly: true,
     async execute(message: Message) {
-        await message.channel.send({embeds: [success({desc: 'Terminating...'})]});
+        await message.channel.send({embeds: [success().setDescription('Terminating...')]});
 
         // If not sharded, just kill the process like normal
         if (!message.client.shard) process.exit(1);

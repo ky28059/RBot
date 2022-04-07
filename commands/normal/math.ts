@@ -1,5 +1,6 @@
 import {Message, MessageEmbed} from 'discord.js';
 import { create, all } from 'mathjs';
+import {requestedBy} from '../../utils/messages';
 
 const config = { };
 const math = create(all, config);
@@ -15,15 +16,13 @@ export default {
         if (!math.parser) return; // unsure why math is a partial
         const parser = math.parser();
 
-        const mathEmbed = new MessageEmbed()
-            .setColor(0x333333)
-            .setTitle('Eval Stack')
-            .setFooter(`Requested by ${message.author.tag}`)
+        const mathEmbed = requestedBy(message.author)
+            .setTitle('Eval Stack');
 
         for (const expression of parsed.expressions) {
             let parsed = parser.evaluate(expression);
-
             if (typeof parsed === 'function') parsed = '*Function definition*';
+
             mathEmbed.addField(`\\> ${expression}`, String(parsed));
         }
 

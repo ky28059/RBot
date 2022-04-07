@@ -1,10 +1,10 @@
 import {CommandInteraction, Message, MessageEmbed, Util} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 import {AudioPlayerStatus, AudioResource} from '@discordjs/voice';
+import {Track} from '../../utils/track';
 
 // Utilities
-import {pagedMessage, reply} from '../../utils/messageUtils';
-import {Track} from '../../utils/track';
+import {pagedMessage, replyEmbed} from '../../utils/messageUtils';
 import {success} from '../../utils/messages';
 
 // Errors
@@ -30,7 +30,7 @@ export default {
 
         // If the queue is empty
         if (!subscription.queue.length)
-            return reply(message, {embeds: [success({title: 'Queue', desc: 'Nothing is in the queue.'})]});
+            return replyEmbed(message, success().setAuthor({name: 'Queue'}).setDescription('Nothing is in the queue.'));
 
         // TODO: make this look better
         const description = subscription.queue.map((track, index) => {
@@ -40,9 +40,8 @@ export default {
             return `${index + 1}) ${Util.escapeMarkdown(track.title)} ${minutes}:${seconds}`;
         });
 
-        const queueEmbed = new MessageEmbed()
-            .setAuthor('Queue')
-            .setColor('#F8AA2A');
+        const queueEmbed = success()
+            .setAuthor({name: 'Queue'});
 
         const splitDescription = Util.splitMessage(`\`\`\`elm\n${description.join('\n')}\n\`\`\``, {
             maxLength: 2048,

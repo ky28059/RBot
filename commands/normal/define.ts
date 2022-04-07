@@ -2,8 +2,9 @@ import {CommandInteraction, Message, MessageEmbed} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 import fetch from 'node-fetch';
 import he from 'he';
-import {author, pagedMessage, reply} from '../../utils/messageUtils';
+import {author, pagedMessage, reply, replyEmbed} from '../../utils/messageUtils';
 import {URL} from "url";
+import {requestedBy, success} from "../../utils/messages";
 
 
 // The structure of the API response seems to be
@@ -27,10 +28,10 @@ export default {
     data: new SlashCommandBuilder()
         .setName('define')
         .setDescription('Gets the definition(s) of a word from wiktionary.')
-        .addStringOption(option =>
-            option.setName('word')
-                .setDescription('The word to define')
-                .setRequired(true)),
+        .addStringOption(option => option
+            .setName('word')
+            .setDescription('The word to define')
+            .setRequired(true)),
     async execute(message: Message | CommandInteraction, parsed: {word: string}) {
         let word = parsed.word;
 
@@ -46,19 +47,15 @@ export default {
             res = await (await fetch(`https://en.wiktionary.org/api/rest_v1/page/definition/${page}`)).json();
         }
 
-        const dictionaryEmbed = new MessageEmbed()
-            .setColor(0x333333)
-
         // If still not found (or some other error occurs), assume the word does not exist
         // Sometimes res.title is omitted from the error response (???) so also check for res.detail
         if ('title' in res || 'detail' in res) {
-            dictionaryEmbed.setAuthor(res.title ?? res.detail);
-            return reply(message, {embeds: [dictionaryEmbed]});
+            // TODO: using a success embed for an error is a bit questionable
+            return replyEmbed(message, success().setAuthor({name: res.title ?? res.detail}));
         }
 
-        dictionaryEmbed
-            .setURL(`https://en.wiktionary.org/wiki/${page}`)
-            .setFooter(`Requested by ${author(message).tag}`);
+        const dictionaryEmbed = requestedBy(author(message))
+            .setURL(`https://en.wiktionary.org/wiki/${page}`);
 
         const pages = [];
         for (const lang of Object.keys(res)) {
@@ -67,7 +64,7 @@ export default {
 
             // A hacky workaround, but TS doesn't recognize that all strings returned by Object.keys are valid to index with
             for (const definition of res[lang as LangCode]!) {
-                let desc = definition.definitions.map((def, i) => {
+                const desc = definition.definitions.map((def, i) => {
                     let str = `${i + 1}. ${cleanWiktionaryHTMLString(def.definition)}`;
                     if (def.parsedExamples)
                         str += '\n' + def.parsedExamples.map(ex => {

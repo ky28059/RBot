@@ -48,6 +48,6 @@ export default {
         }
 
         await tag.save();
-        message.channel.send({embeds: [success({desc: `\`[${presets.join(', ')}]\`s have been set to \`[${newPresets.join(', ')}]\``})]});
+        message.channel.send({embeds: [success().setDescription(`\`[${presets.join(', ')}]\`s have been set to \`[${newPresets.join(', ')}]\``)]});
     }
 }
