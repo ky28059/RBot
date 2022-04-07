@@ -1,6 +1,10 @@
-import {CommandInteraction, Message, PermissionResolvable} from 'discord.js';
+import {Collection, CommandInteraction, Message, PermissionResolvable, Snowflake} from 'discord.js';
 import {SlashCommandBuilder, ToAPIApplicationCommandOptions} from '@discordjs/builders';
+import {readdirSync} from 'fs';
+
+// Types
 import {Guild as GuildPresets} from '../models/Guild';
+import {MusicSubscription} from './subscription';
 
 
 // Fields common to both old and new command syntaxes;
@@ -27,7 +31,36 @@ export type SlashCommand = BaseCommand & {
     data: SlashCommandBuilder,
 }
 
-// Parses a command file from `await import(...)` into an RBot command object
+declare module "discord.js" {
+    interface Client {
+        commands: Collection<string, Command>,
+        submodules: string[],
+        ownerID: Snowflake,
+        subscriptions: Map<Snowflake, MusicSubscription>,
+        loadCommands(): Promise<void>
+    }
+}
+
+// Returns the current submodules from subdirectories of `/commands`.
+export function getSubmodules() {
+    return readdirSync('./commands', {withFileTypes: true})
+        .filter(res => res.isDirectory())
+        .map(dir => dir.name);
+}
+
+// Imports raw command objects given a list of submodules to search, calling the provided callback on each.
+export async function forEachRawCommand(submodules: string[], callback: (command: Command | SlashCommand, dir: string) => void) {
+    for (const dir of submodules) {
+        const files = readdirSync(`./commands/${dir}`).filter(file => file.endsWith('.ts'));
+
+        // TODO: imports are relative to `./util/parseCommands`, but fs is relative to `/`.
+        // Is there any way to make this behavior more clear?
+        for (const file of files)
+            callback((await import(`../commands/${dir}/${file.substring(0, file.length - 3)}`)).default, dir);
+    }
+}
+
+// Parses a command file from `await import(...)` into an RBot command object.
 export function parseCommand(command: Command | SlashCommand, dir: string): Command {
     if ('data' in command) {
         // TODO: would using `...command` here have any adverse consequences?
@@ -48,7 +81,7 @@ export function parseCommand(command: Command | SlashCommand, dir: string): Comm
     return {...command, commandGroup: dir};
 }
 
-// Parses a SlashCommandBuilder option into RBot's argParser syntax
+// Parses a SlashCommandBuilder option into RBot's argParser syntax.
 function parseSlashCommandOption(arg: ToAPIApplicationCommandOptions) {
     const data = arg.toJSON();
     let prefix = '';

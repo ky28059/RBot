@@ -1,5 +1,4 @@
 import {Client, MessageEmbed, Collection, TextChannel, Snowflake, GuildMember} from 'discord.js';
-import {MusicSubscription} from './utils/subscription';
 import {Sequelize} from 'sequelize';
 import {readdirSync} from 'fs';
 
@@ -8,7 +7,7 @@ import {token} from './auth';
 
 // Utils
 import parse from './utils/argumentParser';
-import {parseCommand, Command, SlashCommand} from './utils/parseCommands';
+import {parseCommand, getSubmodules, forEachRawCommand} from './utils/parseCommands';
 import loadGuilds, {Guild as GuildPresets} from './models/Guild';
 import {log} from './utils/logger';
 import {update, isInField, containsField} from './utils/tokenManager';
@@ -18,16 +17,6 @@ import {truncate} from './utils/messageUtils';
 import {err} from './utils/messages';
 import CommandError from './errors/CommandError';
 
-
-declare module "discord.js" {
-    interface Client {
-        commands: Collection<string, Command>,
-        submodules: string[],
-        ownerID: Snowflake,
-        subscriptions: Map<Snowflake, MusicSubscription>,
-        loadCommands(): Promise<void>
-    }
-}
 
 const client = new Client({
     intents: [
@@ -51,18 +40,12 @@ client.subscriptions = new Map(); // For music commands
 // Dynamic command handling
 client.loadCommands = async () => {
     // Load submodules dynamically
-    client.submodules = readdirSync('./commands', {withFileTypes: true})
-        .filter(res => res.isDirectory())
-        .map(dir => dir.name);
+    client.submodules = getSubmodules();
 
-    for (const dir of client.submodules) {
-        const commands = readdirSync(`./commands/${dir}`).filter(file => file.endsWith('.ts'));
-
-        for (const file of commands) {
-            const command = parseCommand((await import(`./commands/${dir}/${file.substring(0, file.length - 3)}`)).default as Command | SlashCommand, dir);
-            client.commands.set(command.name, command);
-        }
-    }
+    await forEachRawCommand(client.submodules, (raw, dir) => {
+        const command = parseCommand(raw, dir);
+        client.commands.set(command.name, command);
+    });
     console.log('Commands loaded!');
 }
 
