@@ -1,19 +1,16 @@
-import {
-    Client, Message, MessageEmbed, Collection, Guild,
-    PermissionResolvable, TextChannel, Snowflake, CommandInteraction, GuildMember
-} from 'discord.js';
-import {SlashCommandBuilder} from "@discordjs/builders";
+import {Client, MessageEmbed, Collection, TextChannel, Snowflake, GuildMember} from 'discord.js';
 import {MusicSubscription} from './utils/subscription';
 import {Sequelize} from 'sequelize';
-import yargs from 'yargs';
-import fs from 'fs';
+import {readdirSync} from 'fs';
 
 // Auth
 import {token} from './auth';
 
 // Utils
-import {log} from './utils/logger';
 import parse from './utils/argumentParser';
+import {parseCommand, Command, SlashCommand} from './utils/parseCommands';
+import loadGuilds, {Guild as GuildPresets} from './models/Guild';
+import {log} from './utils/logger';
 import {update, isInField, containsField} from './utils/tokenManager';
 import {truncate} from './utils/messageUtils';
 
@@ -21,40 +18,6 @@ import {truncate} from './utils/messageUtils';
 import {err} from './utils/messages';
 import CommandError from './errors/CommandError';
 
-// Database
-import {offload, onload} from './utils/JSONOffloader';
-import loadGuilds, {Guild as GuildPresets} from './models/Guild';
-
-
-// https://github.com/yargs/yargs/blob/master/docs/typescript.md
-const flags = yargs(process.argv.slice(2)).options({
-    onload: { type: 'boolean', default: false },
-    offload: { type: 'boolean', default: false },
-}).parseSync();
-
-// Fields common to both old and new command syntaxes
-// Preconditions are still kept in slash commands for abstraction purposes
-type BaseCommand = {
-    isSlashCommand?: boolean,
-    commandGroup: string,
-    examples?: string | string[],
-    guildOnly?: boolean,
-    ownerOnly?: boolean,
-    permReqs?: PermissionResolvable,
-    clientPermReqs?: PermissionResolvable,
-    execute: (message: Message | CommandInteraction, parsed: any, tag: GuildPresets | undefined) => Promise<void>
-}
-// Old text based command detail syntax
-export type Command = BaseCommand & {
-    name: string,
-    aliases?: string[],
-    description: string,
-    pattern?: string,
-}
-// New slash command command detail syntax
-export type SlashCommand = BaseCommand & {
-    data: SlashCommandBuilder,
-}
 
 declare module "discord.js" {
     interface Client {
@@ -82,58 +45,21 @@ const client = new Client({
 });
 
 client.commands = new Collection();
-client.submodules = ['admin', 'music', 'normal', 'owner', 'presets'];
 client.ownerID = '355534246439419904'; // For owner only commands
 client.subscriptions = new Map(); // For music commands
 
 // Dynamic command handling
 client.loadCommands = async () => {
-    for (let dir of client.submodules) {
-        const commands = fs.readdirSync(`./commands/${dir}`).filter(file => file.endsWith('.ts'));
+    // Load submodules dynamically
+    client.submodules = readdirSync('./commands', {withFileTypes: true})
+        .filter(res => res.isDirectory())
+        .map(dir => dir.name);
 
-        for (let file of commands) {
-            let command = (await import(`./commands/${dir}/${file.substring(0, file.length - 3)}`)).default as Command | SlashCommand;
+    for (const dir of client.submodules) {
+        const commands = readdirSync(`./commands/${dir}`).filter(file => file.endsWith('.ts'));
 
-            // Convert slash commands to text-based syntax
-            if ('data' in command) {
-                command = {
-                    isSlashCommand: true,
-                    name: command.data.name,
-                    commandGroup: dir,
-                    description: command.data.description,
-                    pattern: command.data.options.map(arg => {
-                        const data = arg.toJSON();
-                        let prefix = '';
-                        let bracket = '[]'
-
-                        switch (data.type) {
-                            case 4:
-                            case 10:
-                                bracket = '()'
-                                break;
-                            case 6:
-                                prefix = '@';
-                                break;
-                            case 7:
-                                prefix = '#';
-                                break;
-                            case 8:
-                                prefix = '&';
-                                break;
-                        }
-
-                        return `${prefix}${bracket[0]}${data.name}${bracket[1]}${data.required ? '' : '?'}`
-                    }).join(' '),
-                    guildOnly: command.guildOnly,
-                    ownerOnly: command.ownerOnly,
-                    permReqs: command.permReqs,
-                    clientPermReqs: command.clientPermReqs,
-                    execute: command.execute
-                }
-            } else {
-                command.commandGroup = dir; // Dynamic command groups
-            }
-
+        for (const file of commands) {
+            const command = parseCommand((await import(`./commands/${dir}/${file.substring(0, file.length - 3)}`)).default as Command | SlashCommand, dir);
             client.commands.set(command.name, command);
         }
     }
@@ -157,11 +83,7 @@ const talkedRecently = new Set(); // For global cooldowns; consider switching to
 // Run initial stuff
 client.once('ready', async () => {
     await client.loadCommands(); // Load commands
-    if (flags.offload) await offload();
-
     await sequelize.sync(); // Sync database
-
-    if (flags.onload) await onload();
     console.log(`Logged in as ${client.user!.tag}!`);
 });
 

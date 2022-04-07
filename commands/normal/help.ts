@@ -27,7 +27,7 @@ export default {
                 .setColor(0x333333)
                 .setTitle('Command List')
                 .setDescription(`Use \`${prefix}help [Command]\` for information about a command.`)
-                .setFooter(`Requested by ${author(message).tag}`);
+                .setFooter({text: `Requested by ${author(message).tag}`});
 
             for (const module of client.submodules)
                 commandListEmbed.addField(module,

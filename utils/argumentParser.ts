@@ -32,7 +32,7 @@
 */
 
 import {Client, Guild} from 'discord.js';
-import {Command} from '../bot';
+import {Command} from './parseCommands';
 
 import MissingArgumentError from '../errors/MissingArgumentError';
 import IllegalArgumentError from '../errors/IllegalArgumentError';

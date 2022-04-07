@@ -1,11 +1,26 @@
 import { REST } from '@discordjs/rest';
-import { RESTPostAPIApplicationCommandsJSONBody, Routes } from 'discord-api-types/v9';
+import { Routes } from 'discord-api-types/v9';
 import { token } from './auth';
 import { readdirSync } from 'fs';
-import {Command, SlashCommand} from './bot';
+import {Command, SlashCommand} from './utils/parseCommands';
+import {SlashCommandBuilder} from "@discordjs/builders";
+import {Collection, Snowflake} from "discord.js";
+import {MusicSubscription} from "./utils/subscription";
 
 
-const commands: RESTPostAPIApplicationCommandsJSONBody[] = [];
+declare module "discord.js" {
+    interface Client {
+        commands: Collection<string, Command>,
+        submodules: string[],
+        ownerID: Snowflake,
+        subscriptions: Map<Snowflake, MusicSubscription>,
+        loadCommands(): Promise<void>
+    }
+}
+
+// TODO: `ReturnType<SlashCommandBuilder['toJSON']>` is a hacky fix to a `discord-api-types` conflict;
+// ideally this would be unnecessary and `RESTPostAPIApplicationCommandsJSONBody` could be used directly
+const commands: ReturnType<SlashCommandBuilder['toJSON']>[] = [];
 
 const clientId = '684587440777986090';
 const rest = new REST({ version: '9' }).setToken(token);
