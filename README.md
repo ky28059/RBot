@@ -1,14 +1,14 @@
 # RBot
 An unreliable Discord moderator bot, built using Discord.js 13 and Node 16!
 
-#### Invite Link:
+#### Invite link:
 https://discord.com/oauth2/authorize?client_id=684587440777986090&scope=bot+applications.commands&permissions=8
 
-### Folder Structure
-`bot.ts` is the main bot file which is run by `npm start` to run the program. To register new slash commands, use 
+### Folder structure
+`bot.ts` is the main program file, run by `npm start` to start the bot. To register new slash commands, use 
 `npm run registerSlashCommands`; see **Commands** for how RBot's dynamic command parsing works. 
 
-Utilities specifically used by `bot.ts` are in `/utils`.
+Utilities used by `bot.ts` and other commands are in `/utils`.
 
 RBot's commands are located in `/commands`, and are currently organized into 5 submodules:
 - `/commands/admin`: Basic moderator commands; purge, kick, ban, etc.
