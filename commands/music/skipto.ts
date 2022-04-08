@@ -9,7 +9,6 @@ import {success} from '../../utils/messages';
 // Errors
 import ActionUntakeableError from '../../errors/ActionUntakeableError';
 import QueueNonexistentError from '../../errors/QueueNonexistentError';
-import IntegerConversionError from '../../errors/IntegerConversionError';
 import MemberNotInSameVCError from '../../errors/MemberNotInSameVCError';
 
 
@@ -34,10 +33,9 @@ export default {
         if (!canModifyQueue(message.member!))
             throw new MemberNotInSameVCError('skipto');
 
-        if (isNaN(index) || index % 1 !== 0)
-            throw new IntegerConversionError('skipto', 'index');
+        // TODO: see todo in `purge.ts`
         if (index < 1 || index >= subscription.queue.length)
-            throw new ActionUntakeableError('skipto', `Index \`${index}\` is not a valid index of the queue`);
+            throw new ActionUntakeableError('skipto', `Index \`${index}\` is not a valid index of the queue.`);
 
         // Set the index, then stop the audio player to begin playing the next song.
         subscription.index = index - 1;

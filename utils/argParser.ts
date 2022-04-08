@@ -1,15 +1,35 @@
+import {Client, Guild} from 'discord.js';
+import {Command} from './parseCommands';
+
+import MissingArgumentError from '../errors/MissingArgumentError';
+import IllegalArgumentError from '../errors/IllegalArgumentError';
+import NumberConversionError from '../errors/NumberConversionError';
+import IntegerRangeError from "../errors/IntegerRangeError";
+import IntegerConversionError from "../errors/IntegerConversionError";
+
+
+// Regexes to get ID from mention (<@!someid> => someid)
+const mentionRegex = /^<@!?(\d+)>$/;
+const channelRegex = /^<#(\d+)>$/;
+const roleRegex = /^<@&(\d+)>$/;
+
+
 /*
     An argument parser to match message portions to argument patterns, somewhat inspired by HarVM's simpleArgumentParser.
+    The string-based argParser pattern syntax is as follows:
 
-    Parser Syntax:
+    Types:
     [field] = String field
-    (field) = Number field
-    [field]? = Optional field
-    [...field] = Repeating field
-    @[user] = Mention field
+    (field) = Integer field
+    @[user] = User field
     #[channel] = Channel field
     &[role] = Role field
     <rest> = Rest of the arguments, as a string
+
+    Modifiers:
+    [field]? = Optional -- matches if it exists, retuning undefined if it does not
+    [...field] = Repeating field -- attempts to match the rest of the arguments as this field, returning the result as an array
+    (field)[a-b] = Integer range -- matches an integer within the given inclusive range from a to b, throws an error otherwise
 
     Examples (argString, pattern => result):
     "add @role", "[action] &[role]"
@@ -25,26 +45,11 @@
     "one two three", "[...numbers]"
         => { numbers: ["one", "two", "three"] }
     "@user @otheruser @thirduser", "@[...people]"
-        => { people: [Discord.User, Discord.User, Discord.User] }
+        => { people: [User, User, User] }
 
     TODO: add syntax for commands that can have multiple patterns
     Commands whose arguments can be one of multiple patterns: set, censor, uncensor, technically roll would benefit from it as well
 */
-
-import {Client, Guild} from 'discord.js';
-import {Command} from './parseCommands';
-
-import MissingArgumentError from '../errors/MissingArgumentError';
-import IllegalArgumentError from '../errors/IllegalArgumentError';
-import NumberConversionError from '../errors/NumberConversionError';
-
-
-// Regexes to get ID from mention (<@!someid> => someid)
-const mentionRegex = /^<@!?(\d+)>$/;
-const channelRegex = /^<#(\d+)>$/;
-const roleRegex = /^<@&(\d+)>$/;
-
-
 export default function parse(argString: string, command: Command, client: Client, guild: Guild | null) {
     const returnObj: any = {};
     let index = 0; // Current index in the string for <Rest> patterns
@@ -60,9 +65,9 @@ export default function parse(argString: string, command: Command, client: Clien
     // Go down the queue of args and attempt to match 1:1 to patterns
     for (let i = 0; i < patterns.length; i++) {
 
-        const pattern = patterns[i].match(/^(?<prefix>[@#&]?)(?<bracket>[<\[(])(?<repeating>(?:\.{3})?)(?<name>\w+)[)\]>](?<optional>\??)$/)!;
+        const pattern = patterns[i].match(/^(?<prefix>[@#&]?)(?<bracket>[<\[(])(?<repeating>(?:\.{3})?)(?<name>\w+)[)\]>](?:\[(?<rangeFrom>\d+)-(?<rangeTo>\d+)])?(?<optional>\??)$/)!;
         // @ts-ignore
-        const { name, bracket, prefix, repeating, optional } = pattern.groups;
+        const { name, bracket, prefix, repeating, optional, rangeFrom, rangeTo } = pattern.groups;
 
         // If no args were provided, or if none remain
         if (!args || !args.length) {
@@ -100,46 +105,55 @@ export default function parse(argString: string, command: Command, client: Clien
             args.unshift(arg)
             returnObj[name.toLowerCase()] = args
                 .map(arg => arg.replace(/^"|"$/g, '')) // Sanitize quotes
-                .map(arg => matchSingular(arg, prefix, bracket, name, client, guild, command));
+                .map(arg => matchSingular({
+                    arg, prefix, bracket, name, rangeFrom, rangeTo, client, guild, command
+                }));
 
             return returnObj;
         }
 
         // Otherwise, match arg based on prefix
         arg = arg.replace(/^"|"$/g, ''); // Sanitize quotes
-        returnObj[name.toLowerCase()] = matchSingular(arg, prefix, bracket, name, client, guild, command);
+        returnObj[name.toLowerCase()] = matchSingular({
+            arg, prefix, bracket, name, rangeFrom, rangeTo, client, guild, command
+        });
     }
 
     return returnObj;
 }
 
-function matchSingular(arg: string, prefix: string, bracket: string, name: string, client: Client, guild: Guild | null, command: Command) {
-    if (bracket === '(') { // Numbers
+type FieldProps = {
+    arg: string, prefix: string, bracket: string, name: string, rangeFrom?: string, rangeTo?: string,
+    client: Client, guild: Guild | null, command: Command
+}
+function matchSingular({arg, prefix, bracket, name, rangeFrom, rangeTo, client, guild, command}: FieldProps) {
+    if (bracket === '(') { // Integers
         const num = Number(arg);
-        if (isNaN(num)) throw new NumberConversionError(command.name, name);
+        if (isNaN(num) || num % 1 !== 0)
+            throw new IntegerConversionError(command.name, name);
+        if (rangeFrom && rangeTo && (num < Number(rangeFrom) || num > Number(rangeTo)))
+            throw new IntegerRangeError(command.name, name, rangeFrom, rangeTo);
         return num;
     }
+
     switch (prefix) {
         case '@': // Users
-            let userID = arg.match(mentionRegex)?.[1] ?? arg;
-
-            let user = client.users.cache.get(userID);
-            if (!user) throw new IllegalArgumentError(command.name, `Field \`${name}\` must be a valid user`);
+            const userID = arg.match(mentionRegex)?.[1] ?? arg;
+            const user = client.users.cache.get(userID);
+            if (!user) throw new IllegalArgumentError(command.name, `Field \`${name}\` must be a valid user.`);
             return user;
 
         case '#': // Channels
-            let channelID = arg.match(channelRegex)?.[1] ?? arg;
-
-            let channel = client.channels.cache.get(channelID);
-            if (!channel) throw new IllegalArgumentError(command.name, `Field \`${name}\` must be a valid channel`);
+            const channelID = arg.match(channelRegex)?.[1] ?? arg;
+            const channel = client.channels.cache.get(channelID);
+            if (!channel) throw new IllegalArgumentError(command.name, `Field \`${name}\` must be a valid channel.`);
             return channel;
 
         case '&': // Roles
-            let roleID = arg.match(roleRegex)?.[1] ?? arg;
-
             if (!guild) return;
-            let role = guild.roles.cache.get(roleID);
-            if (!role) throw new IllegalArgumentError(command.name, `Field \`${name}\` must be a valid role`);
+            const roleID = arg.match(roleRegex)?.[1] ?? arg;
+            const role = guild.roles.cache.get(roleID);
+            if (!role) throw new IllegalArgumentError(command.name, `Field \`${name}\` must be a valid role.`);
             return role;
 
         default: // Default string field

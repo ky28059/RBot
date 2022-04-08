@@ -13,7 +13,7 @@ export default {
         .setDescription('Fetches plaintext HTML from a website link.')
         .addStringOption(option => option
             .setName('url')
-            .setDescription('The URL to fetch')
+            .setDescription('The URL to fetch.')
             .setRequired(true)),
     async execute(message: Message | CommandInteraction, parsed: {url: string}) {
         const url = parsed.url;

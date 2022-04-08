@@ -19,11 +19,11 @@ export default {
         .setDescription('Kick a user from this server.')
         .addUserOption(option => option
             .setName('target')
-            .setDescription('The user to kick')
+            .setDescription('The user to kick.')
             .setRequired(true))
         .addStringOption(option => option
             .setName('reason')
-            .setDescription('The reason for the kick')),
+            .setDescription('The reason for the kick.')),
     examples: 'kick @example "Spamming in #general"',
     guildOnly: true,
     permReqs: 'KICK_MEMBERS',
@@ -33,19 +33,19 @@ export default {
         const target = guild.members.cache.get(parsed.target.id);
 
         if (!target)
-            throw new IllegalArgumentError('kick', `${target} is not a valid GuildMember`);
+            throw new IllegalArgumentError('kick', `${parsed.target} is not a valid GuildMember.`);
         if (target.user.id === author(message).id)
-            throw new ActionOnSelfError('kick', 'Target');
+            throw new ActionOnSelfError('kick', 'target');
         if (!target.kickable)
-            throw new ActionUntakeableError('kick', `${target} too high in hierarchy, unable to kick`);
+            throw new ActionUntakeableError('kick', `${target} too high in hierarchy, unable to kick.`);
 
-        const reason = parsed.reason || 'No reason provided';
+        const reason = parsed.reason || 'No reason provided.';
         await target.kick(reason);
 
         await log(message.client, guild, {
             id: tag.logchannel, color: 0x7f0000, author: target.user.tag, authorIcon: target.user.displayAvatarURL(),
             desc: `**${target.user} has been kicked by ${author(message)} for the reason:**\n${reason}`
         });
-        await replyEmbed(message, success().setDescription(`Kicked ${target}`));
+        await replyEmbed(message, success().setDescription(`Kicked ${target}.`));
     }
 }

@@ -16,7 +16,7 @@ export default {
         .setDescription('Gets info about a command, or sends a command list.')
         .addStringOption(option => option
             .setName('command')
-            .setDescription('The command to get info about')),
+            .setDescription('The command to get info about.')),
     examples: 'help censor',
     async execute(message: Message | CommandInteraction, parsed: {command?: string}, tag: Guild) {
         const client = message.client;

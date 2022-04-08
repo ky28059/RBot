@@ -3,7 +3,7 @@ import {Message} from 'discord.js';
 export default {
     name: 'emit',
     description: 'Emits an event to be detected by the client (for testing purposes).',
-    pattern: '[Event]',
+    pattern: '[event]',
     examples: 'emit leave',
     guildOnly: true,
     ownerOnly: true,

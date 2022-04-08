@@ -1,4 +1,4 @@
-import parse from '../../utils/argumentParser';
+import parse from '../../utils/argParser';
 import {Message} from "discord.js";
 
 
@@ -6,8 +6,8 @@ export default {
     name: 'parserTest',
     aliases: ['ptest'],
     description: 'Tests the RBot Argument Parser.',
-    pattern: '[Pattern] <Args>?',
-    examples: 'parserTest "[Field1] @[Field2] <Field3>?" one two three four',
+    pattern: '[pattern] <args>?',
+    examples: 'parserTest "[field1] @[field2] <field3>?" one two three four',
     ownerOnly: true,
     execute(message: Message, parsed: {pattern: string, args: string}) {
         const dummyCommand = {

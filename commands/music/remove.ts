@@ -9,8 +9,7 @@ import {success} from '../../utils/messages';
 // Errors
 import QueueNonexistentError from '../../errors/QueueNonexistentError';
 import MemberNotInSameVCError from '../../errors/MemberNotInSameVCError';
-import IntegerConversionError from '../../errors/IntegerConversionError';
-import IntegerRangeError from '../../errors/IntegerRangeError';
+import ActionUntakeableError from '../../errors/ActionUntakeableError';
 
 
 export default {
@@ -33,11 +32,8 @@ export default {
             throw new QueueNonexistentError('remove');
         if (!canModifyQueue(message.member!))
             throw new MemberNotInSameVCError('remove');
-
-        if (isNaN(index) || index % 1 !== 0)
-            throw new IntegerConversionError('remove', 'index');
-        if (index < 1)
-            throw new IntegerRangeError('remove', 'index', 1);
+        if (index < 1 || index >= subscription.queue.length)
+            throw new ActionUntakeableError('skipto', `Index \`${index}\` is not a valid index of the queue.`);
 
         const song = subscription.remove(index);
         await replyEmbed(message, success().setDescription(`❌ Song **${song.title}** was removed from the queue`));

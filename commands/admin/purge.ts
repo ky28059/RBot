@@ -6,7 +6,6 @@ import {replyEmbed} from '../../utils/messageUtils';
 import {success} from '../../utils/messages';
 
 // Errors
-import IntegerConversionError from '../../errors/IntegerConversionError';
 import IntegerRangeError from '../../errors/IntegerRangeError';
 
 
@@ -16,19 +15,20 @@ export default {
         .setDescription('Bulk deletes the specified amount of messages in the channel, or only messages sent by a given user.')
         .addIntegerOption(option => option
             .setName('count')
-            .setDescription('The number of messages to purge')
+            .setDescription('The number of messages to purge.')
+            .setMinValue(1)
+            .setMaxValue(100)
             .setRequired(true))
         .addUserOption(option => option
             .setName('target')
-            .setDescription('The person to delete messages from')),
+            .setDescription('The person to delete messages from.')),
     guildOnly: true,
     permReqs: 'MANAGE_MESSAGES',
     clientPermReqs: 'MANAGE_MESSAGES',
     async execute(message: Message | CommandInteraction, parsed: {count: number, target?: User}) {
         const {count, target} = parsed;
 
-        if (isNaN(count) || count % 1 !== 0)
-            throw new IntegerConversionError('purge', 'Count');
+        // TODO: when discord slash command builders start supporting `minValue` and `maxValue`, this will be unnecessary
         if (count < 1 || count > 100)
             throw new IntegerRangeError('purge', 'Count', 1, 100);
 

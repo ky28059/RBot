@@ -16,7 +16,7 @@ export default {
         .setDescription('Gets the specified xkcd comic, or one at random.')
         .addIntegerOption(option => option
             .setName('comic')
-            .setDescription('The xkcd to send')),
+            .setDescription('The xkcd to send.')),
     async execute(target: Message | CommandInteraction, parsed: {comic: number}) {
         let num = parsed.comic;
         const max = (await (await fetch('https://xkcd.com/info.0.json')).json()).num;

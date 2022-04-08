@@ -3,7 +3,7 @@ import {Message} from 'discord.js';
 export default {
     name: 'choose',
     description: 'Chooses at random between several options.',
-    pattern: '[...Options]',
+    pattern: '[...options]',
     examples: ['choose red blue', 'choose "hip hop" classical'],
     execute(message: Message, parsed: {options: string[]}) {
         const options = parsed.options;

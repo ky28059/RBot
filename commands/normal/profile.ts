@@ -12,7 +12,7 @@ export default {
         .setDescription('Fetches information about the specified user, or yourself if no user was given.')
         .addUserOption(option => option
             .setName('target')
-            .setDescription('The user to get info about')),
+            .setDescription('The user to get info about.')),
     guildOnly: true,
     async execute(message: Message | CommandInteraction, parsed: {target?: User}) {
         // TODO: make prettier, add functionality

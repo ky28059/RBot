@@ -13,7 +13,7 @@ export default {
         .setDescription('Gets info about the specified Minecraft server.')
         .addStringOption(option => option
             .setName('serverip')
-            .setDescription('The IP of the server to fetch')
+            .setDescription('The IP of the server to fetch.')
             .setRequired(true)),
     async execute(message: Message | CommandInteraction, parsed: {serverip: string}) {
         const server = parsed.serverip;

@@ -9,7 +9,7 @@ export default {
     name: 'set',
     description: 'Sets new token data for this server.',
     usage: 'set [field] [value]',
-    pattern: '[Field] <Args>',
+    pattern: '[field] <args>',
     examples: ['set logchannel #logs', 'set prefix r'],
     guildOnly: true,
     permReqs: 'MANAGE_GUILD',

@@ -10,7 +10,7 @@ export default {
     name: 'math',
     aliases: ['calc'],
     description: 'Calculates a list of expressions using mathjs.',
-    pattern: '[...Expressions]',
+    pattern: '[...expressions]',
     examples: ['math "sqrt(3^2 + 4^2)"', 'math "x = 500" "x + 35"', 'math "f(x, y) = x^y" "f(2, 3)"'],
     async execute(message: Message, parsed: {expressions: string[]}) {
         if (!math.parser) return; // unsure why math is a partial

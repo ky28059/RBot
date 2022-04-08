@@ -8,7 +8,7 @@ import IllegalArgumentError from '../../errors/IllegalArgumentError';
 export default {
     name: 'toggle',
     description: 'Toggles whether the specific action will be logged.',
-    pattern: '[...Presets]',
+    pattern: '[...presets]',
     examples: ['toggle message_delete', 'toggle message_delete member_join member_leave'],
     guildOnly: true,
     permReqs: 'MANAGE_GUILD',

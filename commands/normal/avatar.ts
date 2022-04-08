@@ -10,7 +10,7 @@ export default {
         .setDescription('Fetches the discord avatar of the specified user, or yourself if no user was given.')
         .addUserOption(option => option
             .setName('user')
-            .setDescription('The user to get the avatar of')),
+            .setDescription('The user to get the avatar of.')),
     async execute(message: Message | CommandInteraction, parsed: {user?: User}) {
         const avatarTarget = parsed.user ?? author(message);
         const avatarEmbed = requestedBy(author(message))

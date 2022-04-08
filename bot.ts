@@ -6,7 +6,7 @@ import {readdirSync} from 'fs';
 import {token} from './auth';
 
 // Utils
-import parse from './utils/argumentParser';
+import parse from './utils/argParser';
 import {parseCommand, getSubmodules, forEachRawCommand} from './utils/parseCommands';
 import loadGuilds, {Guild as GuildPresets} from './models/Guild';
 import {log} from './utils/logger';

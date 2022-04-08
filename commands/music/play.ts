@@ -20,7 +20,7 @@ export default {
         .setDescription('Plays a video from youtube.')
         .addStringOption(option => option
             .setName('url')
-            .setDescription('The video to play')
+            .setDescription('The video to play.')
             .setRequired(true)),
     aliases: ['p'],
     examples: ['play https://www.youtube.com/watch?v=dQw4w9WgXcQ'],

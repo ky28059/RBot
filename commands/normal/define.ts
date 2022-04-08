@@ -30,7 +30,7 @@ export default {
         .setDescription('Gets the definition(s) of a word from wiktionary.')
         .addStringOption(option => option
             .setName('word')
-            .setDescription('The word to define')
+            .setDescription('The word to define.')
             .setRequired(true)),
     async execute(message: Message | CommandInteraction, parsed: {word: string}) {
         let word = parsed.word;

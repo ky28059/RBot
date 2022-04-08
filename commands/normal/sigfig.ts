@@ -10,7 +10,7 @@ export default {
         .setDescription('Gets the sigfig info of a given number.')
         .addStringOption(option => option
             .setName('number')
-            .setDescription('The number to get the sigfigs of')
+            .setDescription('The number to get the sigfigs of.')
             .setRequired(true)),
     examples: ['sigfig 5.0', 'sigfig 32.582736'],
     execute(message: Message | CommandInteraction, parsed: {number: string}) {
