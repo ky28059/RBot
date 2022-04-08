@@ -31,5 +31,10 @@
     "withoutSharding": "ts-node bot.ts",
     "offload": "ts-node bot.ts --offload",
     "onload": "ts-node bot.ts --onload"
+  },
+  "optionalDependencies": {
+    "bufferutil": "^4.0.6",
+    "erlpack": "github:discord/erlpack",
+    "utf-8-validate": "^5.0.9"
   }
 }
