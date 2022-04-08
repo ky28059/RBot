@@ -7,21 +7,21 @@ import {replyEmbed} from '../../utils/messageUtils';
 import {success} from '../../utils/messages';
 
 // Errors
+import ActionUntakeableError from '../../errors/ActionUntakeableError';
 import QueueNonexistentError from '../../errors/QueueNonexistentError';
-import MemberNotInSameVCError from '../../errors/MemberNotInSameVCError';
 import IntegerConversionError from '../../errors/IntegerConversionError';
-import IntegerRangeError from '../../errors/IntegerRangeError';
+import MemberNotInSameVCError from '../../errors/MemberNotInSameVCError';
 
 
 export default {
     data: new SlashCommandBuilder()
-        .setName('remove')
-        .setDescription('Removes a song from the queue.')
+        .setName('skipto')
+        .setDescription('Skips the music to the provided index.')
         .addIntegerOption(option => option
             .setName('index')
-            .setDescription('The (1-indexed) index to remove from the queue.')
+            .setDescription('The (1-indexed) index to skip the queue to.')
             .setRequired(true)),
-    examples: 'remove 5',
+    examples: 'skipto 3',
     guildOnly: true,
     async execute(message: Message | CommandInteraction, parsed: {index: number}) {
         if (!message.member || !(message.member instanceof GuildMember)) return;
@@ -30,16 +30,19 @@ export default {
         const subscription = message.client.subscriptions.get(message.guild!.id);
 
         if (!subscription)
-            throw new QueueNonexistentError('remove');
+            throw new QueueNonexistentError('skipto');
         if (!canModifyQueue(message.member!))
-            throw new MemberNotInSameVCError('remove');
+            throw new MemberNotInSameVCError('skipto');
 
         if (isNaN(index) || index % 1 !== 0)
-            throw new IntegerConversionError('remove', 'index');
-        if (index < 1)
-            throw new IntegerRangeError('remove', 'index', 1);
+            throw new IntegerConversionError('skipto', 'index');
+        if (index < 1 || index >= subscription.queue.length)
+            throw new ActionUntakeableError('skipto', `Index \`${index}\` is not a valid index of the queue`);
 
-        const song = subscription.remove(index);
-        await replyEmbed(message, success().setDescription(`❌ Song **${song.title}** was removed from the queue`));
+        // Set the index, then stop the audio player to begin playing the next song.
+        subscription.index = index - 1;
+        subscription.audioPlayer.stop();
+
+        await replyEmbed(message, success().setDescription(`Skipped to index **${index}**.`));
     }
 };

@@ -8,6 +8,7 @@ import {skip} from '../../utils/messages';
 
 // Errors
 import QueueNonexistentError from '../../errors/QueueNonexistentError';
+import MemberNotInSameVCError from '../../errors/MemberNotInSameVCError';
 
 
 export default {
@@ -20,8 +21,10 @@ export default {
         if (!message.member || !(message.member instanceof GuildMember)) return;
         const subscription = message.client.subscriptions.get(message.guild!.id);
 
-        if (!subscription) throw new QueueNonexistentError('skip');
-        if (!canModifyQueue(message.member)) return;
+        if (!subscription)
+            throw new QueueNonexistentError('skip');
+        if (!canModifyQueue(message.member))
+            throw new MemberNotInSameVCError('skip');
 
         // Calling .stop() on an AudioPlayer causes it to transition into the Idle state. Because of a state transition
         // listener defined in `subscription.ts`, transitions into the Idle state mean the next track from the queue

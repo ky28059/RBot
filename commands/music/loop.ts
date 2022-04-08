@@ -8,6 +8,7 @@ import {loop, success} from '../../utils/messages';
 
 // Errors
 import QueueNonexistentError from '../../errors/QueueNonexistentError';
+import MemberNotInSameVCError from '../../errors/MemberNotInSameVCError';
 
 
 export default {
@@ -21,8 +22,10 @@ export default {
         if (!message.member || !(message.member instanceof GuildMember)) return;
         const subscription = message.client.subscriptions.get(message.guild!.id);
 
-        if (!subscription) throw new QueueNonexistentError('loop');
-        if (!canModifyQueue(message.member)) return;
+        if (!subscription)
+            throw new QueueNonexistentError('loop');
+        if (!canModifyQueue(message.member))
+            throw new MemberNotInSameVCError('loop');
 
         // Toggle the queue loop
         subscription.queueLoop = !subscription.queueLoop;
