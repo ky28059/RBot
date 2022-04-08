@@ -62,7 +62,7 @@ export default {
     description: 'An example command',
     pattern: '[name] @[...users]',
     // ...
-    async execute(message: Message, args: {name: string, users: User[]}) {
+    async execute(message: Message, parsed: {name: string, users: User[]}) {
         // ...
     }
 }

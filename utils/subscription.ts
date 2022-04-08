@@ -128,13 +128,20 @@ export class MusicSubscription {
      */
     public shuffle() {
         const songs = this.queue;
-        this.queueLock = true;
         for (let i = songs.length - 1; i > 1; i--) {
             let j = 1 + Math.floor(Math.random() * i);
             [songs[i], songs[j]] = [songs[j], songs[i]];
         }
         this.queue = songs;
-        this.queueLock = false;
+    }
+
+    /**
+     * Removes a song from the queue.
+     * @param index The (1-indexed) index to remove.
+     */
+    public remove(index: number) {
+        const song = this.queue.splice(index - 1, 1);
+        return song[0];
     }
 
     /**
