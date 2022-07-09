@@ -5,6 +5,7 @@ import he from 'he';
 import {author, pagedMessage, reply, replyEmbed} from '../../utils/messageUtils';
 import {URL} from "url";
 import {requestedBy, success} from "../../utils/messages";
+import {SlashCommand} from '../../utils/parseCommands';
 
 
 // The structure of the API response seems to be
@@ -24,7 +25,7 @@ type LangDef = {partOfSpeech: string, language: string, definitions: Definition[
 type Definition = {definition: string, parsedExamples?: Example[], examples?: Example[]};
 type Example = {example: string};
 
-export default {
+const command: SlashCommand<{word: string}> = {
     data: new SlashCommandBuilder()
         .setName('define')
         .setDescription('Gets the definition(s) of a word from wiktionary.')
@@ -32,7 +33,7 @@ export default {
             .setName('word')
             .setDescription('The word to define.')
             .setRequired(true)),
-    async execute(message: Message | CommandInteraction, parsed: {word: string}) {
+    async execute(message, parsed) {
         let word = parsed.word;
 
         // Try once with exact supplied word (allows matching of pages like Markov_chain where capitalization matters)
@@ -84,6 +85,8 @@ export default {
         await pagedMessage(message, pages);
     }
 }
+
+export default command;
 
 // Clean the unparsed API output into markdown-ready code
 function cleanWiktionaryHTMLString(str: string) {

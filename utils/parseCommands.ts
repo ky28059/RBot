@@ -9,31 +9,51 @@ import {MusicSubscription} from './subscription';
 
 // Fields common to both old and new command syntaxes;
 // preconditions are still kept in slash commands for abstraction purposes
-type BaseCommand = {
-    isSlashCommand?: boolean,
-    commandGroup: string,
+type BaseCommand<Target, Args, GuildOnly extends boolean> = {
+    aliases?: string[], // NOTE: aliasing a `SlashCommand` will only alias the text-based version of that command.
     examples?: string | string[],
-    guildOnly?: boolean,
     ownerOnly?: boolean,
-    permReqs?: PermissionResolvable,
     clientPermReqs?: PermissionResolvable,
-    execute: (message: Message | CommandInteraction, parsed: any, tag: GuildPresets | undefined) => Promise<void>
+    execute: (message: Target, parsed: Args, tag: Tag<GuildOnly>) => Promise<any>
 }
-// Old text based command detail syntax
-export type Command = BaseCommand & {
+
+// A `GuildOnly` command will always have a valid tag passed in because `message.guild` is guaranteed to exist
+type Tag<T extends boolean> = T extends true ? GuildPresets : GuildPresets | undefined;
+
+// Old text-based command detail syntax. `name`, `description`, `pattern`, `guildOnly`, and `permReqs` are specified
+// explicitly.
+export type TextCommand<Args = {}, GuildOnly extends boolean = false> = BaseCommand<Message, Args, GuildOnly> & {
     name: string,
-    aliases?: string[],
     description: string,
     pattern?: string,
+} & (GuildOnly extends true ? {
+    // Require `guildOnly` and allow `permReqs` if `GuildOnly` is true.
+    guildOnly: GuildOnly
+    permReqs?: PermissionResolvable
+} : {
+    guildOnly?: GuildOnly
+})
+
+// New slash command detail syntax. The `SlashCommandBuilder` contains fields corresponding to `name`, `description`,
+// `pattern`, `guildOnly`, and `permReqs`.
+export type SlashCommand<Args = {}, GuildOnly extends boolean = false> = BaseCommand<Message | CommandInteraction, Args, GuildOnly> & {
+    // TODO: is there a better way of writing this type? @discordjs/builders doesn't export an interface for this >:(
+    data: Omit<SlashCommandBuilder, "addSubcommand" | "addSubcommandGroup">,
 }
-// New slash command detail syntax
-export type SlashCommand = BaseCommand & {
-    data: SlashCommandBuilder,
+
+// The actual command object inside RBot, which is a `SlashCommand` merged into old text-based syntax.
+type Command<Args, GuildOnly extends boolean, SlashCommandCompat extends boolean> = TextCommand<Args, GuildOnly> & {
+    isSlashCommand: SlashCommandCompat,
+    commandGroup: string,
+    permReqs?: PermissionResolvable
+    execute: (SlashCommandCompat extends true ? SlashCommand<Args, GuildOnly> : TextCommand<Args, GuildOnly>)['execute']
 }
 
 declare module "discord.js" {
     interface Client {
-        commands: Collection<string, Command>,
+        // TODO: while `any` might be forced for `Args`, using it for `GuildOnly` might be a little hacky
+        // This union allows for narrowing of the `execute` type by checking `isSlashCommand`.
+        commands: Collection<string, Command<any, any, true> | Command<any, any, false>>,
         submodules: string[],
         ownerID: Snowflake,
         subscriptions: Map<Snowflake, MusicSubscription>,
@@ -49,7 +69,7 @@ export function getSubmodules() {
 }
 
 // Imports raw command objects given a list of submodules to search, calling the provided callback on each.
-export async function forEachRawCommand(submodules: string[], callback: (command: Command | SlashCommand, dir: string) => void) {
+export async function forEachRawCommand(submodules: string[], callback: (command: TextCommand<any, any> | SlashCommand<any, any>, dir: string) => void) {
     for (const dir of submodules) {
         const files = readdirSync(`./commands/${dir}`).filter(file => file.endsWith('.ts'));
 
@@ -61,24 +81,25 @@ export async function forEachRawCommand(submodules: string[], callback: (command
 }
 
 // Parses a command file from `await import(...)` into an RBot command object.
-export function parseCommand(command: Command | SlashCommand, dir: string): Command {
+export function parseCommand(command: TextCommand<any, any> | SlashCommand<any, any>, dir: string): Command<any, any, any> {
+    let isSlashCommand = false;
+
     if ('data' in command) {
         // TODO: would using `...command` here have any adverse consequences?
         command = {
-            isSlashCommand: true,
             name: command.data.name,
-            commandGroup: dir,
             description: command.data.description,
             pattern: command.data.options.map(parseSlashCommandOption).join(' '),
-            guildOnly: command.guildOnly,
+            guildOnly: command.data.dm_permission,
             ownerOnly: command.ownerOnly,
-            permReqs: command.permReqs,
+            permReqs: (command.data.default_member_permissions as PermissionResolvable | null | undefined) || undefined,
             clientPermReqs: command.clientPermReqs,
             execute: command.execute
         }
+        isSlashCommand = true;
     }
 
-    return {...command, commandGroup: dir};
+    return {...command, commandGroup: dir, isSlashCommand};
 }
 
 // Parses a SlashCommandBuilder option into RBot's argParser syntax.

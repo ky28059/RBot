@@ -1,4 +1,5 @@
-import {CommandInteraction, Message, MessageEmbed, Util} from 'discord.js';
+import {SlashCommand} from '../../utils/parseCommands';
+import {MessageEmbed, Util} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 import fetch from 'node-fetch';
 
@@ -7,7 +8,7 @@ import {author, pagedMessage} from '../../utils/messageUtils';
 import {requestedBy} from '../../utils/messages';
 
 
-export default {
+const command: SlashCommand<{url: string}> = {
     data: new SlashCommandBuilder()
         .setName('fetch')
         .setDescription('Fetches plaintext HTML from a website link.')
@@ -15,7 +16,7 @@ export default {
             .setName('url')
             .setDescription('The URL to fetch.')
             .setRequired(true)),
-    async execute(message: Message | CommandInteraction, parsed: {url: string}) {
+    async execute(message, parsed) {
         const url = parsed.url;
         const source = await (await fetch(url)).text() || '[No Source Found]';
 
@@ -32,3 +33,5 @@ export default {
         await pagedMessage(message, splitDescription.map(m => new MessageEmbed(fetchEmbed).setDescription(`\`\`\`html\n${m}\`\`\``)));
     }
 }
+
+export default command;

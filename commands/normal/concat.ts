@@ -1,13 +1,16 @@
-import {Message} from 'discord.js';
+import {TextCommand} from '../../utils/parseCommands';
 
-export default {
+
+const command: TextCommand<{args: string[]}> = {
     name: 'concat',
     aliases: ['cat'],
     description: 'Says a message concatenated from multiple arguments.',
     pattern: '[...args]',
     examples: ['concat Hello world!', 'concat <:notlikeduck :762731625498542091>'],
-    execute(message: Message, parsed: {args: string[]}) {
+    async execute(message, parsed) {
         const args = parsed.args;
-        message.channel.send({content: args.join(''), allowedMentions: {parse: []}});
+        await message.channel.send({content: args.join(''), allowedMentions: {parse: []}});
     }
 }
+
+export default command;

@@ -5,8 +5,8 @@
   "main": "bot.js",
   "author": "Kevin Yu",
   "dependencies": {
-    "@discordjs/builders": "^0.12.0",
-    "@discordjs/opus": "^0.7.0",
+    "@discordjs/builders": "^0.15.0",
+    "@discordjs/opus": "^0.8.0",
     "@discordjs/rest": "^0.3.0",
     "@discordjs/voice": "^0.8.0",
     "@types/he": "^1.1.2",
@@ -17,6 +17,7 @@
     "he": "^1.2.0",
     "libsodium-wrappers": "^0.7.10",
     "mathjs": "^10.4.2",
+    "moment": "^2.29.4",
     "node-fetch": "^2.6.7",
     "sequelize": "^6.3.5",
     "sqlite3": "^5.0.2",

@@ -1,12 +1,13 @@
+import {SlashCommand} from '../../utils/parseCommands';
 import {CommandInteraction, Message, MessageEmbed, User} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 
 // Utilities
 import {author, replyEmbed} from '../../utils/messageUtils';
-import {requestedBy} from "../../utils/messages";
+import {requestedBy} from '../../utils/messages';
 
 
-export default {
+const command: SlashCommand<{target?: User}, true> = {
     data: new SlashCommandBuilder()
         .setName('profile')
         .setDescription('Fetches information about the specified user, or yourself if no user was given.')
@@ -14,7 +15,7 @@ export default {
             .setName('target')
             .setDescription('The user to get info about.')),
     guildOnly: true,
-    async execute(message: Message | CommandInteraction, parsed: {target?: User}) {
+    async execute(message: Message | CommandInteraction, parsed) {
         // TODO: make prettier, add functionality
         const profileTarget = parsed.target || author(message);
         const guildProfileTarget = message.guild!.members.cache.get(profileTarget.id)!;
@@ -28,3 +29,5 @@ export default {
         await replyEmbed(message, profileEmbed);
     }
 }
+
+export default command;

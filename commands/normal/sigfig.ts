@@ -1,10 +1,10 @@
-import {CommandInteraction, Message} from 'discord.js';
+import {SlashCommand} from '../../utils/parseCommands';
 import {SlashCommandBuilder} from '@discordjs/builders';
 import {reply} from '../../utils/messageUtils';
 import NumberConversionError from '../../errors/NumberConversionError';
 
 
-export default {
+const command: SlashCommand<{number: string}> = {
     data: new SlashCommandBuilder()
         .setName('sigfig')
         .setDescription('Gets the sigfig info of a given number.')
@@ -13,7 +13,7 @@ export default {
             .setDescription('The number to get the sigfigs of.')
             .setRequired(true)),
     examples: ['sigfig 5.0', 'sigfig 32.582736'],
-    execute(message: Message | CommandInteraction, parsed: {number: string}) {
+    async execute(message, parsed) {
         const { number } = parsed;
 
         if (isNaN(Number(number)))
@@ -39,3 +39,5 @@ export default {
             return reply(message, `${before}.${before3}**${sig3}**${exponent}, ${sig3.length} significant figure(s).`);
     }
 }
+
+export default command;

@@ -1,3 +1,4 @@
+import {SlashCommand} from '../../utils/parseCommands';
 import {CommandInteraction, Message} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 import fetch from 'node-fetch';
@@ -7,7 +8,7 @@ import {author, replyEmbed} from '../../utils/messageUtils';
 import {success} from '../../utils/messages';
 
 
-export default {
+const command: SlashCommand = {
     data: new SlashCommandBuilder()
         .setName('joke')
         .setDescription('Tells a random joke from https://official-joke-api.appspot.com/.'),
@@ -22,3 +23,5 @@ export default {
         await replyEmbed(message, jokeEmbed);
     }
 }
+
+export default command;

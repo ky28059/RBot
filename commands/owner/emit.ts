@@ -1,13 +1,14 @@
-import {Message} from 'discord.js';
+import {TextCommand} from '../../utils/parseCommands';
 
-export default {
+
+const command: TextCommand<{event: string}, true> = {
     name: 'emit',
     description: 'Emits an event to be detected by the client (for testing purposes).',
     pattern: '[event]',
     examples: 'emit leave',
     guildOnly: true,
     ownerOnly: true,
-    async execute(message: Message, parsed: {event: string}) {
+    async execute(message, parsed) {
         const event = parsed.event;
         const client = message.client;
 
@@ -25,3 +26,5 @@ export default {
         message.channel.send('Signal emitted!');
     }
 }
+
+export default command;

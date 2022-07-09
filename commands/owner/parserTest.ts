@@ -1,15 +1,15 @@
+import {TextCommand} from '../../utils/parseCommands';
 import parse from '../../utils/argParser';
-import {Message} from "discord.js";
 
 
-export default {
+const command: TextCommand<{pattern: string, args: string}> = {
     name: 'parserTest',
     aliases: ['ptest'],
     description: 'Tests the RBot Argument Parser.',
     pattern: '[pattern] <args>?',
     examples: 'parserTest "[field1] @[field2] <field3>?" one two three four',
     ownerOnly: true,
-    execute(message: Message, parsed: {pattern: string, args: string}) {
+    async execute(message, parsed) {
         const dummyCommand = {
             name: 'test',
             description: this.description,
@@ -18,10 +18,12 @@ export default {
             execute: async () => {}
         }
 
-        message.channel.send(`Parsed arguments to this command: \`${JSON.stringify(parsed)}\``);
-        message.channel.send(`
+        await message.channel.send(`Parsed arguments to this command: \`${JSON.stringify(parsed)}\``);
+        await message.channel.send(`
             Custom parse: \`${JSON.stringify(parse(parsed.args, 
             dummyCommand, message.client, message.guild))}\`
         `);
     }
 }
+
+export default command;

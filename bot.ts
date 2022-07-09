@@ -1,6 +1,5 @@
-import {Client, MessageEmbed, Collection, TextChannel, Snowflake, GuildMember} from 'discord.js';
+import {Client, MessageEmbed, Collection, TextChannel, GuildMember, Message, CommandInteraction} from 'discord.js';
 import {Sequelize} from 'sequelize';
-import {readdirSync} from 'fs';
 
 // Auth
 import {token} from './auth';
@@ -81,9 +80,9 @@ client.on('messageCreate', async message => {
     if (message.channel.type === 'DM') { // DM forwarding
         const dmEmbed = new MessageEmbed()
             .setColor(0x7f0000)
-            .setAuthor(message.author.tag, message.author.displayAvatarURL())
+            .setAuthor({name: message.author.tag, iconURL: message.author.displayAvatarURL()})
             .setDescription(`**${message.author} DMed RBot this message:**\n${message.content}`)
-            .setFooter(`${new Date()}`);
+            .setFooter({text: new Date().toISOString()});
         await client.users.cache.get(client.ownerID)?.send({embeds: [dmEmbed]});
     }
 
@@ -162,14 +161,7 @@ client.on('messageCreate', async message => {
             const parsed = parse(argString ?? '', command, client, guild);
             await command.execute(message, parsed, tag);
         } catch (e) {
-            if (!(e instanceof Error)) return;
-
-            // If the error was a result of bad code, log it
-            if (!(e instanceof CommandError)) {
-                console.error(`Error in command ${commandName} called in ${guild?.name ?? 'a DM'} at ${new Date()}: ${e}`);
-                console.error(e.stack);
-            }
-            await message.reply({embeds: [err(e.name, e.message)]}).catch();
+            await handleCommandError(message, commandName, e);
         }
 
         // adds user to set if they have used a command recently
@@ -233,16 +225,20 @@ client.on('interactionCreate', async interaction => {
         }
         await command.execute(interaction, parsed, tag);
     } catch (e) {
-        if (!(e instanceof Error)) return;
-
-        // If the error was a result of bad code, log it
-        if (!(e instanceof CommandError)) {
-            console.error(`Error in command ${interaction.commandName} called in ${guild?.name ?? 'a DM'} at ${new Date()}: ${e}`);
-            console.error(e.stack);
-        }
-        await interaction.reply({embeds: [err(e.name, e.message)]}).catch();
+        await handleCommandError(interaction, interaction.commandName, e);
     }
 })
+
+async function handleCommandError(message: Message | CommandInteraction, commandName: string, e: unknown) {
+    if (!(e instanceof Error)) return;
+
+    // If the error was a result of bad code, log it
+    if (!(e instanceof CommandError)) {
+        console.error(`Error in command ${commandName} called in ${message.guild?.name ?? 'a DM'} at ${new Date()}: ${e}`);
+        console.error(e.stack);
+    }
+    await message.reply({embeds: [err(e.name, e.message)]}).catch();
+}
 
 
 // Bot logs the following events:

@@ -1,11 +1,14 @@
-import {Message} from 'discord.js';
+import {TextCommand} from '../../utils/parseCommands';
 
-export default {
+
+const command: TextCommand<{message: string}> = {
     name: 'say',
     description: 'Repeats your message.',
     pattern: '<message>',
     examples: 'say Hello world!',
-    execute(message: Message, parsed: {message: string}) {
-        message.channel.send({content: parsed.message, allowedMentions: {parse: []}});
+    async execute(message, parsed) {
+        await message.channel.send({content: parsed.message, allowedMentions: {parse: []}});
     }
 }
+
+export default command;

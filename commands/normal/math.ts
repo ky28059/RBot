@@ -1,4 +1,4 @@
-import {Message, MessageEmbed} from 'discord.js';
+import {TextCommand} from '../../utils/parseCommands';
 import { create, all } from 'mathjs';
 import {requestedBy} from '../../utils/messages';
 
@@ -6,13 +6,13 @@ const config = { };
 const math = create(all, config);
 
 
-export default {
+const command: TextCommand<{expressions: string[]}> = {
     name: 'math',
     aliases: ['calc'],
     description: 'Calculates a list of expressions using mathjs.',
     pattern: '[...expressions]',
     examples: ['math "sqrt(3^2 + 4^2)"', 'math "x = 500" "x + 35"', 'math "f(x, y) = x^y" "f(2, 3)"'],
-    async execute(message: Message, parsed: {expressions: string[]}) {
+    async execute(message, parsed) {
         if (!math.parser) return; // unsure why math is a partial
         const parser = math.parser();
 
@@ -29,3 +29,5 @@ export default {
         message.channel.send({embeds: [mathEmbed]});
     }
 }
+
+export default command;

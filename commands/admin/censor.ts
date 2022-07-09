@@ -1,5 +1,4 @@
-import {Message} from 'discord.js';
-import {Guild} from '../../models/Guild';
+import {TextCommand} from '../../utils/parseCommands';
 
 // Utilities
 import {isInField, addToField} from '../../utils/tokenManager';
@@ -9,7 +8,7 @@ import {log} from '../../utils/logger';
 import IllegalArgumentError from '../../errors/IllegalArgumentError';
 
 
-export default {
+const command: TextCommand<{target: string, rest?: string[]}, true> = {
     name: 'censor',
     description: 'Censor a user (delete their messages when sent) or word (delete messages containing that word).',
     pattern: '[Target] [...Rest]?',
@@ -17,7 +16,7 @@ export default {
     guildOnly: true,
     permReqs: 'KICK_MEMBERS',
     clientPermReqs: 'MANAGE_MESSAGES',
-    async execute(message: Message, parsed: {target: string, rest?: string[]}, tag: Guild) {
+    async execute(message, parsed, tag) {
         const guild = message.guild!;
         const target = message.client.users.cache.get(parsed.target.match(/^<@!?(\d+)>$/)?.[1] ?? parsed.target);
 
@@ -57,3 +56,5 @@ export default {
         await message.channel.send(`Now censoring the mention of \`[${censored.join(', ')}]\`!`);
     }
 }
+
+export default command;

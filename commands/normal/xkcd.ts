@@ -8,25 +8,26 @@ import {success} from '../../utils/messages';
 
 // Errors
 import IntegerRangeError from '../../errors/IntegerRangeError';
+import {SlashCommand} from '../../utils/parseCommands';
 
 
-export default {
+const command: SlashCommand<{comic?: number}> = {
     data: new SlashCommandBuilder()
         .setName('xkcd')
         .setDescription('Gets the specified xkcd comic, or one at random.')
         .addIntegerOption(option => option
             .setName('comic')
             .setDescription('The xkcd to send.')),
-    async execute(target: Message | CommandInteraction, parsed: {comic: number}) {
+    async execute(target, parsed) {
         let num = parsed.comic;
         const max = (await (await fetch('https://xkcd.com/info.0.json')).json()).num;
 
         // If num is invalid
-        if (num < 1 || num > max)
+        if (typeof num === 'number' && (num < 1 || num > max))
             throw new IntegerRangeError('xkcd', 'comic', 1, max);
 
         // If no number is specified, send a random comic
-        if (isNaN(num)) num = Math.ceil(Math.random() * max);
+        if (!num) num = Math.ceil(Math.random() * max);
 
         const res = await (await fetch(`https://xkcd.com/${num}/info.0.json`)).json();
         const xkcdEmbed = success()
@@ -39,3 +40,5 @@ export default {
         await replyEmbed(target, xkcdEmbed);
     }
 }
+
+export default command;

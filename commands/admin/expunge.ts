@@ -1,4 +1,5 @@
-import {CommandInteraction, Message, User} from 'discord.js';
+import {SlashCommand} from '../../utils/parseCommands';
+import {User} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 
 // Utilities
@@ -9,10 +10,12 @@ import {success} from '../../utils/messages';
 import IntegerRangeError from '../../errors/IntegerRangeError';
 
 
-export default {
+const command: SlashCommand<{count: number, target?: User}, true> = {
     data: new SlashCommandBuilder()
         .setName('expunge')
         .setDescription('Removes all reactions from the specified amount of messages in the channel.')
+        .setDMPermission(false)
+        .setDefaultMemberPermissions('MANAGE_MESSAGES')
         .addIntegerOption(option => option
             .setName('count')
             .setDescription('The number of messages to expunge.')
@@ -23,10 +26,8 @@ export default {
             .setName('target')
             .setDescription('The person to expunge reactions from.')),
     examples: 'expunge 80',
-    guildOnly: true,
-    permReqs: 'MANAGE_MESSAGES',
     clientPermReqs: 'MANAGE_MESSAGES',
-    async execute(message: Message | CommandInteraction, parsed: {count: number, target?: User}) {
+    async execute(message, parsed) {
         const {count, target} = parsed;
 
         // TODO: see todo in `purge.ts`
@@ -43,3 +44,5 @@ export default {
         await replyEmbed(message, success().setDescription(`Expunged ${count} messages.`));
     }
 }
+
+export default command;

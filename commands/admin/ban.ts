@@ -1,4 +1,5 @@
-import {CommandInteraction, Message, User} from 'discord.js';
+import {SlashCommand} from '../../utils/parseCommands';
+import {User} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 
 // Utilities
@@ -14,10 +15,12 @@ import ActionOnSelfError from '../../errors/ActionOnSelfError';
 import IntegerRangeError from '../../errors/IntegerRangeError';
 
 
-export default {
+const command: SlashCommand<{target: User, reason?: string, days?: number}, true> = {
     data: new SlashCommandBuilder()
         .setName('ban')
         .setDescription('Ban a user from this server.')
+        .setDMPermission(false)
+        .setDefaultMemberPermissions('BAN_MEMBERS')
         .addUserOption(option => option
             .setName('target')
             .setDescription('The user to ban.')
@@ -31,10 +34,8 @@ export default {
             .setMinValue(0)
             .setMaxValue(7)),
     examples: ['ban @example', 'ban @example "NSFW imagery"', 'ban @example "NSFW imagery" 7'],
-    guildOnly: true,
-    permReqs: 'BAN_MEMBERS',
     clientPermReqs: 'BAN_MEMBERS',
-    async execute(message: Message | CommandInteraction, parsed: {target: User, reason?: string, days?: number}, tag: Guild) {
+    async execute(message, parsed, tag) {
         const guild = message.guild!;
         const target = guild.members.cache.get(parsed.target.id);
 
@@ -55,9 +56,11 @@ export default {
         await target.ban({days, reason});
 
         await log(message.client, guild, {
-            id: tag.logchannel, color: 0x7f0000, author: target.user.tag, authorIcon: target.user.displayAvatarURL(),
+            id: tag!.logchannel, color: 0x7f0000, author: target.user.tag, authorIcon: target.user.displayAvatarURL(),
             desc: `**${target} has been banned by ${author(message)} for the reason:**\n${reason}`
         });
         await replyEmbed(message, success().setDescription(`Banned ${target}.`));
     }
 }
+
+export default command;

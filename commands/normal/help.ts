@@ -1,6 +1,5 @@
-import {CommandInteraction, Message} from 'discord.js';
+import {SlashCommand} from '../../utils/parseCommands';
 import {SlashCommandBuilder} from '@discordjs/builders';
-import {Guild} from '../../models/Guild';
 
 // Utilities
 import {author, replyEmbed} from '../../utils/messageUtils';
@@ -10,7 +9,7 @@ import {requestedBy} from '../../utils/messages';
 import IllegalArgumentError from '../../errors/IllegalArgumentError';
 
 
-export default {
+const command: SlashCommand<{command?: string}> = {
     data: new SlashCommandBuilder()
         .setName('help')
         .setDescription('Gets info about a command, or sends a command list.')
@@ -18,7 +17,7 @@ export default {
             .setName('command')
             .setDescription('The command to get info about.')),
     examples: 'help censor',
-    async execute(message: Message | CommandInteraction, parsed: {command?: string}, tag: Guild) {
+    async execute(message, parsed, tag) {
         const client = message.client;
         const commands = client.commands;
         const name = parsed.command;
@@ -64,3 +63,5 @@ export default {
         await replyEmbed(message, helpEmbed);
     }
 }
+
+export default command;

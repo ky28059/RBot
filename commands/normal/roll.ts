@@ -1,15 +1,16 @@
+import {TextCommand} from '../../utils/parseCommands';
 import {Message, Util} from 'discord.js';
 import IntegerRangeError from '../../errors/IntegerRangeError';
+import IntegerConversionError from '../../errors/IntegerConversionError';
 
 
-export default {
+const command: TextCommand<{sides?: string, dice?: string}> = {
     name: 'roll',
     aliases: ['rng', 'dice'],
-    description: 'Rolls y x sided die, defaults to 1 die and 6 sides when numbers are not given.',
-    usage: ['roll [sides] [dice]', 'roll [dnd notation]'],
+    description: 'Rolls y x sided die, defaults to 1 die and 6 sides when numbers are not given. Also supports dnd notation (ie. 3d8).',
     pattern: '[sides]? [dice]?',
     examples: ['roll 5', 'roll 5 2', 'roll 3d8'],
-    execute(message: Message, parsed: {sides?: string, dice?: string}) {
+    async execute(message, parsed) {
         let {sides, dice} = parsed;
 
         // Support dnd notation like "3d8"
@@ -20,6 +21,8 @@ export default {
 
         let diceNum = Number(dice);
         let sidesNum = Number(sides);
+
+        if (diceNum % 1 !== 0) throw new IntegerConversionError(this.name, 'dice');
         if (isNaN(diceNum)) diceNum = 1;
         if (isNaN(sidesNum)) sidesNum = 6;
 
@@ -30,7 +33,7 @@ export default {
         let rolls = [];
         let total = 0;
         for (let i = 0; i < diceNum; i++) {
-            let roll = Math.ceil(Math.random() * Math.floor(sidesNum));
+            let roll = Math.floor(Math.random() * sidesNum) + 1;
             rolls.push(roll);
             total += roll;
         }
@@ -45,8 +48,10 @@ export default {
             append: '...**'
         });
 
-        splitDescription.forEach(async (m) => {
+        splitDescription.forEach((m) => {
             message.channel.send(m);
         });
     }
 }
+
+export default command;

@@ -1,4 +1,5 @@
-import {CommandInteraction, Message, User} from 'discord.js';
+import {SlashCommand} from '../../utils/parseCommands';
+import {User} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 
 // Utilities
@@ -13,10 +14,12 @@ import ActionUntakeableError from '../../errors/ActionUntakeableError';
 import ActionOnSelfError from '../../errors/ActionOnSelfError';
 
 
-export default {
+const command: SlashCommand<{target: User, reason?: string}, true> = {
     data: new SlashCommandBuilder()
         .setName('kick')
         .setDescription('Kick a user from this server.')
+        .setDMPermission(false)
+        .setDefaultMemberPermissions('KICK_MEMBERS')
         .addUserOption(option => option
             .setName('target')
             .setDescription('The user to kick.')
@@ -25,10 +28,8 @@ export default {
             .setName('reason')
             .setDescription('The reason for the kick.')),
     examples: 'kick @example "Spamming in #general"',
-    guildOnly: true,
-    permReqs: 'KICK_MEMBERS',
     clientPermReqs: 'KICK_MEMBERS',
-    async execute(message: Message | CommandInteraction, parsed: {target: User, reason?: string}, tag: Guild) {
+    async execute(message, parsed, tag) {
         const guild = message.guild!;
         const target = guild.members.cache.get(parsed.target.id);
 
@@ -49,3 +50,5 @@ export default {
         await replyEmbed(message, success().setDescription(`Kicked ${target}.`));
     }
 }
+
+export default command;

@@ -1,13 +1,13 @@
-import {Message} from 'discord.js';
+import {TextCommand} from '../../utils/parseCommands';
 import {success} from '../../utils/messages';
 
 
-export default {
+const command: TextCommand = {
     name: 'terminate',
     description: 'Terminates RBot.',
     examples: 'terminate',
     ownerOnly: true,
-    async execute(message: Message) {
+    async execute(message) {
         await message.channel.send({embeds: [success().setDescription('Terminating...')]});
 
         // If not sharded, just kill the process like normal
@@ -17,3 +17,5 @@ export default {
         await message.client.shard.send('terminate');
     }
 }
+
+export default command;
