@@ -107,12 +107,11 @@ run RBot on your own. Note that you need to install a version of Node >= 16 for 
 
 - Install the node.js dependencies with `npm install`.
 
-- Create a config file named `auth.ts` in the root folder that exports your discord bot token ([obtained here](https://discord.com/developers/applications)). 
-  The resulting file should look something like this:
- ```js
- export const token = 'discord_token_here';
- ```
-- Update the owner id in `bot.ts` with your own Discord ID. Though this step isn't *strictly* necessary (nothing will break 
-  if you skip this), without updating the id you will not be able to use owner only commands and DM forwarding.
+- Create a config file named `auth.ts` in the root folder that exports your discord bot token ([obtained here](https://discord.com/developers/applications))
+  and discord user ID. The resulting file should look something like this:
+```js
+export const token = 'discord_token_here';
+export const ownerId = '000000000000000000';
+```
 
-After doing those things, `npm start` should start the bot program.
+With all dependencies installed, `npm start` should start the bot program.

@@ -1,10 +1,10 @@
-import IllegalArgumentError from './IllegalArgumentError';
+import ArgumentConversionError from './ArgumentConversionError';
 
 
-// Thrown when field requiring a number cannot parse the input into a Number
-export default class NumberConversionError extends IllegalArgumentError {
-    constructor (commandName: string, field: string) {
-        super(commandName, `Field \`${field}\` must be a valid number`);
+// Thrown when field requiring a `number` receives a value not resolvable to `number`.
+export default class NumberConversionError extends ArgumentConversionError {
+    constructor (commandName: string, field: string, repeating?: boolean) {
+        super(commandName, field, 'number', repeating);
         this.name = 'NUMBER_CONVERSION_ERROR';
     }
 }

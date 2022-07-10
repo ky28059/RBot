@@ -6,6 +6,9 @@ import IllegalArgumentError from '../errors/IllegalArgumentError';
 import NumberConversionError from '../errors/NumberConversionError';
 import IntegerRangeError from "../errors/IntegerRangeError";
 import IntegerConversionError from "../errors/IntegerConversionError";
+import ChannelConversionError from '../errors/ChannelConversionError';
+import UserConversionError from '../errors/UserConversionError';
+import RoleConversionError from '../errors/RoleConversionError';
 
 
 // Regexes to get ID from mention (<@!someid> => someid)
@@ -107,7 +110,8 @@ export default function parse(argString: string, command: ParserCommand, client:
             returnObj[name.toLowerCase()] = args
                 .map(arg => arg.replace(/^"|"$/g, '')) // Sanitize quotes
                 .map(arg => matchSingular({
-                    arg, prefix, bracket, name, rangeFrom, rangeTo, client, guild, command
+                    arg, prefix, bracket, argName: name, commandName: command.name, repeating: true, rangeFrom, rangeTo,
+                    client, guild
                 }));
 
             return returnObj;
@@ -116,7 +120,8 @@ export default function parse(argString: string, command: ParserCommand, client:
         // Otherwise, match arg based on prefix
         arg = arg.replace(/^"|"$/g, ''); // Sanitize quotes
         returnObj[name.toLowerCase()] = matchSingular({
-            arg, prefix, bracket, name, rangeFrom, rangeTo, client, guild, command
+            arg, prefix, bracket, argName: name, commandName: command.name, repeating: false, rangeFrom, rangeTo,
+            client, guild
         });
     }
 
@@ -124,16 +129,19 @@ export default function parse(argString: string, command: ParserCommand, client:
 }
 
 type FieldProps = {
-    arg: string, prefix: string, bracket: string, name: string, rangeFrom?: string, rangeTo?: string,
-    client: Client, guild: Guild | null, command: ParserCommand
+    arg: string, prefix: string, bracket: string, rangeFrom?: string, rangeTo?: string,
+    argName: string, commandName: string, repeating: boolean,
+    client: Client, guild: Guild | null
 }
-function matchSingular({arg, prefix, bracket, name, rangeFrom, rangeTo, client, guild, command}: FieldProps) {
+function matchSingular(props: FieldProps) {
+    const {arg, prefix, bracket, argName, commandName, repeating, rangeFrom, rangeTo, client, guild} = props;
+
     if (bracket === '(') { // Integers
         const num = Number(arg);
         if (isNaN(num) || num % 1 !== 0)
-            throw new IntegerConversionError(command.name, name);
+            throw new IntegerConversionError(commandName, argName, repeating);
         if (rangeFrom && rangeTo && (num < Number(rangeFrom) || num > Number(rangeTo)))
-            throw new IntegerRangeError(command.name, name, rangeFrom, rangeTo);
+            throw new IntegerRangeError(commandName, argName, rangeFrom, rangeTo, repeating);
         return num;
     }
 
@@ -141,20 +149,20 @@ function matchSingular({arg, prefix, bracket, name, rangeFrom, rangeTo, client, 
         case '@': // Users
             const userID = arg.match(mentionRegex)?.[1] ?? arg;
             const user = client.users.cache.get(userID);
-            if (!user) throw new IllegalArgumentError(command.name, `Field \`${name}\` must be a valid user.`);
+            if (!user) throw new UserConversionError(commandName, argName, repeating);
             return user;
 
         case '#': // Channels
             const channelID = arg.match(channelRegex)?.[1] ?? arg;
             const channel = client.channels.cache.get(channelID);
-            if (!channel) throw new IllegalArgumentError(command.name, `Field \`${name}\` must be a valid channel.`);
+            if (!channel) throw new ChannelConversionError(commandName, argName, repeating);
             return channel;
 
         case '&': // Roles
             if (!guild) return;
             const roleID = arg.match(roleRegex)?.[1] ?? arg;
             const role = guild.roles.cache.get(roleID);
-            if (!role) throw new IllegalArgumentError(command.name, `Field \`${name}\` must be a valid role.`);
+            if (!role) throw new RoleConversionError(commandName, argName, repeating);
             return role;
 
         default: // Default string field

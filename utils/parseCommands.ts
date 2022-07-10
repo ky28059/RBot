@@ -78,7 +78,6 @@ declare module "discord.js" {
     interface Client {
         commands: Collection<string, ParsedCommand>,
         submodules: string[],
-        ownerID: Snowflake,
         subscriptions: Map<Snowflake, MusicSubscription>,
         loadCommands(): Promise<void>
     }

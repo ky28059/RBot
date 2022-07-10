@@ -2,7 +2,7 @@ import {Client, MessageEmbed, Collection, TextChannel, GuildMember, Message, Com
 import {Sequelize} from 'sequelize';
 
 // Auth
-import {token} from './auth';
+import {token, ownerId} from './auth';
 
 // Utils
 import parse from './utils/argParser';
@@ -33,7 +33,6 @@ const client = new Client({
 });
 
 client.commands = new Collection();
-client.ownerID = '355534246439419904'; // For owner only commands
 client.subscriptions = new Map(); // For music commands
 
 // Dynamic command handling
@@ -81,7 +80,7 @@ client.on('messageCreate', async message => {
             .setAuthor({name: message.author.tag, iconURL: message.author.displayAvatarURL()})
             .setDescription(`**${message.author} DMed RBot this message:**\n${message.content}`)
             .setFooter({text: new Date().toISOString()});
-        await client.users.cache.get(client.ownerID)?.send({embeds: [dmEmbed]});
+        await client.users.cache.get(ownerId)?.send({embeds: [dmEmbed]});
     }
 
     if (talkedRecently.has(message.author.id)) return; // Global spam prevention
@@ -149,7 +148,7 @@ client.on('messageCreate', async message => {
             const embed = err('CLIENT_PERMS_MISSING', `Client lacks permissions: \`${command.clientPermReqs}\``);
             await message.reply({embeds: [embed]}).catch();
             return;
-        } else if (command.ownerOnly && message.author.id !== client.ownerID) {
+        } else if (command.ownerOnly && message.author.id !== ownerId) {
             const embed = err('OWNER_ONLY', 'Owner only command cannot be invoked by non owner');
             await message.reply({embeds: [embed]}).catch();
             return;
@@ -204,7 +203,7 @@ client.on('interactionCreate', async interaction => {
         const embed = err('CLIENT_PERMS_MISSING', `Client lacks permissions: \`${command.clientPermReqs}\``);
         await interaction.reply({embeds: [embed]}).catch();
         return;
-    } else if (command.ownerOnly && interaction.user.id !== client.ownerID) {
+    } else if (command.ownerOnly && interaction.user.id !== ownerId) {
         const embed = err('OWNER_ONLY', 'Owner only command cannot be invoked by non owner');
         await interaction.reply({embeds: [embed]}).catch();
         return;
