@@ -24,51 +24,59 @@ RBot dynamically parses all folders inside `/commands` as submodules. Within eac
 as a command.
 
 Commands come in two formats: slash command supporting and text-only. The detailed types for these can be found in 
-`./util/parseCommands`, but essentially a slash-command supporting command file will have a `data` property which exports
-the `SlashCommandBuilder` representing the command's application data, which is used for command registration and then 
-parsed to be compatible with text-based invocations.
+`./util/parseCommands`, but essentially a slash-command supporting command file exports a `data` property which contains
+the `SlashCommandBuilder` representing the command's application data. This data is used for command registration and 
+used when backporting the command to allow text-based invocations.
+
+The command itself uses one of two factory functions to standardize the created command format across text and slash 
+commands.
 ```ts
-// Slash command
-export default {
-    data: new SlashCommandBuilder()
-        .setName('example')
-        .setDescription('An example command'),
-    // ...
-    async execute(message: Message | CommandInteraction) {
+// slash-command.ts
+
+export const data = new SlashCommandBuilder()
+    .setName('example')
+    .setDescription('An example command')
+
+export default createSlashCommand(
+    data,
+    async (message) => {
         // ...
     }
-}
+);
 ```
 ```ts
-// Text-only command
-export default {
+// text-command.ts
+
+export default createTextCommand({
     name: 'example',
     description: 'An example command',
     // ...
-    async execute(message: Message) {
+    async execute(message) {
         // ...
     }
-}
+});
 ```
 The main body of a command is its `async execute()` method, which takes in the `Message` (or, if supporting slash commands,
-the `CommandInteraction`) and an object representing the command's parsed arguments and executes logic based on the
-provided input. Thrown errors (like when input is malformed) are caught in `bot.ts` and displayed as error embeds.
+`Message | CommandInteraction`) and the command's parsed arguments and executes the command. Thrown errors (like when 
+input is malformed) are caught in `bot.ts` and sent in discord as error embeds.
 
 For text-based commands, arguments are specified by providing a `pattern` field in the command data specifying a parser
 pattern. The syntax for RBot's argParser pattern can be found in `./util/argParser`.
 ```ts
-export default {
+// example.ts
+
+export default createTextCommand<{name: string, users: User[]}>({
     name: 'example',
     description: 'An example command',
     pattern: '[name] @[...users]',
     // ...
-    async execute(message: Message, parsed: {name: string, users: User[]}) {
+    async execute(message, parsed) {
         // ...
     }
-}
+});
 ```
-For slash commands, using the `SlashCommandBuilder`'s `.addStringOption`, `addUserOption`, etc. will be automatically 
-parsed to an argParser pattern at startup.
+For slash commands, using the `SlashCommandBuilder`'s `.addStringOption`, `addUserOption`, etc. methods will be automatically 
+parsed to an `argParser` pattern via the factory function.
 
 ### Running RBot locally
 While most files RBot uses are committed directly to GitHub, there are a few things you need to do before being able to 
