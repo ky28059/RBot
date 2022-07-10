@@ -66,12 +66,12 @@ client.once('ready', async () => {
     console.log(`Logged in as ${client.user!.tag}!`);
 });
 
-client.on('guildCreate', async guild => {
+client.on('guildCreate', async (guild) => {
     await update(guild, client);
     console.log(`New guild joined: ${guild.name} (id: ${guild.id}). This guild has ${guild.memberCount} members!`);
 });
 
-client.on('messageCreate', async message => {
+client.on('messageCreate', async (message) => {
     if (message.author.bot) return; // Bot ignores itself and other bots
 
     if (message.channel.type === 'DM') { // DM forwarding
@@ -170,7 +170,8 @@ client.on('messageCreate', async message => {
     }
 });
 
-client.on('interactionCreate', async interaction => {
+// Slash commands
+client.on('interactionCreate', async (interaction) => {
     if (!interaction.isCommand()) return;
 
     const command = client.commands.get(interaction.commandName);
@@ -236,6 +237,16 @@ async function handleCommandError(message: Message | CommandInteraction, command
     }
     await message.reply({embeds: [err(e.name, e.message)]}).catch();
 }
+
+// Autocomplete
+client.on('interactionCreate', async (interaction) => {
+    if (!interaction.isAutocomplete()) return;
+
+    const command = interaction.client.commands.get(interaction.commandName);
+    if (!command || !command.handleAutocomplete) return;
+
+    await command.handleAutocomplete(interaction);
+})
 
 
 // Bot logs the following events:

@@ -14,7 +14,8 @@ export const data = new SlashCommandBuilder()
     .setDescription('Gets info about a command, or sends a command list.')
     .addStringOption(option => option
         .setName('command')
-        .setDescription('The command to get info about.'))
+        .setDescription('The command to get info about.')
+        .setAutocomplete(true))
 
 export default createSlashCommand<{command?: string}>({
     data,
@@ -53,7 +54,7 @@ export default createSlashCommand<{command?: string}>({
             throw new IllegalArgumentError('help', `Command \`${name}\` not a valid command`);
 
         // If there were arguments given and the argument was a valid command, display info about that command
-        const helpEmbed = requestedBy(author(message)).setTitle(`${command.name}`);
+        const helpEmbed = requestedBy(author(message)).setTitle(command.name);
 
         if (command.description) helpEmbed.setDescription(command.description);
         if (command.commandGroup) helpEmbed.addField('**Command Group:**', command.commandGroup);
@@ -67,5 +68,12 @@ export default createSlashCommand<{command?: string}>({
             Array.isArray(command.permReqs) ? command.permReqs.join(', ') : command.permReqs.toString());
 
         await replyEmbed(message, helpEmbed);
+    },
+    async handleAutocomplete(interaction) {
+        const focused = interaction.options.getFocused();
+        const choices = [...interaction.client.commands.keys()]
+            .filter(command => command.startsWith(focused.toString()))
+            .slice(0, 25)
+        await interaction.respond(choices.map(command => ({name: command, value: command})));
     }
 });

@@ -1,4 +1,4 @@
-import {Collection, CommandInteraction, Message, Permissions, PermissionResolvable, Snowflake, PermissionString} from 'discord.js';
+import {Collection, CommandInteraction, Message, Permissions, PermissionResolvable, Snowflake, AutocompleteInteraction} from 'discord.js';
 import {SlashCommandBuilder, ToAPIApplicationCommandOptions} from '@discordjs/builders';
 import {readdirSync} from 'fs';
 
@@ -21,17 +21,23 @@ type CommandCallback<Target, Args, GuildOnly extends boolean> = (message: Target
 
 
 type SlashCommandData = Omit<SlashCommandBuilder, "addSubcommand" | "addSubcommandGroup">;
+type SlashCommand<Args, GuildOnly extends boolean> = {
+    data: SlashCommandData,
+    execute: CommandCallback<Message | CommandInteraction, Args, GuildOnly>,
+    handleAutocomplete?: (interaction: AutocompleteInteraction) => Promise<any>
+}
 export function createSlashCommand<Args = {}, GuildOnly extends boolean = false>(
-    command: BaseCommand & {data: SlashCommandData, execute: CommandCallback<Message | CommandInteraction, Args, GuildOnly>}
+    command: BaseCommand & SlashCommand<Args, GuildOnly>
 ): Command<Args, GuildOnly, true> {
     const {data, ...opts} = command;
+    const permissions = new Permissions((data.default_member_permissions || undefined) as PermissionResolvable | undefined).toArray()
     return {
         isSlashCommand: true,
         name: data.name,
         description: data.description,
         pattern: data.options.map(parseSlashCommandOption).join(' '),
         guildOnly: data.dm_permission || false,
-        permReqs: new Permissions((data.default_member_permissions || undefined) as PermissionString | undefined).toArray(),
+        permReqs: permissions.length ? permissions : undefined,
         ...opts
     }
 }
@@ -42,7 +48,7 @@ type TextCommand<Args, GuildOnly extends boolean> = {
     description: string,
     pattern?: string,
     guildOnly?: GuildOnly // TODO: figure out if its possible to require this field only if `GuildOnly` is true
-    permReqs?: PermissionResolvable,
+    permReqs?: PermissionResolvable, // TODO: is there a type-safe way to only allow this when `GuildOnly` is true?
     execute: CommandCallback<Message, Args, GuildOnly>
 }
 export function createTextCommand<Args = {}, GuildOnly extends boolean = false>(
@@ -62,11 +68,13 @@ type Command<Args, GuildOnly extends boolean, SlashCommandCompat extends boolean
     name: string,
     description: string,
     pattern?: string,
-    guildOnly: boolean, //GuildOnly
+    guildOnly: boolean,
     permReqs?: PermissionResolvable,
     execute: SlashCommandCompat extends true
         ? CommandCallback<Message | CommandInteraction, Args, GuildOnly>
-        : CommandCallback<Message, Args, GuildOnly>
+        : CommandCallback<Message, Args, GuildOnly>,
+    // TODO: is there a type-safe way to express that this is always undefined when `SlashCommandCompat` is false?
+    handleAutocomplete?: (interaction: AutocompleteInteraction) => Promise<any>
 }
 
 // The type of the command object inside RBot, which contains a dynamic `commandGroup` field and is narrowable
