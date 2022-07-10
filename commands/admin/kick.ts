@@ -28,9 +28,11 @@ export const data = new SlashCommandBuilder()
         .setName('reason')
         .setDescription('The reason for the kick.'));
 
-export default createSlashCommand<{target: User, reason?: string}, true>(
+export default createSlashCommand<{target: User, reason?: string}, true>({
     data,
-    async (message, parsed, tag) => {
+    examples: 'kick @example "Spamming in #general"',
+    clientPermReqs: 'KICK_MEMBERS',
+    async execute(message, parsed, tag) {
         const guild = message.guild!;
         const target = guild.members.cache.get(parsed.target.id);
 
@@ -49,8 +51,5 @@ export default createSlashCommand<{target: User, reason?: string}, true>(
             desc: `**${target.user} has been kicked by ${author(message)} for the reason:**\n${reason}`
         });
         await replyEmbed(message, success().setDescription(`Kicked ${target}.`));
-    }, {
-        examples: 'kick @example "Spamming in #general"',
-        clientPermReqs: 'KICK_MEMBERS'
     }
-);
+});

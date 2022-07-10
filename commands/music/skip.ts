@@ -17,9 +17,10 @@ export const data = new SlashCommandBuilder()
     .setDescription('Skips the currently playing song.')
     .setDMPermission(false)
 
-export default createSlashCommand<{}, true>(
+export default createSlashCommand<{}, true>({
     data,
-    async (message) => {
+    aliases: ['s'],
+    async execute(message) {
         if (!message.member || !(message.member instanceof GuildMember)) return;
         const subscription = message.client.subscriptions.get(message.guild!.id);
 
@@ -33,7 +34,5 @@ export default createSlashCommand<{}, true>(
         // will be loaded and played.
         subscription.audioPlayer.stop();
         await replyEmbed(message, skip());
-    }, {
-        aliases: ['s']
     }
-);
+});

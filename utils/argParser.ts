@@ -22,7 +22,7 @@ const roleRegex = /^<@&(\d+)>$/;
     [field] = String field
     (field) = Integer field
     @[user] = User field
-    #[channel] = Text channel field
+    #[channel] = Channel field
     &[role] = Role field
     <rest> = Rest of the arguments, as a string
 

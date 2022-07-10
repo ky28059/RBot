@@ -26,9 +26,11 @@ export const data = new SlashCommandBuilder()
         .setName('target')
         .setDescription('The person to expunge reactions from.'))
 
-export default createSlashCommand<{count: number, target?: User}, true>(
+export default createSlashCommand<{count: number, target?: User}, true>({
     data,
-    async (message, parsed) => {
+    examples: 'expunge 80',
+    clientPermReqs: 'MANAGE_MESSAGES',
+    async execute(message, parsed) {
         const {count, target} = parsed;
 
         // TODO: see todo in `purge.ts`
@@ -43,8 +45,5 @@ export default createSlashCommand<{count: number, target?: User}, true>(
             if (message.reactions.cache.size > 0) message.reactions.removeAll();
         });
         await replyEmbed(message, success().setDescription(`Expunged ${count} messages.`));
-    }, {
-        examples: 'expunge 80',
-        clientPermReqs: 'MANAGE_MESSAGES',
     }
-);
+});

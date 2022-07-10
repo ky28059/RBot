@@ -5,6 +5,7 @@ import {readdirSync} from 'fs';
 // Types
 import {Guild as GuildPresets} from '../models/Guild';
 import {MusicSubscription} from './subscription';
+import {APIApplicationCommandIntegerOption, APIApplicationCommandOption} from 'discord-api-types/v10';
 
 
 type BaseCommand = {
@@ -21,10 +22,9 @@ type CommandCallback<Target, Args, GuildOnly extends boolean> = (message: Target
 
 type SlashCommandData = Omit<SlashCommandBuilder, "addSubcommand" | "addSubcommandGroup">;
 export function createSlashCommand<Args = {}, GuildOnly extends boolean = false>(
-    data: SlashCommandData,
-    callback: CommandCallback<Message | CommandInteraction, Args, GuildOnly>,
-    opts: BaseCommand = {}
+    command: BaseCommand & {data: SlashCommandData, execute: CommandCallback<Message | CommandInteraction, Args, GuildOnly>}
 ): Command<Args, GuildOnly, true> {
+    const {data, ...opts} = command;
     return {
         isSlashCommand: true,
         name: data.name,
@@ -32,7 +32,6 @@ export function createSlashCommand<Args = {}, GuildOnly extends boolean = false>
         pattern: data.options.map(parseSlashCommandOption).join(' '),
         guildOnly: data.dm_permission || false,
         permReqs: new Permissions((data.default_member_permissions || undefined) as PermissionString | undefined).toArray(),
-        execute: callback,
         ...opts
     }
 }
@@ -117,23 +116,20 @@ export async function forEachRawCommand(
 function parseSlashCommandOption(arg: ToAPIApplicationCommandOptions) {
     const data = arg.toJSON();
     let prefix = '';
-    let bracket = '[]'
+    let bracket = '[]';
 
     switch (data.type) {
-        case 4:
-        case 10:
-            bracket = '()'
-            break;
-        case 6:
-            prefix = '@';
-            break;
-        case 7:
-            prefix = '#';
-            break;
-        case 8:
-            prefix = '&';
-            break;
+        // TODO: bracket = () corresponds to integers only; should `argParser` support doubles too?
+        case 4: bracket = '()'; break;
+        case 6: prefix = '@'; break;
+        case 7: prefix = '#'; break;
+        case 8: prefix = '&'; break;
     }
 
-    return `${prefix}${bracket[0]}${data.name}${bracket[1]}${data.required ? '' : '?'}`
+    let pattern = `${prefix}${bracket[0]}${data.name}${bracket[1]}`
+
+    if ('max_value' in data) pattern += `[${data.min_value}-${data.max_value}]`;
+    if (!data.required) pattern += '?';
+
+    return pattern;
 }

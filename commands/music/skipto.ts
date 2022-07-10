@@ -22,9 +22,10 @@ export const data = new SlashCommandBuilder()
         .setDescription('The (1-indexed) index to skip the queue to.')
         .setRequired(true))
 
-export default createSlashCommand<{index: number}, true>(
+export default createSlashCommand<{index: number}, true>({
     data,
-    async (message, parsed) => {
+    examples: 'skipto 3',
+    async execute(message, parsed) {
         if (!message.member || !(message.member instanceof GuildMember)) return;
 
         const index = parsed.index;
@@ -44,7 +45,5 @@ export default createSlashCommand<{index: number}, true>(
         subscription.audioPlayer.stop();
 
         await replyEmbed(message, success().setDescription(`Skipped to index **${index}**.`));
-    }, {
-        examples: 'skipto 3'
     }
-);
+});

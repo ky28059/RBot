@@ -33,9 +33,11 @@ export const data = new SlashCommandBuilder()
         .setMinValue(0)
         .setMaxValue(7))
 
-export default createSlashCommand<{target: User, reason?: string, days?: number}, true>(
+export default createSlashCommand<{target: User, reason?: string, days?: number}, true>({
     data,
-    async (message, parsed, tag) => {
+    examples: ['ban @example', 'ban @example "NSFW imagery"', 'ban @example "NSFW imagery" 7'],
+    clientPermReqs: 'BAN_MEMBERS',
+    async execute(message, parsed, tag) {
         const guild = message.guild!;
         const target = guild.members.cache.get(parsed.target.id);
 
@@ -60,8 +62,5 @@ export default createSlashCommand<{target: User, reason?: string, days?: number}
             desc: `**${target} has been banned by ${author(message)} for the reason:**\n${reason}`
         });
         await replyEmbed(message, success().setDescription(`Banned ${target}.`));
-    }, {
-        examples: ['ban @example', 'ban @example "NSFW imagery"', 'ban @example "NSFW imagery" 7'],
-        clientPermReqs: 'BAN_MEMBERS',
     }
-);
+});

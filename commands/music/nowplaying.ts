@@ -16,9 +16,10 @@ export const data = new SlashCommandBuilder()
     .setDescription('Displays the currently playing song.')
     .setDMPermission(false)
 
-export default createSlashCommand<{}, true>(
+export default createSlashCommand<{}, true>({
     data,
-    async (message) => {
+    aliases: ['np'],
+    async execute(message) {
         const subscription = message.client.subscriptions.get(message.guild!.id);
         if (!subscription) throw new QueueNonexistentError('nowplaying');
 
@@ -28,7 +29,5 @@ export default createSlashCommand<{}, true>(
 
         const track = (subscription.audioPlayer.state.resource as AudioResource<Track>).metadata;
         await replyEmbed(message, nowPlaying(track));
-    }, {
-        aliases: ['np']
     }
-);
+});

@@ -16,9 +16,9 @@ export const data = new SlashCommandBuilder()
         .setDescription('The URL to fetch.')
         .setRequired(true))
 
-export default createSlashCommand<{url: string}>(
+export default createSlashCommand<{url: string}>({
     data,
-    async (message, parsed) => {
+    async execute(message, parsed) {
         const url = parsed.url;
         const source = await (await fetch(url)).text() || '[No Source Found]';
 
@@ -39,4 +39,4 @@ export default createSlashCommand<{url: string}>(
             ))
         );
     }
-);
+});

@@ -22,9 +22,10 @@ export const data = new SlashCommandBuilder()
         .setDescription('The (1-indexed) index to remove from the queue.')
         .setRequired(true))
 
-export default createSlashCommand<{index: number}, true>(
+export default createSlashCommand<{index: number}, true>({
     data,
-    async (message, parsed) => {
+    examples: 'remove 5',
+    async execute(message, parsed) {
         if (!message.member || !(message.member instanceof GuildMember)) return;
 
         const index = parsed.index;
@@ -39,7 +40,5 @@ export default createSlashCommand<{index: number}, true>(
 
         const song = subscription.remove(index);
         await replyEmbed(message, success().setDescription(`❌ Song **${song.title}** was removed from the queue`));
-    }, {
-        examples: 'remove 5'
     }
-);
+});

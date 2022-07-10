@@ -31,20 +31,6 @@ used when backporting the command to allow text-based invocations.
 The command itself uses one of two factory functions to standardize the created command format across text and slash 
 commands.
 ```ts
-// slash-command.ts
-
-export const data = new SlashCommandBuilder()
-    .setName('example')
-    .setDescription('An example command')
-
-export default createSlashCommand(
-    data,
-    async (message) => {
-        // ...
-    }
-);
-```
-```ts
 // text-command.ts
 
 export default createTextCommand({
@@ -52,7 +38,22 @@ export default createTextCommand({
     description: 'An example command',
     // ...
     async execute(message) {
-        // ...
+        // message: Message
+    }
+});
+```
+```ts
+// slash-command.ts
+
+export const data = new SlashCommandBuilder()
+    .setName('example')
+    .setDescription('An example command')
+
+export default createSlashCommand({
+    data,
+    // ...
+    async execute(message) {
+        // message: Message | CommandInteraction
     }
 });
 ```
@@ -61,22 +62,44 @@ The main body of a command is its `async execute()` method, which takes in the `
 input is malformed) are caught in `bot.ts` and sent in discord as error embeds.
 
 For text-based commands, arguments are specified by providing a `pattern` field in the command data specifying a parser
-pattern. The syntax for RBot's argParser pattern can be found in `./util/argParser`.
+pattern. The syntax for RBot's argParser pattern can be found in `./util/argParser`. For type safety, the parsed arguments 
+type must be passed to the factory function's first generic argument.
 ```ts
 // example.ts
 
-export default createTextCommand<{name: string, users: User[]}>({
+export default createTextCommand<{ name: string, user?: User }>({
     name: 'example',
     description: 'An example command',
-    pattern: '[name] @[...users]',
+    pattern: '[name] @[user]?',
     // ...
     async execute(message, parsed) {
-        // ...
+        // parsed: {name: string, user?: User}
     }
 });
 ```
-For slash commands, using the `SlashCommandBuilder`'s `.addStringOption`, `addUserOption`, etc. methods will be automatically 
+
+For slash commands, using the `SlashCommandBuilder`'s `.addStringOption`, `.addUserOption`, etc. methods will be automatically 
 parsed to an `argParser` pattern via the factory function.
+```ts
+// example.ts
+
+export const data = new SlashCommandBuilder()
+    .setName('example')
+    .setDescription('An example command')
+    .addStringOption(option => option
+        .setName('name')
+        .setRequired(true))
+    .addUserOption(option => option
+        .setName('user'))
+
+export default createSlashCommand<{ name: string, user?: User }>({
+    data,
+    // ...
+    async execute(message, parsed) {
+        // parsed: {name: string, user?: User}
+    }
+});
+```
 
 ### Running RBot locally
 While most files RBot uses are committed directly to GitHub, there are a few things you need to do before being able to 

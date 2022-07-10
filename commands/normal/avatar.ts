@@ -14,13 +14,13 @@ export const data = new SlashCommandBuilder()
         .setName('user')
         .setDescription('The user to get the avatar of.'))
 
-export default createSlashCommand<{user?: User}>(
+export default createSlashCommand<{user?: User}>({
     data,
-    async (message, parsed) => {
+    async execute(message, parsed) {
         const avatarTarget = parsed.user ?? author(message);
         const avatarEmbed = requestedBy(author(message))
             .setTitle(avatarTarget.username)
             .setImage(avatarTarget.displayAvatarURL({size: 4096, dynamic: true, format: 'png'}));
         await replyEmbed(message, avatarEmbed);
     }
-)
+});

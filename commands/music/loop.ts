@@ -17,9 +17,10 @@ export const data = new SlashCommandBuilder()
     .setDescription('Toggles whether the bot will loop the queue.')
     .setDMPermission(false)
 
-export default createSlashCommand<{}, true>(
+export default createSlashCommand<{}, true>({
     data,
-    async (message) => {
+    aliases: ['l'],
+    async execute(message) {
         if (!message.member || !(message.member instanceof GuildMember)) return;
         const subscription = message.client.subscriptions.get(message.guild!.id);
 
@@ -31,7 +32,5 @@ export default createSlashCommand<{}, true>(
         // Toggle the queue loop
         subscription.queueLoop = !subscription.queueLoop;
         return replyEmbed(message, loop(subscription.queueLoop));
-    }, {
-        aliases: ['l']
     }
-);
+});

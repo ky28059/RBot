@@ -17,9 +17,9 @@ export const data = new SlashCommandBuilder()
     .setDescription('Shuffles the queue.')
     .setDMPermission(false)
 
-export default createSlashCommand<{}, true>(
+export default createSlashCommand<{}, true>({
     data,
-    async (message) => {
+    async execute(message) {
         if (!message.member || !(message.member instanceof GuildMember)) return;
         const subscription = message.client.subscriptions.get(message.guild!.id);
 
@@ -31,4 +31,4 @@ export default createSlashCommand<{}, true>(
         subscription.shuffle();
         await replyEmbed(message, shuffle());
     }
-);
+});

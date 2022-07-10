@@ -11,9 +11,9 @@ export const data = new SlashCommandBuilder()
     .setName('joke')
     .setDescription('Tells a random joke from https://official-joke-api.appspot.com/.')
 
-export default createSlashCommand(
+export default createSlashCommand({
     data,
-    async (message) => {
+    async execute(message) {
         const joke = await (await fetch('https://official-joke-api.appspot.com/random_joke')).json()
 
         const jokeEmbed = success()
@@ -23,4 +23,4 @@ export default createSlashCommand(
 
         await replyEmbed(message, jokeEmbed);
     }
-);
+});

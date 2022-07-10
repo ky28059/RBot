@@ -8,5 +8,5 @@ auth.ts
 auth.js
 
 # Server Presets
-database.sqlite
+database*.sqlite
 tokens

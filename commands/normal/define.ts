@@ -36,9 +36,9 @@ export const data = new SlashCommandBuilder()
         .setDescription('The word to define.')
         .setRequired(true))
 
-export default createSlashCommand<{word: string}>(
+export default createSlashCommand<{word: string}>({
     data,
-    async (message, parsed) => {
+    async execute(message, parsed) {
         let word = parsed.word;
 
         // Try once with exact supplied word (allows matching of pages like Markov_chain where capitalization matters)
@@ -88,7 +88,7 @@ export default createSlashCommand<{word: string}>(
 
         await pagedMessage(message, pages);
     }
-);
+});
 
 // Clean the unparsed API output into markdown-ready code
 function cleanWiktionaryHTMLString(str: string) {

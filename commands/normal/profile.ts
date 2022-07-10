@@ -15,9 +15,9 @@ export const data = new SlashCommandBuilder()
         .setName('target')
         .setDescription('The user to get info about.'))
 
-export default createSlashCommand<{target?: User}, true>(
+export default createSlashCommand<{target?: User}, true>({
     data,
-    async (message, parsed) => {
+    async execute(message, parsed) {
         // TODO: make prettier, add functionality
         const profileTarget = parsed.target || author(message);
         const guildProfileTarget = message.guild!.members.cache.get(profileTarget.id)!;
@@ -30,4 +30,4 @@ export default createSlashCommand<{target?: User}, true>(
             );
         await replyEmbed(message, profileEmbed);
     }
-);
+});

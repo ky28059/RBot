@@ -16,9 +16,10 @@ export const data = new SlashCommandBuilder()
         .setName('command')
         .setDescription('The command to get info about.'))
 
-export default createSlashCommand<{command?: string}>(
+export default createSlashCommand<{command?: string}>({
     data,
-    async (message, parsed, tag) => {
+    examples: 'help purge',
+    async execute(message, parsed, tag) {
         const client = message.client;
         const commands = client.commands;
         const name = parsed.command;
@@ -66,7 +67,5 @@ export default createSlashCommand<{command?: string}>(
             Array.isArray(command.permReqs) ? command.permReqs.join(', ') : command.permReqs.toString());
 
         await replyEmbed(message, helpEmbed);
-    }, {
-        examples: 'help censor'
     }
-);
+});

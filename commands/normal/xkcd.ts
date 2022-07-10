@@ -17,9 +17,9 @@ export const data = new SlashCommandBuilder()
         .setName('comic')
         .setDescription('The xkcd to send.'))
 
-export default createSlashCommand<{comic?: number}>(
+export default createSlashCommand<{comic?: number}>({
     data,
-    async (message, parsed) => {
+    async execute(message, parsed) {
         let num = parsed.comic;
         const max = (await (await fetch('https://xkcd.com/info.0.json')).json()).num;
 
@@ -40,4 +40,4 @@ export default createSlashCommand<{comic?: number}>(
 
         await replyEmbed(message, xkcdEmbed);
     }
-);
+});

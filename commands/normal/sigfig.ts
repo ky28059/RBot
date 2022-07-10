@@ -12,9 +12,9 @@ export const data = new SlashCommandBuilder()
         .setDescription('The number to get the sigfigs of.')
         .setRequired(true))
 
-export default createSlashCommand<{number: string}>(
+export default createSlashCommand<{number: string}>({
     data,
-    async (message, parsed) => {
+    async execute(message, parsed) {
         const { number } = parsed;
 
         if (isNaN(Number(number)))
@@ -39,4 +39,4 @@ export default createSlashCommand<{number: string}>(
         if (sig3) // Decimals with zero left sides (third pattern) - 0.003450
             return reply(message, `${before}.${before3}**${sig3}**${exponent}, ${sig3.length} significant figure(s).`);
     }
-);
+});

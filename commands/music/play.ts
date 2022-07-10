@@ -24,9 +24,12 @@ export const data = new SlashCommandBuilder()
         .setDescription('The video to play.')
         .setRequired(true))
 
-export default createSlashCommand<{url: string}, true>(
+export default createSlashCommand<{url: string}, true>({
     data,
-    async (message, parsed) => {
+    aliases: ['p'],
+    examples: ['play https://www.youtube.com/watch?v=dQw4w9WgXcQ'],
+    clientPermReqs: 'CONNECT',
+    async execute(message, parsed) {
         if (!message.member || !(message.member instanceof GuildMember)) return;
 
         const { channel } = message.member.voice;
@@ -72,9 +75,5 @@ export default createSlashCommand<{url: string}, true>(
         // Enqueue the track and reply a success message to the user
         subscription.enqueue(track);
         await replyEmbed(message, success().setDescription(`Enqueued **${track.title}**`));
-    }, {
-        aliases: ['p'],
-        examples: ['play https://www.youtube.com/watch?v=dQw4w9WgXcQ'],
-        clientPermReqs: 'CONNECT'
     }
-);
+});

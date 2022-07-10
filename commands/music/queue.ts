@@ -17,9 +17,10 @@ export const data = new SlashCommandBuilder()
     .setDescription('Displays the current music queue.')
     .setDMPermission(false)
 
-export default createSlashCommand<{}, true>(
+export default createSlashCommand<{}, true>({
     data,
-    async (message) => {
+    aliases: ['q'],
+    async execute(message) {
         const subscription = message.client.subscriptions.get(message.guild!.id);
         if (!subscription) throw new QueueNonexistentError('queue');
 
@@ -52,7 +53,5 @@ export default createSlashCommand<{}, true>(
         });
 
         await pagedMessage(message, splitDescription.map(m => new MessageEmbed(queueEmbed).setDescription(m)));
-    }, {
-        aliases: ['q']
     }
-);
+});

@@ -14,9 +14,9 @@ export const data = new SlashCommandBuilder()
     .setDMPermission(false)
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
 
-export default createSlashCommand<{}, true>(
+export default createSlashCommand<{}, true>({
     data,
-    async (message, parsed, tag) => {
+    async execute(message, parsed, tag) {
         const {disabled_commands, autoroles, censored_users, censored_words, blacklist} = tag;
 
         // TODO: make this embed look better
@@ -55,4 +55,4 @@ export default createSlashCommand<{}, true>(
 
         await replyEmbed(message, tokenEmbed);
     }
-);
+});

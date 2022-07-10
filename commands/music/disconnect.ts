@@ -17,9 +17,10 @@ export const data = new SlashCommandBuilder()
     .setDescription('Kills the music.')
     .setDMPermission(false)
 
-export default createSlashCommand<{}, true>(
+export default createSlashCommand<{}, true>({
     data,
-    async (message) => {
+    aliases: ['die', 'leave', 'dc'],
+    async execute(message) {
         if (!message.member || !(message.member instanceof GuildMember)) return;
         const subscription = message.client.subscriptions.get(message.guild!.id);
 
@@ -32,7 +33,5 @@ export default createSlashCommand<{}, true>(
         message.client.subscriptions.delete(message.guild!.id);
 
         await replyEmbed(message, die());
-    }, {
-        aliases: ['die', 'leave', 'dc']
     }
-);
+});
