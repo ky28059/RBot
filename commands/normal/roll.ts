@@ -1,10 +1,13 @@
-import {TextCommand} from '../../utils/parseCommands';
-import {Message, Util} from 'discord.js';
+import {createTextCommand} from '../../utils/parseCommands';
+import {Util} from 'discord.js';
+
+// Errors
 import IntegerRangeError from '../../errors/IntegerRangeError';
 import IntegerConversionError from '../../errors/IntegerConversionError';
 
 
-const command: TextCommand<{sides?: string, dice?: string}> = {
+
+export default createTextCommand<{sides?: string, dice?: string}>({
     name: 'roll',
     aliases: ['rng', 'dice'],
     description: 'Rolls y x sided die, defaults to 1 die and 6 sides when numbers are not given. Also supports dnd notation (ie. 3d8).',
@@ -52,6 +55,4 @@ const command: TextCommand<{sides?: string, dice?: string}> = {
             message.channel.send(m);
         });
     }
-}
-
-export default command;
+});

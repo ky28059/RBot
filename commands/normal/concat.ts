@@ -1,7 +1,7 @@
-import {TextCommand} from '../../utils/parseCommands';
+import {createTextCommand} from '../../utils/parseCommands';
 
 
-const command: TextCommand<{args: string[]}> = {
+export default createTextCommand<{args: string[]}>({
     name: 'concat',
     aliases: ['cat'],
     description: 'Says a message concatenated from multiple arguments.',
@@ -11,6 +11,4 @@ const command: TextCommand<{args: string[]}> = {
         const args = parsed.args;
         await message.channel.send({content: args.join(''), allowedMentions: {parse: []}});
     }
-}
-
-export default command;
+});

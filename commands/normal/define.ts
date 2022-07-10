@@ -1,11 +1,13 @@
-import {CommandInteraction, Message, MessageEmbed} from 'discord.js';
+import {createSlashCommand} from '../../utils/parseCommands';
+import {MessageEmbed} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
+import {URL} from 'url';
 import fetch from 'node-fetch';
 import he from 'he';
+
+// Utils
 import {author, pagedMessage, reply, replyEmbed} from '../../utils/messageUtils';
-import {URL} from "url";
 import {requestedBy, success} from "../../utils/messages";
-import {SlashCommand} from '../../utils/parseCommands';
 
 
 // The structure of the API response seems to be
@@ -25,15 +27,18 @@ type LangDef = {partOfSpeech: string, language: string, definitions: Definition[
 type Definition = {definition: string, parsedExamples?: Example[], examples?: Example[]};
 type Example = {example: string};
 
-const command: SlashCommand<{word: string}> = {
-    data: new SlashCommandBuilder()
-        .setName('define')
-        .setDescription('Gets the definition(s) of a word from wiktionary.')
-        .addStringOption(option => option
-            .setName('word')
-            .setDescription('The word to define.')
-            .setRequired(true)),
-    async execute(message, parsed) {
+
+export const data = new SlashCommandBuilder()
+    .setName('define')
+    .setDescription('Gets the definition(s) of a word from wiktionary.')
+    .addStringOption(option => option
+        .setName('word')
+        .setDescription('The word to define.')
+        .setRequired(true))
+
+export default createSlashCommand<{word: string}>(
+    data,
+    async (message, parsed) => {
         let word = parsed.word;
 
         // Try once with exact supplied word (allows matching of pages like Markov_chain where capitalization matters)
@@ -60,8 +65,7 @@ const command: SlashCommand<{word: string}> = {
 
         const pages = [];
         for (const lang of Object.keys(res)) {
-            const langEmbed = new MessageEmbed(dictionaryEmbed)
-                .setTitle(`${word} (${lang})`);
+            const langEmbed = new MessageEmbed(dictionaryEmbed).setTitle(`${word} (${lang})`);
 
             // A hacky workaround, but TS doesn't recognize that all strings returned by Object.keys are valid to index with
             for (const definition of res[lang as LangCode]!) {
@@ -84,9 +88,7 @@ const command: SlashCommand<{word: string}> = {
 
         await pagedMessage(message, pages);
     }
-}
-
-export default command;
+);
 
 // Clean the unparsed API output into markdown-ready code
 function cleanWiktionaryHTMLString(str: string) {

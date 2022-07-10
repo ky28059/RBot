@@ -1,4 +1,5 @@
-import {CommandInteraction, GuildMember, Message} from 'discord.js';
+import {createSlashCommand} from '../../utils/parseCommands';
+import {GuildMember} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 
 // Utilities
@@ -12,17 +13,18 @@ import QueueNonexistentError from '../../errors/QueueNonexistentError';
 import MemberNotInSameVCError from '../../errors/MemberNotInSameVCError';
 
 
-export default {
-    data: new SlashCommandBuilder()
-        .setName('skipto')
-        .setDescription('Skips the music to the provided index.')
-        .addIntegerOption(option => option
-            .setName('index')
-            .setDescription('The (1-indexed) index to skip the queue to.')
-            .setRequired(true)),
-    examples: 'skipto 3',
-    guildOnly: true,
-    async execute(message: Message | CommandInteraction, parsed: {index: number}) {
+export const data = new SlashCommandBuilder()
+    .setName('skipto')
+    .setDescription('Skips the music to the provided index.')
+    .setDMPermission(false)
+    .addIntegerOption(option => option
+        .setName('index')
+        .setDescription('The (1-indexed) index to skip the queue to.')
+        .setRequired(true))
+
+export default createSlashCommand<{index: number}, true>(
+    data,
+    async (message, parsed) => {
         if (!message.member || !(message.member instanceof GuildMember)) return;
 
         const index = parsed.index;
@@ -42,5 +44,7 @@ export default {
         subscription.audioPlayer.stop();
 
         await replyEmbed(message, success().setDescription(`Skipped to index **${index}**.`));
+    }, {
+        examples: 'skipto 3'
     }
-};
+);

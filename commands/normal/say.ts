@@ -1,7 +1,7 @@
-import {TextCommand} from '../../utils/parseCommands';
+import {createTextCommand} from '../../utils/parseCommands';
 
 
-const command: TextCommand<{message: string}> = {
+export default createTextCommand<{message: string}>({
     name: 'say',
     description: 'Repeats your message.',
     pattern: '<message>',
@@ -9,6 +9,4 @@ const command: TextCommand<{message: string}> = {
     async execute(message, parsed) {
         await message.channel.send({content: parsed.message, allowedMentions: {parse: []}});
     }
-}
-
-export default command;
+});

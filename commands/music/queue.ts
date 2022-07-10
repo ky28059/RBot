@@ -1,4 +1,5 @@
-import {CommandInteraction, Message, MessageEmbed, Util} from 'discord.js';
+import {createSlashCommand} from '../../utils/parseCommands';
+import {MessageEmbed, Util} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 import {AudioPlayerStatus, AudioResource} from '@discordjs/voice';
 import {Track} from '../../utils/track';
@@ -11,15 +12,15 @@ import {success} from '../../utils/messages';
 import QueueNonexistentError from '../../errors/QueueNonexistentError';
 
 
-export default {
-    data: new SlashCommandBuilder()
-        .setName('queue')
-        .setDescription('Displays the current music queue.'),
-    aliases: ['q'],
-    guildOnly: true,
-    async execute(message: Message | CommandInteraction) {
-        const subscription = message.client.subscriptions.get(message.guild!.id);
+export const data = new SlashCommandBuilder()
+    .setName('queue')
+    .setDescription('Displays the current music queue.')
+    .setDMPermission(false)
 
+export default createSlashCommand<{}, true>(
+    data,
+    async (message) => {
+        const subscription = message.client.subscriptions.get(message.guild!.id);
         if (!subscription) throw new QueueNonexistentError('queue');
 
         // TODO: do something with this
@@ -51,5 +52,7 @@ export default {
         });
 
         await pagedMessage(message, splitDescription.map(m => new MessageEmbed(queueEmbed).setDescription(m)));
+    }, {
+        aliases: ['q']
     }
-};
+);

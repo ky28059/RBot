@@ -1,4 +1,5 @@
-import {CommandInteraction, GuildMember, Message} from 'discord.js';
+import {createSlashCommand} from '../../utils/parseCommands';
+import {GuildMember} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 
 // Utilities
@@ -11,13 +12,14 @@ import QueueNonexistentError from '../../errors/QueueNonexistentError';
 import MemberNotInSameVCError from '../../errors/MemberNotInSameVCError';
 
 
-export default {
-    data: new SlashCommandBuilder()
-        .setName('shuffle')
-        .setDescription('Shuffles the queue.'),
-    examples: 'shuffle',
-    guildOnly: true,
-    async execute(message: Message | CommandInteraction) {
+export const data = new SlashCommandBuilder()
+    .setName('shuffle')
+    .setDescription('Shuffles the queue.')
+    .setDMPermission(false)
+
+export default createSlashCommand<{}, true>(
+    data,
+    async (message) => {
         if (!message.member || !(message.member instanceof GuildMember)) return;
         const subscription = message.client.subscriptions.get(message.guild!.id);
 
@@ -29,4 +31,4 @@ export default {
         subscription.shuffle();
         await replyEmbed(message, shuffle());
     }
-};
+);

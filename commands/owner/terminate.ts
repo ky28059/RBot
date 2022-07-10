@@ -1,11 +1,10 @@
-import {TextCommand} from '../../utils/parseCommands';
+import {createTextCommand} from '../../utils/parseCommands';
 import {success} from '../../utils/messages';
 
 
-const command: TextCommand = {
+export default createTextCommand({
     name: 'terminate',
     description: 'Terminates RBot.',
-    examples: 'terminate',
     ownerOnly: true,
     async execute(message) {
         await message.channel.send({embeds: [success().setDescription('Terminating...')]});
@@ -16,6 +15,4 @@ const command: TextCommand = {
         // Tell the sharding manager to terminate
         await message.client.shard.send('terminate');
     }
-}
-
-export default command;
+});

@@ -1,12 +1,12 @@
-import {SlashCommand} from '../../utils/parseCommands';
+import {createSlashCommand} from '../../utils/parseCommands';
 import {User} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
+import {PermissionFlagsBits} from 'discord-api-types/v10';
 
 // Utilities
 import {log} from '../../utils/logger';
 import {author, replyEmbed} from '../../utils/messageUtils';
 import {success} from '../../utils/messages';
-import {Guild} from '../../models/Guild';
 
 // Errors
 import IllegalArgumentError from '../../errors/IllegalArgumentError';
@@ -15,27 +15,27 @@ import ActionOnSelfError from '../../errors/ActionOnSelfError';
 import IntegerRangeError from '../../errors/IntegerRangeError';
 
 
-const command: SlashCommand<{target: User, reason?: string, days?: number}, true> = {
-    data: new SlashCommandBuilder()
-        .setName('ban')
-        .setDescription('Ban a user from this server.')
-        .setDMPermission(false)
-        .setDefaultMemberPermissions('BAN_MEMBERS')
-        .addUserOption(option => option
-            .setName('target')
-            .setDescription('The user to ban.')
-            .setRequired(true))
-        .addStringOption(option => option
-            .setName('reason')
-            .setDescription('The reason for the ban.'))
-        .addIntegerOption(option => option
-            .setName('days')
-            .setDescription('How many days of messages to delete from that user.')
-            .setMinValue(0)
-            .setMaxValue(7)),
-    examples: ['ban @example', 'ban @example "NSFW imagery"', 'ban @example "NSFW imagery" 7'],
-    clientPermReqs: 'BAN_MEMBERS',
-    async execute(message, parsed, tag) {
+export const data = new SlashCommandBuilder()
+    .setName('ban')
+    .setDescription('Ban a user from this server.')
+    .setDMPermission(false)
+    .setDefaultMemberPermissions(PermissionFlagsBits.BanMembers)
+    .addUserOption(option => option
+        .setName('target')
+        .setDescription('The user to ban.')
+        .setRequired(true))
+    .addStringOption(option => option
+        .setName('reason')
+        .setDescription('The reason for the ban.'))
+    .addIntegerOption(option => option
+        .setName('days')
+        .setDescription('How many days of messages to delete from that user.')
+        .setMinValue(0)
+        .setMaxValue(7))
+
+export default createSlashCommand<{target: User, reason?: string, days?: number}, true>(
+    data,
+    async (message, parsed, tag) => {
         const guild = message.guild!;
         const target = guild.members.cache.get(parsed.target.id);
 
@@ -60,7 +60,8 @@ const command: SlashCommand<{target: User, reason?: string, days?: number}, true
             desc: `**${target} has been banned by ${author(message)} for the reason:**\n${reason}`
         });
         await replyEmbed(message, success().setDescription(`Banned ${target}.`));
+    }, {
+        examples: ['ban @example', 'ban @example "NSFW imagery"', 'ban @example "NSFW imagery" 7'],
+        clientPermReqs: 'BAN_MEMBERS',
     }
-}
-
-export default command;
+);

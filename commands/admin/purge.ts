@@ -1,6 +1,7 @@
-import {SlashCommand} from '../../utils/parseCommands';
+import {createSlashCommand} from '../../utils/parseCommands';
 import {Message, User} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
+import {PermissionFlagsBits} from 'discord-api-types/v10';
 
 // Utilities
 import {replyEmbed} from '../../utils/messageUtils';
@@ -10,23 +11,24 @@ import {success} from '../../utils/messages';
 import IntegerRangeError from '../../errors/IntegerRangeError';
 
 
-const command: SlashCommand<{count: number, target?: User}, true> = {
-    data: new SlashCommandBuilder()
-        .setName('purge')
-        .setDescription('Bulk deletes the specified amount of messages in the channel, or only messages sent by a given user.')
-        .setDMPermission(false)
-        .setDefaultMemberPermissions('MANAGE_MESSAGES')
-        .addIntegerOption(option => option
-            .setName('count')
-            .setDescription('The number of messages to purge.')
-            .setMinValue(1)
-            .setMaxValue(100)
-            .setRequired(true))
-        .addUserOption(option => option
-            .setName('target')
-            .setDescription('The person to delete messages from.')),
-    clientPermReqs: 'MANAGE_MESSAGES',
-    async execute(message, parsed) {
+export const data = new SlashCommandBuilder()
+    .setName('purge')
+    .setDescription('Bulk deletes the specified amount of messages in the channel, or only messages sent by a given user.')
+    .setDMPermission(false)
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages)
+    .addIntegerOption(option => option
+        .setName('count')
+        .setDescription('The number of messages to purge.')
+        .setMinValue(1)
+        .setMaxValue(100)
+        .setRequired(true))
+    .addUserOption(option => option
+        .setName('target')
+        .setDescription('The person to delete messages from.'))
+
+export default createSlashCommand<{count: number, target?: User}, true>(
+    data,
+    async (message, parsed) => {
         const {count, target} = parsed;
 
         // TODO: when discord slash command builders start supporting `minValue` and `maxValue`, this will be unnecessary
@@ -44,7 +46,7 @@ const command: SlashCommand<{count: number, target?: User}, true> = {
         const deleted = await message.channel.bulkDelete(fetched, true);
 
         await replyEmbed(message, success().setDescription(`Purged ${deleted.size} messages`));
+    }, {
+        clientPermReqs: 'MANAGE_MESSAGES'
     }
-}
-
-export default command;
+);

@@ -1,23 +1,22 @@
-import {Message, TextChannel} from 'discord.js';
+import {createTextCommand} from '../../utils/parseCommands';
 import {success} from '../../utils/messages';
-import {Guild} from '../../models/Guild';
 
 import IllegalArgumentError from '../../errors/IllegalArgumentError';
 
 
-export default {
+export default createTextCommand<{presets: string[]}, true>({
     name: 'toggle',
-    description: 'Toggles whether the specific action will be logged.',
+    description: 'Toggles whether the specific action(s) will be logged.',
     pattern: '[...presets]',
-    examples: ['toggle message_delete', 'toggle message_delete member_join member_leave'],
+    examples: ['toggle message_delete', 'toggle message_delete member_join member_leave', 'toggle all'],
     guildOnly: true,
     permReqs: 'MANAGE_GUILD',
-    async execute(message: Message, parsed: {presets: string[]}, tag: Guild) {
+    async execute(message, parsed, tag) {
         const presets = parsed.presets;
 
         let newPresets = [];
 
-        for (let preset of presets) { // Weird glitch where running !toggle without any arguments sets [] to []?
+        for (const preset of presets) { // Weird glitch where running !toggle without any arguments sets [] to []?
             if (preset === 'all') {
                 // If all is given as an argument
                 for (let f in tag) {
@@ -50,4 +49,4 @@ export default {
         await tag.save();
         message.channel.send({embeds: [success().setDescription(`\`[${presets.join(', ')}]\`s have been set to \`[${newPresets.join(', ')}]\``)]});
     }
-}
+});

@@ -1,24 +1,25 @@
-import {Message, CommandInteraction} from 'discord.js';
+import {createSlashCommand} from '../../utils/parseCommands';
 import {SlashCommandBuilder} from '@discordjs/builders';
 import fetch from 'node-fetch';
 
 // Utilities
-import {author, reply, replyEmbed} from '../../utils/messageUtils';
+import {author, replyEmbed} from '../../utils/messageUtils';
 import {success} from '../../utils/messages';
 
 // Errors
 import IntegerRangeError from '../../errors/IntegerRangeError';
-import {SlashCommand} from '../../utils/parseCommands';
 
 
-const command: SlashCommand<{comic?: number}> = {
-    data: new SlashCommandBuilder()
-        .setName('xkcd')
-        .setDescription('Gets the specified xkcd comic, or one at random.')
-        .addIntegerOption(option => option
-            .setName('comic')
-            .setDescription('The xkcd to send.')),
-    async execute(target, parsed) {
+export const data = new SlashCommandBuilder()
+    .setName('xkcd')
+    .setDescription('Gets the specified xkcd comic, or one at random.')
+    .addIntegerOption(option => option
+        .setName('comic')
+        .setDescription('The xkcd to send.'))
+
+export default createSlashCommand<{comic?: number}>(
+    data,
+    async (message, parsed) => {
         let num = parsed.comic;
         const max = (await (await fetch('https://xkcd.com/info.0.json')).json()).num;
 
@@ -35,10 +36,8 @@ const command: SlashCommand<{comic?: number}> = {
             .setURL(`https://xkcd.com/${num}/`)
             .setDescription(res.alt)
             .setImage(res.img)
-            .setFooter({text: `Comic #${num}, requested by ${author(target).tag}`});
+            .setFooter({text: `Comic #${num}, requested by ${author(message).tag}`});
 
-        await replyEmbed(target, xkcdEmbed);
+        await replyEmbed(message, xkcdEmbed);
     }
-}
-
-export default command;
+);

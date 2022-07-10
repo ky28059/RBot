@@ -6,7 +6,7 @@ import {token} from './auth';
 
 // Utils
 import parse from './utils/argParser';
-import {parseCommand, getSubmodules, forEachRawCommand} from './utils/parseCommands';
+import {getSubmodules, forEachRawCommand} from './utils/parseCommands';
 import loadGuilds, {Guild as GuildPresets} from './models/Guild';
 import {log} from './utils/logger';
 import {update, isInField, containsField} from './utils/tokenManager';
@@ -40,10 +40,8 @@ client.subscriptions = new Map(); // For music commands
 client.loadCommands = async () => {
     // Load submodules dynamically
     client.submodules = getSubmodules();
-
-    await forEachRawCommand(client.submodules, (raw, dir) => {
-        const command = parseCommand(raw, dir);
-        client.commands.set(command.name, command);
+    await forEachRawCommand(client.submodules, ({command, dir}) => {
+        client.commands.set(command.name, {...command, commandGroup: dir});
     });
     console.log('Commands loaded!');
 }

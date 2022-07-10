@@ -1,5 +1,4 @@
-import {SlashCommand} from '../../utils/parseCommands';
-import {CommandInteraction, Message} from 'discord.js';
+import {createSlashCommand} from '../../utils/parseCommands';
 import {SlashCommandBuilder} from '@discordjs/builders';
 import fetch from 'node-fetch';
 
@@ -8,11 +7,13 @@ import {author, replyEmbed} from '../../utils/messageUtils';
 import {success} from '../../utils/messages';
 
 
-const command: SlashCommand = {
-    data: new SlashCommandBuilder()
-        .setName('joke')
-        .setDescription('Tells a random joke from https://official-joke-api.appspot.com/.'),
-    async execute(message: Message | CommandInteraction) {
+export const data = new SlashCommandBuilder()
+    .setName('joke')
+    .setDescription('Tells a random joke from https://official-joke-api.appspot.com/.')
+
+export default createSlashCommand(
+    data,
+    async (message) => {
         const joke = await (await fetch('https://official-joke-api.appspot.com/random_joke')).json()
 
         const jokeEmbed = success()
@@ -22,6 +23,4 @@ const command: SlashCommand = {
 
         await replyEmbed(message, jokeEmbed);
     }
-}
-
-export default command;
+);

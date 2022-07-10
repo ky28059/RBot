@@ -1,5 +1,5 @@
 import {Client, Guild} from 'discord.js';
-import {Command} from './parseCommands';
+import {ParsedCommand} from './parseCommands';
 
 import MissingArgumentError from '../errors/MissingArgumentError';
 import IllegalArgumentError from '../errors/IllegalArgumentError';
@@ -22,7 +22,7 @@ const roleRegex = /^<@&(\d+)>$/;
     [field] = String field
     (field) = Integer field
     @[user] = User field
-    #[channel] = Channel field
+    #[channel] = Text channel field
     &[role] = Role field
     <rest> = Rest of the arguments, as a string
 
@@ -50,7 +50,8 @@ const roleRegex = /^<@&(\d+)>$/;
     TODO: add syntax for commands that can have multiple patterns
     Commands whose arguments can be one of multiple patterns: set, censor, uncensor, technically roll would benefit from it as well
 */
-export default function parse(argString: string, command: Command, client: Client, guild: Guild | null) {
+type ParserCommand = Pick<ParsedCommand, "pattern" | "name">;
+export default function parse(argString: string, command: ParserCommand, client: Client, guild: Guild | null) {
     const returnObj: any = {};
     let index = 0; // Current index in the string for <Rest> patterns
 
@@ -124,7 +125,7 @@ export default function parse(argString: string, command: Command, client: Clien
 
 type FieldProps = {
     arg: string, prefix: string, bracket: string, name: string, rangeFrom?: string, rangeTo?: string,
-    client: Client, guild: Guild | null, command: Command
+    client: Client, guild: Guild | null, command: ParserCommand
 }
 function matchSingular({arg, prefix, bracket, name, rangeFrom, rangeTo, client, guild, command}: FieldProps) {
     if (bracket === '(') { // Integers

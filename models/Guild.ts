@@ -4,7 +4,7 @@
 import {Model, DataTypes, Sequelize, Optional} from 'sequelize';
 
 
-interface GuildAttributes {
+export interface GuildAttributes {
     guildID: string;
     prefix: string;
     logchannel: string;

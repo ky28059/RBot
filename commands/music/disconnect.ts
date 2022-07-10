@@ -1,4 +1,4 @@
-import {SlashCommand} from '../../utils/parseCommands';
+import {createSlashCommand} from '../../utils/parseCommands';
 import {GuildMember} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 
@@ -12,15 +12,15 @@ import QueueNonexistentError from '../../errors/QueueNonexistentError';
 import MemberNotInSameVCError from '../../errors/MemberNotInSameVCError';
 
 
-const command: SlashCommand<{}, true> = {
-    data: new SlashCommandBuilder()
-        .setName('disconnect')
-        .setDescription('Kills the music.')
-        .setDMPermission(false),
-    aliases: ['die', 'leave', 'dc'],
-    async execute(message) {
-        if (!message.member || !(message.member instanceof GuildMember)) return;
+export const data = new SlashCommandBuilder()
+    .setName('disconnect')
+    .setDescription('Kills the music.')
+    .setDMPermission(false)
 
+export default createSlashCommand<{}, true>(
+    data,
+    async (message) => {
+        if (!message.member || !(message.member instanceof GuildMember)) return;
         const subscription = message.client.subscriptions.get(message.guild!.id);
 
         if (!subscription)
@@ -32,7 +32,7 @@ const command: SlashCommand<{}, true> = {
         message.client.subscriptions.delete(message.guild!.id);
 
         await replyEmbed(message, die());
+    }, {
+        aliases: ['die', 'leave', 'dc']
     }
-};
-
-export default command;
+);

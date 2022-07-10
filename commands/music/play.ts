@@ -1,4 +1,5 @@
-import {CommandInteraction, GuildMember, Message, StageChannel} from 'discord.js';
+import {createSlashCommand} from '../../utils/parseCommands';
+import {GuildMember, StageChannel} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 import {entersState, joinVoiceChannel, VoiceConnectionStatus} from '@discordjs/voice';
 
@@ -14,19 +15,18 @@ import MusicAlreadyBoundError from '../../errors/MusicAlreadyBoundError';
 import ActionUntakeableError from '../../errors/ActionUntakeableError';
 
 
-export default {
-    data: new SlashCommandBuilder()
-        .setName('play')
-        .setDescription('Plays a video from youtube.')
-        .addStringOption(option => option
-            .setName('url')
-            .setDescription('The video to play.')
-            .setRequired(true)),
-    aliases: ['p'],
-    examples: ['play https://www.youtube.com/watch?v=dQw4w9WgXcQ'],
-    guildOnly: true,
-    clientPermReqs: 'CONNECT',
-    async execute(message: Message | CommandInteraction, parsed: {url: string}) {
+export const data = new SlashCommandBuilder()
+    .setName('play')
+    .setDescription('Plays a video from youtube.')
+    .setDMPermission(false)
+    .addStringOption(option => option
+        .setName('url')
+        .setDescription('The video to play.')
+        .setRequired(true))
+
+export default createSlashCommand<{url: string}, true>(
+    data,
+    async (message, parsed) => {
         if (!message.member || !(message.member instanceof GuildMember)) return;
 
         const { channel } = message.member.voice;
@@ -40,8 +40,6 @@ export default {
             throw new ActionUntakeableError('play', `Cannot speak in channel \`${channel.name}\`, missing permissions`);
         if (subscription && message.guild!.me!.voice.channel && channel !== message.guild!.me!.voice.channel)
             throw new MusicAlreadyBoundError('play', message.guild!.me!.voice.channel, channel);
-
-        const url = parsed.url;
 
         // If the subscription doesn't exist or if its VoiceConnection has been destroyed after a forced disconnect,
         // create a new subscription and VoiceConnection by joining the channel
@@ -60,7 +58,7 @@ export default {
         await entersState(subscription.voiceConnection, VoiceConnectionStatus.Ready, 20e3);
 
         // Attempt to create a Track from the user's video URL
-        const track = await Track.from(url, author(message).id, {
+        const track = await Track.from(parsed.url, author(message).id, {
             onStart() {
                 message.channel?.send({embeds: [nowPlaying(track)]}).catch(console.warn);
             },
@@ -74,5 +72,9 @@ export default {
         // Enqueue the track and reply a success message to the user
         subscription.enqueue(track);
         await replyEmbed(message, success().setDescription(`Enqueued **${track.title}**`));
+    }, {
+        aliases: ['p'],
+        examples: ['play https://www.youtube.com/watch?v=dQw4w9WgXcQ'],
+        clientPermReqs: 'CONNECT'
     }
-};
+);

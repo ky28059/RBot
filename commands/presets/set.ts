@@ -1,19 +1,18 @@
-import {Message, TextChannel} from 'discord.js';
+import {createTextCommand} from '../../utils/parseCommands';
+import {TextChannel} from 'discord.js';
 import {success} from '../../utils/messages';
-import {Guild} from '../../models/Guild';
 
 import IllegalArgumentError from '../../errors/IllegalArgumentError';
 
 
-export default {
+export default createTextCommand<{field: string, args: string}, true>({
     name: 'set',
     description: 'Sets new token data for this server.',
-    usage: 'set [field] [value]',
     pattern: '[field] <args>',
     examples: ['set logchannel #logs', 'set prefix r'],
     guildOnly: true,
     permReqs: 'MANAGE_GUILD',
-    async execute(message: Message, parsed: {field: string, args: string}, tag: Guild) {
+    async execute(message, parsed, tag) {
         const {field, args} = parsed;
         const guild = message.guild!;
 
@@ -48,4 +47,4 @@ export default {
         await tag.save();
         message.channel.send({embeds: [success().setDescription(`\`${field}\` has been updated to \`${updated}\``)]});
     }
-}
+});

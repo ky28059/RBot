@@ -1,4 +1,4 @@
-import {SlashCommand} from '../../utils/parseCommands';
+import {createSlashCommand} from '../../utils/parseCommands';
 import {MessageAttachment, Util} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 import fetch from 'node-fetch';
@@ -8,15 +8,17 @@ import {author, reply, replyEmbed} from '../../utils/messageUtils';
 import {requestedBy, success} from '../../utils/messages';
 
 
-const command: SlashCommand<{serverip: string}> = {
-    data: new SlashCommandBuilder()
-        .setName('server')
-        .setDescription('Gets info about the specified Minecraft server.')
-        .addStringOption(option => option
-            .setName('serverip')
-            .setDescription('The IP of the server to fetch.')
-            .setRequired(true)),
-    async execute(message, parsed) {
+export const data = new SlashCommandBuilder()
+    .setName('server')
+    .setDescription('Gets info about the specified Minecraft server.')
+    .addStringOption(option => option
+        .setName('serverip')
+        .setDescription('The IP of the server to fetch.')
+        .setRequired(true))
+
+export default createSlashCommand<{serverip: string}>(
+    data,
+    async (message, parsed) => {
         const server = parsed.serverip;
         const res = await (await fetch(`https://api.mcsrvstat.us/2/${server}`)).json();
 
@@ -43,6 +45,4 @@ const command: SlashCommand<{serverip: string}> = {
 
         await reply(message, {files: attachment && [attachment], embeds: [serverEmbed]});
     }
-}
-
-export default command;
+);

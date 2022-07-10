@@ -1,7 +1,7 @@
-import {TextCommand} from '../../utils/parseCommands';
+import {createTextCommand} from '../../utils/parseCommands';
 
 
-const command: TextCommand<{options: string[]}> = {
+export default createTextCommand<{options: string[]}>({
     name: 'choose',
     description: 'Chooses at random between several options.',
     pattern: '[...options]',
@@ -11,6 +11,4 @@ const command: TextCommand<{options: string[]}> = {
         const index = Math.floor(Math.random() * options.length);
         await message.channel.send({content: options[index], allowedMentions: {parse: []}});
     }
-}
-
-export default command;
+});

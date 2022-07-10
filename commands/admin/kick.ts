@@ -1,6 +1,7 @@
-import {SlashCommand} from '../../utils/parseCommands';
+import {createSlashCommand} from '../../utils/parseCommands';
 import {User} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
+import {PermissionFlagsBits} from 'discord-api-types/v10';
 
 // Utilities
 import {log} from '../../utils/logger';
@@ -14,22 +15,22 @@ import ActionUntakeableError from '../../errors/ActionUntakeableError';
 import ActionOnSelfError from '../../errors/ActionOnSelfError';
 
 
-const command: SlashCommand<{target: User, reason?: string}, true> = {
-    data: new SlashCommandBuilder()
-        .setName('kick')
-        .setDescription('Kick a user from this server.')
-        .setDMPermission(false)
-        .setDefaultMemberPermissions('KICK_MEMBERS')
-        .addUserOption(option => option
-            .setName('target')
-            .setDescription('The user to kick.')
-            .setRequired(true))
-        .addStringOption(option => option
-            .setName('reason')
-            .setDescription('The reason for the kick.')),
-    examples: 'kick @example "Spamming in #general"',
-    clientPermReqs: 'KICK_MEMBERS',
-    async execute(message, parsed, tag) {
+export const data = new SlashCommandBuilder()
+    .setName('kick')
+    .setDescription('Kick a user from this server.')
+    .setDMPermission(false)
+    .setDefaultMemberPermissions(PermissionFlagsBits.KickMembers)
+    .addUserOption(option => option
+        .setName('target')
+        .setDescription('The user to kick.')
+        .setRequired(true))
+    .addStringOption(option => option
+        .setName('reason')
+        .setDescription('The reason for the kick.'));
+
+export default createSlashCommand<{target: User, reason?: string}, true>(
+    data,
+    async (message, parsed, tag) => {
         const guild = message.guild!;
         const target = guild.members.cache.get(parsed.target.id);
 
@@ -48,7 +49,8 @@ const command: SlashCommand<{target: User, reason?: string}, true> = {
             desc: `**${target.user} has been kicked by ${author(message)} for the reason:**\n${reason}`
         });
         await replyEmbed(message, success().setDescription(`Kicked ${target}.`));
+    }, {
+        examples: 'kick @example "Spamming in #general"',
+        clientPermReqs: 'KICK_MEMBERS'
     }
-}
-
-export default command;
+);

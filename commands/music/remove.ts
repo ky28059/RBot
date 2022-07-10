@@ -1,4 +1,5 @@
-import {CommandInteraction, GuildMember, Message} from 'discord.js';
+import {createSlashCommand} from '../../utils/parseCommands';
+import {GuildMember} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 
 // Utilities
@@ -12,17 +13,18 @@ import MemberNotInSameVCError from '../../errors/MemberNotInSameVCError';
 import ActionUntakeableError from '../../errors/ActionUntakeableError';
 
 
-export default {
-    data: new SlashCommandBuilder()
-        .setName('remove')
-        .setDescription('Removes a song from the queue.')
-        .addIntegerOption(option => option
-            .setName('index')
-            .setDescription('The (1-indexed) index to remove from the queue.')
-            .setRequired(true)),
-    examples: 'remove 5',
-    guildOnly: true,
-    async execute(message: Message | CommandInteraction, parsed: {index: number}) {
+export const data = new SlashCommandBuilder()
+    .setName('remove')
+    .setDescription('Removes a song from the queue.')
+    .setDMPermission(false)
+    .addIntegerOption(option => option
+        .setName('index')
+        .setDescription('The (1-indexed) index to remove from the queue.')
+        .setRequired(true))
+
+export default createSlashCommand<{index: number}, true>(
+    data,
+    async (message, parsed) => {
         if (!message.member || !(message.member instanceof GuildMember)) return;
 
         const index = parsed.index;
@@ -37,5 +39,7 @@ export default {
 
         const song = subscription.remove(index);
         await replyEmbed(message, success().setDescription(`❌ Song **${song.title}** was removed from the queue`));
+    }, {
+        examples: 'remove 5'
     }
-};
+);

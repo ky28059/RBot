@@ -1,4 +1,4 @@
-import {SlashCommand} from '../../utils/parseCommands';
+import {createSlashCommand} from '../../utils/parseCommands';
 import {SlashCommandBuilder} from '@discordjs/builders';
 
 // Utilities
@@ -9,15 +9,16 @@ import {requestedBy} from '../../utils/messages';
 import IllegalArgumentError from '../../errors/IllegalArgumentError';
 
 
-const command: SlashCommand<{command?: string}> = {
-    data: new SlashCommandBuilder()
-        .setName('help')
-        .setDescription('Gets info about a command, or sends a command list.')
-        .addStringOption(option => option
-            .setName('command')
-            .setDescription('The command to get info about.')),
-    examples: 'help censor',
-    async execute(message, parsed, tag) {
+export const data = new SlashCommandBuilder()
+    .setName('help')
+    .setDescription('Gets info about a command, or sends a command list.')
+    .addStringOption(option => option
+        .setName('command')
+        .setDescription('The command to get info about.'))
+
+export default createSlashCommand<{command?: string}>(
+    data,
+    async (message, parsed, tag) => {
         const client = message.client;
         const commands = client.commands;
         const name = parsed.command;
@@ -31,12 +32,16 @@ const command: SlashCommand<{command?: string}> = {
                 .setTitle('Command List')
                 .setDescription(`Use \`${prefix}help [Command]\` for information about a command.`);
 
-            for (const module of client.submodules)
-                commandListEmbed.addField(module,
+            for (const module of client.submodules) {
+                commandListEmbed.addField(
+                    module,
                     [...client.commands.values()]
                         .filter(cmd => cmd.commandGroup === module)
                         .map(cmd => cmd.name)
-                        .join(', '), true);
+                        .join(', '),
+                    true
+                );
+            }
 
             return replyEmbed(message, commandListEmbed);
         }
@@ -61,7 +66,7 @@ const command: SlashCommand<{command?: string}> = {
             Array.isArray(command.permReqs) ? command.permReqs.join(', ') : command.permReqs.toString());
 
         await replyEmbed(message, helpEmbed);
+    }, {
+        examples: 'help censor'
     }
-}
-
-export default command;
+);

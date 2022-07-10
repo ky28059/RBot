@@ -1,7 +1,7 @@
-import {TextCommand} from '../../utils/parseCommands';
+import {createTextCommand} from '../../utils/parseCommands';
 
 
-const command: TextCommand<{event: string}, true> = {
+export default createTextCommand<{event: string}, true>({
     name: 'emit',
     description: 'Emits an event to be detected by the client (for testing purposes).',
     pattern: '[event]',
@@ -13,18 +13,11 @@ const command: TextCommand<{event: string}, true> = {
         const client = message.client;
 
         switch (event) {
-            case 'join':
-                client.emit('guildMemberAdd', message.member!);
-                break;
-            case 'leave':
-                client.emit('guildMemberRemove', message.member!);
-                break;
-            case 'delete':
-                client.emit('messageDelete', message);
-                break;
+            case 'join': client.emit('guildMemberAdd', message.member!); break;
+            case 'leave': client.emit('guildMemberRemove', message.member!); break;
+            case 'delete': client.emit('messageDelete', message); break;
         }
+
         message.channel.send('Signal emitted!');
     }
-}
-
-export default command;
+});

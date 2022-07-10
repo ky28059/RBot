@@ -1,14 +1,16 @@
-import {SlashCommand} from '../../utils/parseCommands';
+import {createSlashCommand} from '../../utils/parseCommands';
 import {CommandInteraction, Message} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 import {reply} from '../../utils/messageUtils';
 
 
-const command: SlashCommand = {
-    data: new SlashCommandBuilder()
-        .setName('ping')
-        .setDescription('Gets the latency of the bot.'),
-    async execute(message) {
+export const data = new SlashCommandBuilder()
+    .setName('ping')
+    .setDescription('Gets the latency of the bot.')
+
+export default createSlashCommand(
+    data,
+    async (message) => {
         const m = await reply(message, 'Ping?');
 
         // APIMessage is only ever returned if message is a CommandInteraction
@@ -17,6 +19,4 @@ const command: SlashCommand = {
 
         await m.edit(`Pong! Latency is ${m.createdTimestamp - message.createdTimestamp}ms. API Latency is ${Math.round(message.client.ws.ping)}ms`)
     }
-}
-
-export default command;
+);

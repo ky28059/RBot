@@ -1,14 +1,13 @@
-import {Message} from 'discord.js';
+import {createTextCommand} from '../../utils/parseCommands';
 import {err, success} from '../../utils/messages';
 
 
-export default {
+export default createTextCommand({
     name: 'reload',
     aliases: ['rl'],
     description: 'Reloads all command files.',
-    examples: 'reload',
     ownerOnly: true,
-    async execute(message: Message) {
+    async execute(message) {
         // Return early if running without sharding
         if (!message.client.shard)
             return message.channel.send({embeds: [
@@ -21,4 +20,4 @@ export default {
         // Most likely an unideal implementation but at least it works
         await message.client.shard.broadcastEval(() => process.exit(1));
     }
-}
+});

@@ -1,4 +1,4 @@
-import {TextCommand} from '../../utils/parseCommands';
+import {createTextCommand} from '../../utils/parseCommands';
 import { create, all } from 'mathjs';
 import {requestedBy} from '../../utils/messages';
 
@@ -6,7 +6,7 @@ const config = { };
 const math = create(all, config);
 
 
-const command: TextCommand<{expressions: string[]}> = {
+export default createTextCommand<{expressions: string[]}>({
     name: 'math',
     aliases: ['calc'],
     description: 'Calculates a list of expressions using mathjs.',
@@ -28,6 +28,4 @@ const command: TextCommand<{expressions: string[]}> = {
 
         message.channel.send({embeds: [mathEmbed]});
     }
-}
-
-export default command;
+});

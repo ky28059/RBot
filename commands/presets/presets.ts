@@ -1,19 +1,22 @@
-import {CommandInteraction, Message} from 'discord.js';
+import {createSlashCommand} from '../../utils/parseCommands';
 import {SlashCommandBuilder} from '@discordjs/builders';
-import {Guild} from '../../models/Guild';
+import {PermissionFlagsBits} from 'discord-api-types/v10';
 
 // Utilities
 import {author, replyEmbed} from '../../utils/messageUtils';
 import {requestedBy} from '../../utils/messages';
 
 
-export default {
-    data: new SlashCommandBuilder()
-        .setName('presets')
-        .setDescription('Displays this server\'s current settings (log channel, disabled commands, etc.).'),
-    guildOnly: true,
-    permReqs: 'MANAGE_GUILD',
-    async execute(message: Message | CommandInteraction, parsed: {}, tag: Guild) {
+
+export const data = new SlashCommandBuilder()
+    .setName('presets')
+    .setDescription('Displays this server\'s current settings (log channel, disabled commands, etc.).')
+    .setDMPermission(false)
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
+
+export default createSlashCommand<{}, true>(
+    data,
+    async (message, parsed, tag) => {
         const {disabled_commands, autoroles, censored_users, censored_words, blacklist} = tag;
 
         // TODO: make this embed look better
@@ -52,4 +55,4 @@ export default {
 
         await replyEmbed(message, tokenEmbed);
     }
-}
+);
