@@ -15,7 +15,7 @@ type BaseCommandOpts = {
 }
 
 // A `GuildOnly` command will always have a valid tag passed in because `message.guild` is guaranteed to exist
-type Tag<T extends boolean> = T extends true ? GuildPresets : GuildPresets | undefined;
+type Tag<T extends boolean> = T extends true ? GuildPresets : GuildPresets | null;
 type CommandCallback<Target, Args, GuildOnly extends boolean> = (message: Target, parsed: Args, tag: Tag<GuildOnly>) => Promise<any>
 
 

@@ -16,15 +16,15 @@ export async function update(guild: Guild, client: Client) {
 
     if (!tag) {
         // If the tag doesn't exist
-        const tag = await GuildPresets.create({
-            guildID: guild.id,
-        });
-        return console.log(`Tag ${tag.guildID} added.`);
+        const newTag = await GuildPresets.create({ guildID: guild.id });
+        console.log(`Tag ${newTag.guildID} added.`);
+        return newTag;
     }
 
     // If the tag exists, run checks on it
     // Since update() gets called on every message, this may get tedious
     await runTagChecks(tag, guild, client);
+    return tag;
 }
 
 // Run tag checks to ensure token cleanliness

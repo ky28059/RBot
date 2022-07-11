@@ -85,45 +85,17 @@ client.on('messageCreate', async (message) => {
 
     if (talkedRecently.has(message.author.id)) return; // Global spam prevention
 
-    let prefix = '!';
-    let tag;
-    let member;
-    let guild = message.guild;
-
-    if (guild) {
-        // Server specific Tag reliant things (censorship, custom prefix)
-        member = guild.members.cache.get(message.author.id)!;
-
-        await update(guild, client);
-        tag = (await GuildPresets.findOne({ where: { guildID: guild.id } }))!;
-        prefix = tag.prefix;
-
-        // Handles censorship
-        if (
-            (tag.censored_users && isInField(tag, 'censored_users', message.author.id)
-            || (tag.censored_words && containsField(tag, 'censored_words', message.content, 'ҩ')))
-            && !member.permissions.has('ADMINISTRATOR') // Admin override
-        ) {
-            await message.delete()
-                .catch(error => console.error(`message in ${guild} could not be censored because of ${error}!`));
-
-            await log(client, guild, {
-                id: tag.logchannel, color: 0x7f0000, author: message.author.tag, authorIcon: message.author.displayAvatarURL(),
-                desc: `**Message by ${message.author} censored in ${message.channel}:**\n${message.content}`
-            });
-            return;
-        }
-    }
+    const guild = message.guild;
+    const tag = guild && await update(guild, client);
+    const prefix = tag?.prefix || '!';
+    const member = guild?.members.cache.get(message.author.id);
 
     if (message.content.substring(0, prefix.length) === prefix) {
         // Splits content string by first chunk of whitespace, preserving whitespace in arguments
         const [cmd, argString] = message.content.slice(prefix.length).trim().split(/(?<=^\S+)\s+/);
         const commandName = cmd.toLowerCase();
 
-        if (message.guild
-            && tag?.disabled_commands
-            && isInField(tag, 'disabled_commands', commandName)
-        ) {
+        if (tag?.disabled_commands && isInField(tag, 'disabled_commands', commandName)) {
             // Handles command disabling
             const embed = err('DISABLED_ERROR', 'Invoked command disabled in current server');
             await message.reply({embeds: [embed]});
@@ -178,17 +150,13 @@ client.on('interactionCreate', async (interaction) => {
     if (!command || !command.isSlashCommand) return;
 
     const guild = interaction.guild;
-    let tag;
-    if (guild) {
-        await update(guild, client);
-        tag = (await GuildPresets.findOne({ where: { guildID: guild.id } }))!;
+    const tag = guild && await update(guild, client);
 
-        if (tag.disabled_commands && isInField(tag, 'disabled_commands', interaction.commandName)) {
-            // Handles command disabling
-            const embed = err('DISABLED_ERROR', 'Invoked command disabled in current server');
-            await interaction.reply({embeds: [embed]});
-            return;
-        }
+    if (tag?.disabled_commands && isInField(tag, 'disabled_commands', interaction.commandName)) {
+        // Handles command disabling
+        const embed = err('DISABLED_ERROR', 'Invoked command disabled in current server');
+        await interaction.reply({embeds: [embed]});
+        return;
     }
 
     // List of conditions to check before executing command
