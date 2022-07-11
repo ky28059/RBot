@@ -1,15 +1,14 @@
-import {createTextCommand} from '../../utils/parseCommands';
+import {createGuildOnlyTextCommand} from '../../utils/parseCommands';
 import {success} from '../../utils/messages';
 
 import IllegalArgumentError from '../../errors/IllegalArgumentError';
 
 
-export default createTextCommand<{presets: string[]}, true>({
+export default createGuildOnlyTextCommand<{presets: string[]}>({
     name: 'toggle',
     description: 'Toggles whether the specific action(s) will be logged.',
     pattern: '[...presets]',
     examples: ['toggle message_delete', 'toggle message_delete member_join member_leave', 'toggle all'],
-    guildOnly: true,
     permReqs: 'MANAGE_GUILD',
     async execute(message, parsed, tag) {
         const presets = parsed.presets;

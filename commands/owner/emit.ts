@@ -1,12 +1,11 @@
-import {createTextCommand} from '../../utils/parseCommands';
+import {createGuildOnlyTextCommand} from '../../utils/parseCommands';
 
 
-export default createTextCommand<{event: string}, true>({
+export default createGuildOnlyTextCommand<{event: string}>({
     name: 'emit',
     description: 'Emits an event to be detected by the client (for testing purposes).',
     pattern: '[event]',
     examples: 'emit leave',
-    guildOnly: true,
     ownerOnly: true,
     async execute(message, parsed) {
         const event = parsed.event;

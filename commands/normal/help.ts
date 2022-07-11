@@ -51,7 +51,7 @@ export default createSlashCommand<{command?: string}>({
         // If there were arguments given
         const command = commands.get(name.toLowerCase()) || commands.find(c => !!c.aliases && c.aliases.includes(name));
         if (!command)
-            throw new IllegalArgumentError('help', `Command \`${name}\` not a valid command`);
+            throw new IllegalArgumentError('help', `\`${name}\` is not a valid command.`);
 
         // If there were arguments given and the argument was a valid command, display info about that command
         const helpEmbed = requestedBy(author(message)).setTitle(command.name);

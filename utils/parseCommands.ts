@@ -8,11 +8,10 @@ import {MusicSubscription} from './subscription';
 import {APIApplicationCommandIntegerOption, APIApplicationCommandOption} from 'discord-api-types/v10';
 
 
-type BaseCommand = {
+type BaseCommandOpts = {
     aliases?: string[], // NOTE: aliasing a `SlashCommand` will only alias the text-based version of that command.
     examples?: string | string[],
-    ownerOnly?: boolean,
-    clientPermReqs?: PermissionResolvable,
+    ownerOnly?: boolean
 }
 
 // A `GuildOnly` command will always have a valid tag passed in because `message.guild` is guaranteed to exist
@@ -21,13 +20,14 @@ type CommandCallback<Target, Args, GuildOnly extends boolean> = (message: Target
 
 
 type SlashCommandData = Omit<SlashCommandBuilder, "addSubcommand" | "addSubcommandGroup">;
-type SlashCommand<Args, GuildOnly extends boolean> = {
+type SlashCommandOpts<Args, GuildOnly extends boolean> = {
     data: SlashCommandData,
+    clientPermReqs?: PermissionResolvable,
     execute: CommandCallback<Message | CommandInteraction, Args, GuildOnly>,
     handleAutocomplete?: (interaction: AutocompleteInteraction) => Promise<any>
 }
 export function createSlashCommand<Args = {}, GuildOnly extends boolean = false>(
-    command: BaseCommand & SlashCommand<Args, GuildOnly>
+    command: BaseCommandOpts & SlashCommandOpts<Args, GuildOnly>
 ): Command<Args, GuildOnly, true> {
     const {data, ...opts} = command;
     const permissions = new Permissions((data.default_member_permissions || undefined) as PermissionResolvable | undefined).toArray()
@@ -36,40 +36,52 @@ export function createSlashCommand<Args = {}, GuildOnly extends boolean = false>
         name: data.name,
         description: data.description,
         pattern: data.options.map(parseSlashCommandOption).join(' '),
-        guildOnly: data.dm_permission || false,
+        guildOnly: (data.dm_permission || false) as GuildOnly,
         permReqs: permissions.length ? permissions : undefined,
         ...opts
     }
 }
 
 
-type TextCommand<Args, GuildOnly extends boolean> = {
+type TextCommandOpts = {
     name: string,
     description: string,
     pattern?: string,
-    guildOnly?: GuildOnly // TODO: figure out if its possible to require this field only if `GuildOnly` is true
-    permReqs?: PermissionResolvable, // TODO: is there a type-safe way to only allow this when `GuildOnly` is true?
-    execute: CommandCallback<Message, Args, GuildOnly>
 }
-export function createTextCommand<Args = {}, GuildOnly extends boolean = false>(
-    opts: BaseCommand & TextCommand<Args, GuildOnly>
-): Command<Args, GuildOnly, false> {
+export function createTextCommand<Args = {}>(
+    command: BaseCommandOpts & TextCommandOpts & { execute: CommandCallback<Message, Args, false> }
+): Command<Args, false, false> {
     return {
         isSlashCommand: false,
-        ...opts,
-        guildOnly: opts.guildOnly || false,
+        guildOnly: false,
+        ...command,
+    }
+}
+
+type GuildOnlyTextCommandOpts = {
+    permReqs?: PermissionResolvable,
+    clientPermReqs?: PermissionResolvable
+}
+export function createGuildOnlyTextCommand<Args = {}>(
+    command: BaseCommandOpts & TextCommandOpts & GuildOnlyTextCommandOpts & { execute: CommandCallback<Message, Args, true> }
+): Command<Args, true, false> {
+    return {
+        isSlashCommand: false,
+        guildOnly: true,
+        ...command,
     }
 }
 
 // The target type of the factory functions, a `SlashCommand` merged into old text-based syntax with
 // extra compatibility metadata.
-type Command<Args, GuildOnly extends boolean, SlashCommandCompat extends boolean> = BaseCommand & {
+type Command<Args, GuildOnly extends boolean, SlashCommandCompat extends boolean> = BaseCommandOpts & {
     isSlashCommand: SlashCommandCompat,
     name: string,
     description: string,
     pattern?: string,
-    guildOnly: boolean,
+    guildOnly: GuildOnly,
     permReqs?: PermissionResolvable,
+    clientPermReqs?: PermissionResolvable,
     execute: SlashCommandCompat extends true
         ? CommandCallback<Message | CommandInteraction, Args, GuildOnly>
         : CommandCallback<Message, Args, GuildOnly>,

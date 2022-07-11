@@ -6,7 +6,9 @@ import {err} from './messages';
 
 
 // Replies to a message or interaction.
-export async function reply(target: Message | CommandInteraction, content: string | MessageOptions) {
+// TODO: `options.flags` are incompatible between messages and command interactions;
+// is there any fix beyond disallowing this property?
+export async function reply(target: Message | CommandInteraction, content: string | Omit<MessageOptions, 'flags'>) {
     return target instanceof CommandInteraction
         ? target.reply({...(typeof content === 'string' ? {content} : content), fetchReply: true})
         : target.channel.send(content);

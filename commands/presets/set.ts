@@ -1,4 +1,4 @@
-import {createTextCommand} from '../../utils/parseCommands';
+import {createGuildOnlyTextCommand} from '../../utils/parseCommands';
 import {TextChannel} from 'discord.js';
 import {success} from '../../utils/messages';
 
@@ -6,11 +6,11 @@ import IllegalArgumentError from '../../errors/IllegalArgumentError';
 
 
 export default createTextCommand<{field: string, args: string}, true>({
+export default createGuildOnlyTextCommand<{field: string, args: string}>({
     name: 'set',
     description: 'Sets new token data for this server.',
     pattern: '[field] <args>',
     examples: ['set logchannel #logs', 'set prefix r'],
-    guildOnly: true,
     permReqs: 'MANAGE_GUILD',
     async execute(message, parsed, tag) {
         const {field, args} = parsed;
