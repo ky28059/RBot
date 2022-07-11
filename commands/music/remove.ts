@@ -1,4 +1,4 @@
-import {createSlashCommand} from '../../utils/parseCommands';
+import {createGuildOnlySlashCommand} from '../../utils/commands';
 import {GuildMember} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 
@@ -22,7 +22,7 @@ export const data = new SlashCommandBuilder()
         .setDescription('The (1-indexed) index to remove from the queue.')
         .setRequired(true))
 
-export default createSlashCommand<{index: number}, true>({
+export default createGuildOnlySlashCommand<{index: number}>({
     data,
     examples: 'remove 5',
     async execute(message, parsed) {

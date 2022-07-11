@@ -1,4 +1,4 @@
-import {createSlashCommand} from '../../utils/parseCommands';
+import {createGuildOnlySlashCommand} from '../../utils/commands';
 import {User} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 import {PermissionFlagsBits} from 'discord-api-types/v10';
@@ -28,7 +28,7 @@ export const data = new SlashCommandBuilder()
         .setName('reason')
         .setDescription('The reason for the kick.'));
 
-export default createSlashCommand<{target: User, reason?: string}, true>({
+export default createGuildOnlySlashCommand<{target: User, reason?: string}>({
     data,
     examples: 'kick @example "Spamming in #general"',
     clientPermReqs: 'KICK_MEMBERS',

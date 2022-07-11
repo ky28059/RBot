@@ -1,4 +1,4 @@
-import {createGuildOnlyTextCommand} from '../../utils/parseCommands';
+import {createGuildOnlyTextCommand} from '../../utils/commands';
 
 
 export default createGuildOnlyTextCommand<{event: string}>({

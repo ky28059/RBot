@@ -1,4 +1,4 @@
-import {createSlashCommand} from '../../utils/parseCommands';
+import {createGuildOnlySlashCommand} from '../../utils/commands';
 import {User} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 import {PermissionFlagsBits} from 'discord-api-types/v10';
@@ -33,7 +33,7 @@ export const data = new SlashCommandBuilder()
         .setMinValue(0)
         .setMaxValue(7))
 
-export default createSlashCommand<{target: User, reason?: string, days?: number}, true>({
+export default createGuildOnlySlashCommand<{target: User, reason?: string, days?: number}>({
     data,
     examples: ['ban @example', 'ban @example "NSFW imagery"', 'ban @example "NSFW imagery" 7'],
     clientPermReqs: 'BAN_MEMBERS',

@@ -1,4 +1,4 @@
-import {createSlashCommand} from '../../utils/parseCommands';
+import {createGuildOnlySlashCommand} from '../../utils/commands';
 import {SlashCommandBuilder} from '@discordjs/builders';
 import {PermissionFlagsBits} from 'discord-api-types/v10';
 
@@ -14,7 +14,7 @@ export const data = new SlashCommandBuilder()
     .setDMPermission(false)
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
 
-export default createSlashCommand<{}, true>({
+export default createGuildOnlySlashCommand({
     data,
     async execute(message, parsed, tag) {
         const {disabled_commands, autoroles, censored_users, censored_words, blacklist} = tag;

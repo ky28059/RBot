@@ -1,4 +1,4 @@
-import {createSlashCommand} from '../../utils/parseCommands';
+import {createGuildOnlySlashCommand} from '../../utils/commands';
 import {GuildMember, StageChannel} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 import {entersState, joinVoiceChannel, VoiceConnectionStatus} from '@discordjs/voice';
@@ -24,7 +24,7 @@ export const data = new SlashCommandBuilder()
         .setDescription('The video to play.')
         .setRequired(true))
 
-export default createSlashCommand<{url: string}, true>({
+export default createGuildOnlySlashCommand<{url: string}>({
     data,
     aliases: ['p'],
     examples: ['play https://www.youtube.com/watch?v=dQw4w9WgXcQ'],

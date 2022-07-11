@@ -1,4 +1,4 @@
-import {createSlashCommand} from '../../utils/parseCommands';
+import {createGuildOnlySlashCommand} from '../../utils/commands';
 import {User} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 
@@ -15,7 +15,7 @@ export const data = new SlashCommandBuilder()
         .setName('target')
         .setDescription('The user to get info about.'))
 
-export default createSlashCommand<{target?: User}, true>({
+export default createGuildOnlySlashCommand<{target?: User}>({
     data,
     async execute(message, parsed) {
         // TODO: make prettier, add functionality

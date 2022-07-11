@@ -13,6 +13,9 @@ type BaseCommandOpts = {
     examples?: string | string[],
     ownerOnly?: boolean
 }
+type GuildOnlyBaseCommandOpts = BaseCommandOpts & {
+    clientPermReqs?: PermissionResolvable
+}
 
 // A `GuildOnly` command will always have a valid tag passed in because `message.guild` is guaranteed to exist
 type Tag<T extends boolean> = T extends true ? GuildPresets : GuildPresets | null;
@@ -20,23 +23,43 @@ type CommandCallback<Target, Args, GuildOnly extends boolean> = (message: Target
 
 
 type SlashCommandData = Omit<SlashCommandBuilder, "addSubcommand" | "addSubcommandGroup">;
-type SlashCommandOpts<Args, GuildOnly extends boolean> = {
+type SlashCommandOpts = {
     data: SlashCommandData,
-    clientPermReqs?: PermissionResolvable,
-    execute: CommandCallback<Message | CommandInteraction, Args, GuildOnly>,
     handleAutocomplete?: (interaction: AutocompleteInteraction) => Promise<any>
 }
-export function createSlashCommand<Args = {}, GuildOnly extends boolean = false>(
-    command: BaseCommandOpts & SlashCommandOpts<Args, GuildOnly>
-): Command<Args, GuildOnly, true> {
+// Creates a non-guild-only slash command. Pass command properties to this function using the `SlashCommandBuilder`,
+// or pass extra options as `opts`.
+export function createSlashCommand<Args = {}>(
+    command: BaseCommandOpts & SlashCommandOpts & { execute: CommandCallback<Message | CommandInteraction, Args, false> }
+): Command<Args, false, true> {
     const {data, ...opts} = command;
     const permissions = new Permissions((data.default_member_permissions || undefined) as PermissionResolvable | undefined).toArray()
     return {
         isSlashCommand: true,
+        guildOnly: false, //data.dm_permission
         name: data.name,
         description: data.description,
         pattern: data.options.map(parseSlashCommandOption).join(' '),
-        guildOnly: (data.dm_permission || false) as GuildOnly,
+        permReqs: permissions.length ? permissions : undefined,
+        ...opts
+    }
+}
+
+// Creates a guild-only slash command. This command's usage will be restricted to guilds, but will have access
+// to a non-nullable `Tag` and guild-specific properties like `permReqs` and `clientPermReqs`. **Important:** ensure
+// that the `SlashCommandBuilder` has a call to `.setDMPermission(false)`, or else the slash command will be
+// usable in DMs.
+export function createGuildOnlySlashCommand<Args = {}>(
+    command: GuildOnlyBaseCommandOpts & SlashCommandOpts & { execute: CommandCallback<Message | CommandInteraction, Args, true> }
+): Command<Args, true, true> {
+    const {data, ...opts} = command;
+    const permissions = new Permissions((data.default_member_permissions || undefined) as PermissionResolvable | undefined).toArray()
+    return {
+        isSlashCommand: true,
+        guildOnly: true, //data.dm_permission
+        name: data.name,
+        description: data.description,
+        pattern: data.options.map(parseSlashCommandOption).join(' '),
         permReqs: permissions.length ? permissions : undefined,
         ...opts
     }
@@ -48,6 +71,7 @@ type TextCommandOpts = {
     description: string,
     pattern?: string,
 }
+// Creates a non-guild-only text command. Pass command properties to this function as `opts`.
 export function createTextCommand<Args = {}>(
     command: BaseCommandOpts & TextCommandOpts & { execute: CommandCallback<Message, Args, false> }
 ): Command<Args, false, false> {
@@ -58,12 +82,13 @@ export function createTextCommand<Args = {}>(
     }
 }
 
-type GuildOnlyTextCommandOpts = {
+type GuildOnlyTextCommandOpts = TextCommandOpts & {
     permReqs?: PermissionResolvable,
-    clientPermReqs?: PermissionResolvable
 }
+// Creates a guild-only text command. This command's usage will be restricted to guilds, but will have access
+// to a non-nullable `Tag` and guild-specific properties like `permReqs` and `clientPermReqs`.
 export function createGuildOnlyTextCommand<Args = {}>(
-    command: BaseCommandOpts & TextCommandOpts & GuildOnlyTextCommandOpts & { execute: CommandCallback<Message, Args, true> }
+    command: GuildOnlyBaseCommandOpts & GuildOnlyTextCommandOpts & { execute: CommandCallback<Message, Args, true> }
 ): Command<Args, true, false> {
     return {
         isSlashCommand: false,

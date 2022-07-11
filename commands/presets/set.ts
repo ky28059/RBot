@@ -1,4 +1,4 @@
-import {createGuildOnlyTextCommand} from '../../utils/parseCommands';
+import {createGuildOnlyTextCommand} from '../../utils/commands';
 import {TextChannel} from 'discord.js';
 import {success} from '../../utils/messages';
 

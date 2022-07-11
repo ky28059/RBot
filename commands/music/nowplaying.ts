@@ -1,4 +1,4 @@
-import {createSlashCommand} from '../../utils/parseCommands';
+import {createGuildOnlySlashCommand} from '../../utils/commands';
 import {SlashCommandBuilder} from '@discordjs/builders';
 import {AudioPlayerStatus, AudioResource} from '@discordjs/voice';
 
@@ -16,7 +16,7 @@ export const data = new SlashCommandBuilder()
     .setDescription('Displays the currently playing song.')
     .setDMPermission(false)
 
-export default createSlashCommand<{}, true>({
+export default createGuildOnlySlashCommand({
     data,
     aliases: ['np'],
     async execute(message) {

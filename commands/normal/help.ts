@@ -1,4 +1,4 @@
-import {createSlashCommand} from '../../utils/parseCommands';
+import {createSlashCommand} from '../../utils/commands';
 import {SlashCommandBuilder} from '@discordjs/builders';
 
 // Utilities

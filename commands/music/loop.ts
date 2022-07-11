@@ -1,4 +1,4 @@
-import {createSlashCommand} from '../../utils/parseCommands';
+import {createGuildOnlySlashCommand} from '../../utils/commands';
 import {GuildMember} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 
@@ -17,7 +17,7 @@ export const data = new SlashCommandBuilder()
     .setDescription('Toggles whether the bot will loop the queue.')
     .setDMPermission(false)
 
-export default createSlashCommand<{}, true>({
+export default createGuildOnlySlashCommand({
     data,
     aliases: ['l'],
     async execute(message) {

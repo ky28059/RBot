@@ -1,4 +1,4 @@
-import {createSlashCommand} from '../../utils/parseCommands';
+import {createGuildOnlySlashCommand} from '../../utils/commands';
 import {GuildMember} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 
@@ -17,7 +17,7 @@ export const data = new SlashCommandBuilder()
     .setDescription('Shuffles the queue.')
     .setDMPermission(false)
 
-export default createSlashCommand<{}, true>({
+export default createGuildOnlySlashCommand({
     data,
     async execute(message) {
         if (!message.member || !(message.member instanceof GuildMember)) return;

@@ -1,5 +1,5 @@
 import {Client, Guild} from 'discord.js';
-import {ParsedCommand} from './parseCommands';
+import {ParsedCommand} from './commands';
 
 import MissingArgumentError from '../errors/MissingArgumentError';
 import IllegalArgumentError from '../errors/IllegalArgumentError';

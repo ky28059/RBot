@@ -6,10 +6,10 @@ import {token, ownerId} from './auth';
 
 // Utils
 import parse from './utils/argParser';
-import {getSubmodules, forEachRawCommand} from './utils/parseCommands';
+import {getSubmodules, forEachRawCommand} from './utils/commands';
 import loadGuilds, {Guild as GuildPresets} from './models/Guild';
 import {log} from './utils/logger';
-import {update, isInField, containsField} from './utils/tokenManager';
+import {update, isInField, containsField} from './utils/tokens';
 import {truncate} from './utils/messageUtils';
 
 // Messages

@@ -1,4 +1,4 @@
-import {isInField, removeFromField} from '../../utils/tokenManager.js';
+import {isInField, removeFromField} from '../../utils/tokens.ts';
 import {log} from '../../utils/logger.ts';
 
 // Errors

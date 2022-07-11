@@ -1,4 +1,4 @@
-import {createSlashCommand} from '../../utils/parseCommands';
+import {createGuildOnlySlashCommand, createSlashCommand} from '../../utils/commands';
 import {Message, User} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 import {PermissionFlagsBits} from 'discord-api-types/v10';
@@ -6,9 +6,6 @@ import {PermissionFlagsBits} from 'discord-api-types/v10';
 // Utilities
 import {replyEmbed} from '../../utils/messageUtils';
 import {success} from '../../utils/messages';
-
-// Errors
-import IntegerRangeError from '../../errors/IntegerRangeError';
 
 
 export const data = new SlashCommandBuilder()
@@ -26,15 +23,11 @@ export const data = new SlashCommandBuilder()
         .setName('target')
         .setDescription('The person to delete messages from.'))
 
-export default createSlashCommand<{count: number, target?: User}, true>({
+export default createGuildOnlySlashCommand<{count: number, target?: User}>({
     data,
     clientPermReqs: 'MANAGE_MESSAGES',
     async execute(message, parsed) {
         const {count, target} = parsed;
-
-        // TODO: when discord slash command builders start supporting `minValue` and `maxValue`, this will be unnecessary
-        if (count < 1 || count > 100)
-            throw new IntegerRangeError('purge', 'Count', 1, 100);
 
         // Delete the original message so that more messages can be bulk deleted
         if (message instanceof Message) await message.delete()

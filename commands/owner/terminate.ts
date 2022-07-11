@@ -1,4 +1,4 @@
-import {createTextCommand} from '../../utils/parseCommands';
+import {createTextCommand} from '../../utils/commands';
 import {success} from '../../utils/messages';
 
 
