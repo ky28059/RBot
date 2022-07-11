@@ -1,11 +1,15 @@
 import {Collection, CommandInteraction, Message, Permissions, PermissionResolvable, Snowflake, AutocompleteInteraction} from 'discord.js';
-import {SlashCommandBuilder, ToAPIApplicationCommandOptions} from '@discordjs/builders';
+import {SlashCommandBuilder, SlashCommandSubcommandsOnlyBuilder} from '@discordjs/builders';
+import {
+    APIApplicationCommandOption,
+    APIApplicationCommandSubcommandOption,
+    ApplicationCommandOptionType
+} from 'discord-api-types/v10';
 import {readdirSync} from 'fs';
 
 // Types
 import {Guild as GuildPresets} from '../models/Guild';
 import {MusicSubscription} from './subscription';
-import {APIApplicationCommandIntegerOption, APIApplicationCommandOption} from 'discord-api-types/v10';
 
 
 type BaseCommandOpts = {
@@ -39,7 +43,7 @@ export function createSlashCommand<Args = {}>(
         guildOnly: false, //data.dm_permission
         name: data.name,
         description: data.description,
-        pattern: data.options.map(parseSlashCommandOption).join(' '),
+        pattern: data.options.map((arg) => parseSlashCommandOption(arg.toJSON())).join(' '),
         permReqs: permissions.length ? permissions : undefined,
         ...opts
     }
@@ -59,7 +63,7 @@ export function createGuildOnlySlashCommand<Args = {}>(
         guildOnly: true, //data.dm_permission
         name: data.name,
         description: data.description,
-        pattern: data.options.map(parseSlashCommandOption).join(' '),
+        pattern: data.options.map((arg) => parseSlashCommandOption(arg.toJSON())).join(' '),
         permReqs: permissions.length ? permissions : undefined,
         ...opts
     }
@@ -157,17 +161,16 @@ export async function forEachRawCommand(
 }
 
 // Parses a SlashCommandBuilder option into RBot's argParser syntax.
-function parseSlashCommandOption(arg: ToAPIApplicationCommandOptions) {
-    const data = arg.toJSON();
+function parseSlashCommandOption(data: APIApplicationCommandOption) {
     let prefix = '';
     let bracket = '[]';
 
     switch (data.type) {
         // TODO: bracket = () corresponds to integers only; should `argParser` support doubles too?
-        case 4: bracket = '()'; break;
-        case 6: prefix = '@'; break;
-        case 7: prefix = '#'; break;
-        case 8: prefix = '&'; break;
+        case ApplicationCommandOptionType.Integer: bracket = '()'; break;
+        case ApplicationCommandOptionType.User: prefix = '@'; break;
+        case ApplicationCommandOptionType.Channel: prefix = '#'; break;
+        case ApplicationCommandOptionType.Role: prefix = '&'; break;
     }
 
     let pattern = `${prefix}${bracket[0]}${data.name}${bracket[1]}`

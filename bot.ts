@@ -5,7 +5,7 @@ import {Sequelize} from 'sequelize';
 import {token, ownerId} from './auth';
 
 // Utils
-import parse from './utils/argParser';
+import {parseSlashCommandArgs, parseTextArgs} from './utils/argParser';
 import {getSubmodules, forEachRawCommand} from './utils/commands';
 import loadGuilds, {Guild as GuildPresets} from './models/Guild';
 import {log} from './utils/logger';
@@ -127,7 +127,7 @@ client.on('messageCreate', async (message) => {
         }
 
         try {
-            const parsed = parse(argString ?? '', command, client, guild);
+            const parsed = parseTextArgs(argString ?? '', command, client, guild);
             await command.execute(message, parsed, tag);
         } catch (e) {
             await handleCommandError(message, commandName, e);
@@ -179,16 +179,7 @@ client.on('interactionCreate', async (interaction) => {
     }
 
     try {
-        // Construct parsed arguments
-        const parsed: any = {};
-        for (const option of interaction.options.data) {
-            const type = option.type;
-            parsed[option.name] =
-                type === 'USER' ? option.user
-                : type === 'CHANNEL' ? option.channel
-                : type === 'ROLE' ? option.role
-                : option.value
-        }
+        const parsed = parseSlashCommandArgs(interaction.options.data);
         await command.execute(interaction, parsed, tag);
     } catch (e) {
         await handleCommandError(interaction, interaction.commandName, e);

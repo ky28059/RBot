@@ -1,5 +1,5 @@
 import {createTextCommand} from '../../utils/commands';
-import parse from '../../utils/argParser';
+import {parseTextArgs} from '../../utils/argParser';
 
 
 export default createTextCommand<{pattern: string, args: string}>({
@@ -17,7 +17,7 @@ export default createTextCommand<{pattern: string, args: string}>({
 
         await message.channel.send(`Parsed arguments to this command: \`${JSON.stringify(parsed)}\``);
         await message.channel.send(`
-            Custom parse: \`${JSON.stringify(parse(parsed.args, dummyCommand, message.client, message.guild))}\`
+            Custom parse: \`${JSON.stringify(parseTextArgs(parsed.args, dummyCommand, message.client, message.guild))}\`
         `);
     }
 });

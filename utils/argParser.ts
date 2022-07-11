@@ -1,8 +1,8 @@
-import {Client, Guild} from 'discord.js';
+import {Client, CommandInteractionOption, Guild} from 'discord.js';
 import {ParsedCommand} from './commands';
 
+// Errors
 import MissingArgumentError from '../errors/MissingArgumentError';
-import IllegalArgumentError from '../errors/IllegalArgumentError';
 import NumberConversionError from '../errors/NumberConversionError';
 import IntegerRangeError from "../errors/IntegerRangeError";
 import IntegerConversionError from "../errors/IntegerConversionError";
@@ -54,8 +54,11 @@ const roleRegex = /^<@&(\d+)>$/;
     Commands whose arguments can be one of multiple patterns: set, censor, uncensor, technically roll would benefit from it as well
 */
 type ParserCommand = Pick<ParsedCommand, "pattern" | "name">;
-export default function parse(argString: string, command: ParserCommand, client: Client, guild: Guild | null) {
-    const returnObj: any = {};
+
+// Parses an `argString` into command arguments for the given `ParserCommand`. Throws conversion errors if an
+// argument is of the wrong type, and `MissingArgumentError`s if a required argument is missing.
+export function parseTextArgs(argString: string, command: ParserCommand, client: Client, guild: Guild | null) {
+    const parsed: any = {};
     let index = 0; // Current index in the string for <Rest> patterns
 
     // Get argument patterns if they exist, return if the command takes in no arguments or if patterns are missing
@@ -95,9 +98,9 @@ export default function parse(argString: string, command: ParserCommand, client:
             if (i !== patterns.length - 1)
                 console.warn(`Bad pattern in ${command.name}, field <${name}> is not the last field`);
 
-            returnObj[name.toLowerCase()] = argString.substring(index - arg.length);
+            parsed[name.toLowerCase()] = argString.substring(index - arg.length);
 
-            return returnObj;
+            return parsed;
         }
 
         // If repeating, match remaining args and return
@@ -107,26 +110,41 @@ export default function parse(argString: string, command: ParserCommand, client:
                 console.warn(`Bad pattern in ${command.name}, repeating field ${name} is not the last field`);
 
             args.unshift(arg)
-            returnObj[name.toLowerCase()] = args
+            parsed[name.toLowerCase()] = args
                 .map(arg => arg.replace(/^"|"$/g, '')) // Sanitize quotes
                 .map(arg => matchSingular({
                     arg, prefix, bracket, argName: name, commandName: command.name, repeating: true, rangeFrom, rangeTo,
                     client, guild
                 }));
 
-            return returnObj;
+            return parsed;
         }
 
         // Otherwise, match arg based on prefix
         arg = arg.replace(/^"|"$/g, ''); // Sanitize quotes
-        returnObj[name.toLowerCase()] = matchSingular({
+        parsed[name.toLowerCase()] = matchSingular({
             arg, prefix, bracket, argName: name, commandName: command.name, repeating: false, rangeFrom, rangeTo,
             client, guild
         });
     }
 
-    return returnObj;
+    return parsed;
 }
+
+// Converts a `CommandInteractionOption[]` from a `CommandInteraction` into an argParser object.
+export function parseSlashCommandArgs(options: readonly CommandInteractionOption[]) {
+    const parsed: any = {};
+    for (const option of options) {
+        const type = option.type;
+        parsed[option.name] =
+            type === 'USER' ? option.user
+            : type === 'CHANNEL' ? option.channel
+            : type === 'ROLE' ? option.role
+            : option.value
+    }
+    return parsed;
+}
+
 
 type FieldProps = {
     arg: string, prefix: string, bracket: string, rangeFrom?: string, rangeTo?: string,
