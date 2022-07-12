@@ -31,33 +31,45 @@ export function requestedBy(user: User) {
 }
 
 
-// The Now Playing embed for music commands.
+// The `Now playing` embed for music commands.
 export function nowPlaying(song: Track) {
     return success()
         .setAuthor({name: 'Now playing:'})
         .setDescription(`[${song.title}](${song.url}) [<@!${song.queuedBy}>]`);
 }
 
-// The Loop embed for music commands.
+// The `Loop` embed for music commands.
 export function loop(looped: boolean) {
     return success()
-        .setDescription(`Loop set to **${looped ? 'on' : 'off'}**`);
+        .setDescription(`Loop set to **${looped ? 'on' : 'off'}**.`);
 }
 
-// The Skip embed for music commands.
+// The `Skip` embed for music commands.
 export function skip() {
     return success()
-        .setDescription('⏭ Skipped the song');
+        .setDescription('⏭ Skipped the song.');
 }
 
-// The Shuffle embed for music commands.
+// The `Pause` embed for music commands.
+export function pause() {
+    return success()
+        .setDescription('⏸ Paused the song.');
+}
+
+// The `Unpause` embed for music commands.
+export function unpause() {
+    return success()
+        .setDescription('▶ Unpaused the song.')
+}
+
+// The `Shuffle` embed for music commands.
 export function shuffle() {
     return success()
-        .setDescription('🔀 Shuffled the queue');
+        .setDescription('🔀 Shuffled the queue.');
 }
 
 // The Die embed for music commands.
 export function die() {
     return success()
-        .setDescription('⏹ Music queue ended');
+        .setDescription('⏹ Music queue ended.');
 }

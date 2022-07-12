@@ -1,7 +1,5 @@
 import {Client, MessageEmbed, Collection, TextChannel, GuildMember, Message, CommandInteraction} from 'discord.js';
 import {Sequelize} from 'sequelize';
-
-// Auth
 import {token, ownerId} from './auth';
 
 // Utils
@@ -132,7 +130,7 @@ client.on('messageCreate', async (message) => {
                 const subcommand = command.subcommands.find(cmd => cmd.name === subcommandName);
                 if (!subcommand) return; // TODO: error
 
-                const parsed = parseTextArgs(newArgString, subcommand, client, guild);
+                const parsed = parseTextArgs(newArgString ?? '', subcommand, client, guild);
                 return subcommand.execute(message, parsed, tag);
             }
 

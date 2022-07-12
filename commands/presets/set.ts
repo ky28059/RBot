@@ -51,9 +51,9 @@ export default createGuildOnlySlashSubCommands<{prefix: {prefix: string}, logcha
                 const guild = message.guild!;
 
                 if (channel.type !== 'GUILD_TEXT')
-                    throw new IllegalArgumentError('set.prefix', '`Channel` must be a text channel.');
+                    throw new IllegalArgumentError('set.logchannel', '`Channel` must be a text channel.');
                 if (!((channel as TextChannel).guild.id === guild.id))
-                    throw new IllegalArgumentError('set.prefix', '`Channel` must be within this server.');
+                    throw new IllegalArgumentError('set.logchannel', '`Channel` must be within this server.');
 
                 tag.logchannel = channel.id;
                 await tag.save();
