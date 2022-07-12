@@ -62,8 +62,7 @@ The main body of a command is its `async execute()` method, which takes in the `
 input is malformed) are caught in `bot.ts` and sent in discord as error embeds.
 
 For text-based commands, arguments are specified by providing a `pattern` field in the command data specifying a parser
-pattern. The syntax for RBot's argParser pattern can be found in `./util/argParser`. For type safety, the parsed arguments 
-type must be passed to the factory function's first generic argument.
+pattern (see **Parsing**). For type safety, the parsed object type must be passed to the factory function as a generic.
 ```ts
 // example.ts
 
@@ -100,6 +99,36 @@ export default createSlashCommand<{ name: string, user?: User }>({
     }
 });
 ```
+
+### Parsing
+Responsible for parsing command arguments, `argParser.ts` (inspired by HarVM's simpleArgumentParser) determines how to 
+parse text arguments based on a custom string-based pattern syntax. The full documentation for said syntax is as follows:
+
+| Pattern    | Type                         |
+|------------|------------------------------|
+| `[field]`  | Singular string.             |
+| `(field)`  | Singular integer.            |
+| `@[field]` | Singular `User`.             |
+| `#[field]` | Singular `Channel`.          |
+| `&[field]` | Singular `Role`.             |
+| `<field>`  | The rest of the `argString`. |
+
+| Pattern        | Modifier                                                                                                                                                          |
+|----------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `[field]?`     | Optionality. The field will be matched if it exists, or will be `undefined` if it doesn't. Unlike required fields, no error will be thrown if nothing is matched. |
+| `[...field]`   | Repeating. The rest of the given arguments will be matched as this field, and the match will be returned as an array.                                             |
+| `(field)[a-b]` | (for integer fields) Range. The field will only match if the argument lies within the inclusive range from `a` to `b`, and an error will be thrown otherwise.     |
+
+For the confused, here's some examples of patterns and what they match:
+
+| Pattern               | Arguments   | Parsed                                  |
+|-----------------------|-------------|-----------------------------------------|
+| `[message]`           | `hello`     | `{message: 'hello'}`                    |
+| `[action] @[role]`    | `add @role` | `{action: 'add', role: Role}`           |
+| `(count) @[target]?`  | `100 @user` | `{count: 100, target: User}`            |
+| `(count) @[target]?`  | `100`       | `{count: 100}`                          |
+| `[initial] [...args]` | `a b c d`   | `{initial: 'a', args: ['b', 'c', 'd']}` |
+| `[initial] <args>`    | `a b c d`   | `{initial: 'a', args: 'b c d'}`         |
 
 ### Running RBot locally
 While most files RBot uses are committed directly to GitHub, there are a few things you need to do before being able to 

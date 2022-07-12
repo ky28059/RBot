@@ -16,44 +16,8 @@ const mentionRegex = /^<@!?(\d+)>$/;
 const channelRegex = /^<#(\d+)>$/;
 const roleRegex = /^<@&(\d+)>$/;
 
-
-/*
-    An argument parser to match message portions to argument patterns, somewhat inspired by HarVM's simpleArgumentParser.
-    The string-based argParser pattern syntax is as follows:
-
-    Types:
-    [field] = String field
-    (field) = Integer field
-    @[user] = User field
-    #[channel] = Channel field
-    &[role] = Role field
-    <rest> = Rest of the arguments, as a string
-
-    Modifiers:
-    [field]? = Optional -- matches if it exists, retuning undefined if it does not
-    [...field] = Repeating field -- attempts to match the rest of the arguments as this field, returning the result as an array
-    (field)[a-b] = Integer range -- matches an integer within the given inclusive range from a to b, throws an error otherwise
-
-    Examples (argString, pattern => result):
-    "add @role", "[action] &[role]"
-        => { action: "add", role: Discord.Role }
-    "something other else", "[field] [field2] [field3]?"
-        => { field: "something", field2: "other", field3: "else" }
-    "something other", "[field] [field2] [field3]?"
-        => { field: "something", field2: "other" }
-    "something other", "[field] [field2] [field3]"
-        => MissingArgumentError
-    "something other else", "<message>"
-        => { message: "something other else" }
-    "one two three", "[...numbers]"
-        => { numbers: ["one", "two", "three"] }
-    "@user @otheruser @thirduser", "@[...people]"
-        => { people: [User, User, User] }
-
-    TODO: add syntax for commands that can have multiple patterns
-    Commands whose arguments can be one of multiple patterns: set, censor, uncensor, technically roll would benefit from it as well
-*/
 type ParserCommand = Pick<ParsedCommand, "pattern" | "name">;
+
 
 // Parses an `argString` into command arguments for the given `ParserCommand`. Throws conversion errors if an
 // argument is of the wrong type, and `MissingArgumentError`s if a required argument is missing.
