@@ -127,6 +127,15 @@ client.on('messageCreate', async (message) => {
         }
 
         try {
+            if ('subcommands' in command) {
+                const [subcommandName, newArgString] = argString.trim().split(/(?<=^\S+)\s+/);
+                const subcommand = command.subcommands.find(cmd => cmd.name === subcommandName);
+                if (!subcommand) return; // TODO: error
+
+                const parsed = parseTextArgs(newArgString, subcommand, client, guild);
+                return subcommand.execute(message, parsed, tag);
+            }
+
             const parsed = parseTextArgs(argString ?? '', command, client, guild);
             await command.execute(message, parsed, tag);
         } catch (e) {
@@ -179,6 +188,16 @@ client.on('interactionCreate', async (interaction) => {
     }
 
     try {
+        if ('subcommands' in command) {
+            const subcommandName = interaction.options.getSubcommand(true);
+            const subcommand = command.subcommands.find(cmd => cmd.name === subcommandName);
+            if (!subcommand) return; // TODO: error
+
+            // TODO: this is probably a little hacky
+            const parsed = parseSlashCommandArgs(interaction.options.data.find(opt => opt.name === subcommandName)!.options!);
+            return subcommand.execute(interaction, parsed, tag);
+        }
+
         const parsed = parseSlashCommandArgs(interaction.options.data);
         await command.execute(interaction, parsed, tag);
     } catch (e) {
@@ -202,8 +221,16 @@ client.on('interactionCreate', async (interaction) => {
     if (!interaction.isAutocomplete()) return;
 
     const command = interaction.client.commands.get(interaction.commandName);
-    if (!command || !command.handleAutocomplete) return;
+    if (!command) return;
 
+    if ('subcommands' in command) {
+        const subcommandName = interaction.options.getSubcommand(true);
+        const subcommand = command.subcommands.find(cmd => cmd.name === subcommandName);
+        if (!subcommand || !subcommand.handleAutocomplete) return;
+        return subcommand.handleAutocomplete(interaction);
+    }
+
+    if (!command.handleAutocomplete) return;
     await command.handleAutocomplete(interaction);
 })
 

@@ -53,13 +53,22 @@ export default createSlashCommand<{command?: string}>({
         if (!command)
             throw new IllegalArgumentError('help', `\`${name}\` is not a valid command.`);
 
+        const isSubCommand = 'subcommands' in command;
+
         // If there were arguments given and the argument was a valid command, display info about that command
         const helpEmbed = requestedBy(author(message)).setTitle(command.name);
 
         if (command.description) helpEmbed.setDescription(command.description);
         if (command.commandGroup) helpEmbed.addField('**Command Group:**', command.commandGroup);
         if (command.aliases) helpEmbed.addField('**Aliases:**', command.aliases.join(', '));
-        helpEmbed.addField('**Usage:**', `${prefix}${command.name} ${command.pattern || ''}`);
+        if (isSubCommand) helpEmbed.addField(
+            '**Subcommands:**',
+            command.subcommands.map((cmd) => `**${command.name} ${cmd.name}** - ${cmd.description}`).join('\n')
+        );
+        helpEmbed.addField('**Usage:**', isSubCommand
+            ? command.subcommands.map((cmd) => `${prefix}${command.name} ${cmd.name} ${cmd.pattern || ''}`).join('\n')
+            : `${prefix}${command.name} ${command.pattern || ''}`
+        );
 
         // TODO: these fields should really be arrays only to simplify parsing
         if (command.examples) helpEmbed.addField('**Examples:**',

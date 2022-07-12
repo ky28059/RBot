@@ -1,5 +1,5 @@
 import {Client, CommandInteractionOption, Guild} from 'discord.js';
-import {ParsedCommand} from './commands';
+import {CommandExecutionData, ParsedCommand} from './commands';
 
 // Errors
 import MissingArgumentError from '../errors/MissingArgumentError';
@@ -16,7 +16,7 @@ const mentionRegex = /^<@!?(\d+)>$/;
 const channelRegex = /^<#(\d+)>$/;
 const roleRegex = /^<@&(\d+)>$/;
 
-type ParserCommand = Pick<ParsedCommand, "pattern" | "name">;
+type ParserCommand = Pick<CommandExecutionData<any, any, any>, "pattern" | "name">;
 
 
 // Parses an `argString` into command arguments for the given `ParserCommand`. Throws conversion errors if an

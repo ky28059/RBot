@@ -1,50 +1,65 @@
-import {createGuildOnlyTextCommand} from '../../utils/commands';
-import {TextChannel} from 'discord.js';
-import {success} from '../../utils/messages';
+import {createGuildOnlySlashSubCommands} from '../../utils/commands';
+import {Channel, TextChannel} from 'discord.js';
+import {SlashCommandBuilder} from '@discordjs/builders';
+import {PermissionFlagsBits} from 'discord-api-types/v10';
 
+// Utils
+import {success} from '../../utils/messages';
+import {replyEmbed} from '../../utils/messageUtils';
+
+// Errors
 import IllegalArgumentError from '../../errors/IllegalArgumentError';
 
 
-export default createTextCommand<{field: string, args: string}, true>({
-export default createGuildOnlyTextCommand<{field: string, args: string}>({
-    name: 'set',
-    description: 'Sets new token data for this server.',
-    pattern: '[field] <args>',
-    examples: ['set logchannel #logs', 'set prefix r'],
-    permReqs: 'MANAGE_GUILD',
-    async execute(message, parsed, tag) {
-        const {field, args} = parsed;
-        const guild = message.guild!;
+export const data = new SlashCommandBuilder()
+    .setName('set')
+    .setDescription('Sets new token data for this server.')
+    .setDMPermission(false)
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
+    .addSubcommand(option => option
+        .setName('prefix')
+        .setDescription('Sets the text command prefix for this server.')
+        .addStringOption(option => option
+            .setName('prefix')
+            .setDescription('The prefix to set')
+            .setRequired(true)))
+    .addSubcommand(option => option
+        .setName('logchannel')
+        .setDescription('Sets the logging channel for this server.')
+        .addChannelOption(option => option
+            .setName('channel')
+            .setDescription('The channel RBot should log in')
+            .setRequired(true)))
 
-        let updated; // better way of doing this, there is probably
+export default createGuildOnlySlashSubCommands<{prefix: {prefix: string}, logchannel: {channel: Channel}}>({
+    data,
+    examples: ['set prefix r', 'set logchannel #logs'],
+    subcommands: {
+        prefix: {
+            async execute(message, parsed, tag) {
+                const {prefix} = parsed;
 
-        switch (field) {
-            case 'logchannel':
-                // sloppily copy code from argparser in lieu of multiple patterns
-                const id = args.match(/^<#(\d+)>$/);
-                let channelID = id ? id[1] : args;
-                const channelTarget = message.client.channels.cache.get(channelID);
+                tag.prefix = prefix;
+                await tag.save();
 
-                if (!channelTarget)
-                    throw new IllegalArgumentError(this.name, '`Channel` must be a valid text channel');
-                if (channelTarget.type !== 'GUILD_TEXT')
-                    throw new IllegalArgumentError(this.name, '`Channel` must be a text channel');
-                if (!((channelTarget as TextChannel).guild.id === guild.id))
-                    throw new IllegalArgumentError(this.name, '`Channel` must be within this server');
+                await replyEmbed(message, success().setDescription(`\`prefix\` has been updated to \`${prefix}\`.`));
+            }
+        },
+        logchannel: {
+            async execute(message, parsed, tag) {
+                const {channel} = parsed;
+                const guild = message.guild!;
 
-                tag.logchannel = channelTarget.id;
-                updated = channelTarget;
-                break;
+                if (channel.type !== 'GUILD_TEXT')
+                    throw new IllegalArgumentError('set.prefix', '`Channel` must be a text channel.');
+                if (!((channel as TextChannel).guild.id === guild.id))
+                    throw new IllegalArgumentError('set.prefix', '`Channel` must be within this server.');
 
-            case 'prefix':
-                tag.prefix = args;
-                updated = args;
-                break;
+                tag.logchannel = channel.id;
+                await tag.save();
 
-            default:
-                throw new IllegalArgumentError(this.name, `${field} not a valid token field; valid token fields: \`logchannel\`, \`prefix\``);
+                await replyEmbed(message, success().setDescription(`\`logchannel\` has been updated to \`#${(channel as TextChannel).name}\`.`));
+            }
         }
-        await tag.save();
-        message.channel.send({embeds: [success().setDescription(`\`${field}\` has been updated to \`${updated}\``)]});
     }
 });
