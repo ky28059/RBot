@@ -104,14 +104,14 @@ export default createSlashCommand<{ name: string, user?: User }>({
 Responsible for parsing command arguments, `argParser.ts` (inspired by HarVM's simpleArgumentParser) determines how to 
 parse text arguments based on a custom string-based pattern syntax. The full documentation for said syntax is as follows:
 
-| Pattern    | Type                         |
-|------------|------------------------------|
-| `[field]`  | Singular string.             |
-| `(field)`  | Singular integer.            |
-| `@[field]` | Singular `User`.             |
-| `#[field]` | Singular `Channel`.          |
-| `&[field]` | Singular `Role`.             |
-| `<field>`  | The rest of the `argString`. |
+| Pattern    | Type                                                    |
+|------------|---------------------------------------------------------|
+| `[field]`  | Singular string.                                        |
+| `(field)`  | Singular integer.                                       |
+| `@[field]` | Singular `User`. Resolves both mentions and raw IDs.    |
+| `#[field]` | Singular `Channel`. Resolves both mentions and raw IDs. |
+| `&[field]` | Singular `Role`. Resolves both mentions and raw IDs.    |
+| `<field>`  | The rest of the `argString`.                            |
 
 | Pattern        | Modifier                                                                                                                                                          |
 |----------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -124,11 +124,14 @@ For the confused, here's some examples of patterns and what they match:
 | Pattern               | Arguments   | Parsed                                  |
 |-----------------------|-------------|-----------------------------------------|
 | `[message]`           | `hello`     | `{message: 'hello'}`                    |
-| `[action] @[role]`    | `add @role` | `{action: 'add', role: Role}`           |
+| `(message)`           | `hello`     | IntegerConversionError                  |
+| `[action] &[role]`    | `add @role` | `{action: 'add', role: Role}`           |
 | `(count) @[target]?`  | `100 @user` | `{count: 100, target: User}`            |
 | `(count) @[target]?`  | `100`       | `{count: 100}`                          |
 | `[initial] [...args]` | `a b c d`   | `{initial: 'a', args: ['b', 'c', 'd']}` |
 | `[initial] <args>`    | `a b c d`   | `{initial: 'a', args: 'b c d'}`         |
+| `(days)[0-7]`         | `5`         | `{days: 5}`                             |
+| `(days)[0-7]`         | `56`        | IntegerRangeError                       |
 
 ### Running RBot locally
 While most files RBot uses are committed directly to GitHub, there are a few things you need to do before being able to 
