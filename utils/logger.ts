@@ -18,7 +18,7 @@ export async function log(
     // If the log channel is invalid
     if (!channel)
         return console.warn(`Invalid logchannel ${id} in ${guild.name} with reason: NONEXISTENT`);
-    if (channel.type !== 'GUILD_TEXT')
+    if (!channel.isText())
         return console.warn(`Invalid logchannel ${id} in ${guild.name} with reason: NOT-TEXT`);
 
     const logEmbed = new MessageEmbed();
@@ -29,6 +29,6 @@ export async function log(
     if (fields) logEmbed.addFields(fields);
     logEmbed.setFooter(new Date().toUTCString());
 
-    (channel as TextChannel).send({embeds: [logEmbed]})
+    channel.send({embeds: [logEmbed]})
         .catch(error => console.error(`Error while logging action in ${guild.name}: ${error}!`));
 }

@@ -1,5 +1,4 @@
 import {Client, CommandInteractionOption, Guild} from 'discord.js';
-import {CommandExecutionData, ParsedCommand} from './commands';
 
 // Errors
 import MissingArgumentError from '../errors/MissingArgumentError';
@@ -16,18 +15,16 @@ const mentionRegex = /^<@!?(\d+)>$/;
 const channelRegex = /^<#(\d+)>$/;
 const roleRegex = /^<@&(\d+)>$/;
 
-type ParserCommand = Pick<CommandExecutionData<any, any, any>, "pattern" | "name">;
-
 
 // Parses an `argString` into command arguments for the given `ParserCommand`. Throws conversion errors if an
 // argument is of the wrong type, and `MissingArgumentError`s if a required argument is missing.
-export function parseTextArgs(argString: string, command: ParserCommand, client: Client, guild: Guild | null) {
+export function parseTextArgs(commandName: string, pattern: string | undefined, argString: string, client: Client, guild: Guild | null) {
     const parsed: any = {};
     let index = 0; // Current index in the string for <Rest> patterns
 
     // Get argument patterns if they exist, return if the command takes in no arguments or if patterns are missing
-    if (!command.pattern) return;
-    const patterns = command.pattern.split(' ');
+    if (!pattern) return;
+    const patterns = pattern.split(' ');
 
     // Split by spaces, but preserve sequences with spaces that are enclosed in quotes
     // Regex taken from HarVM
@@ -43,7 +40,7 @@ export function parseTextArgs(argString: string, command: ParserCommand, client:
         // If no args were provided, or if none remain
         if (!args || !args.length) {
             // Throw MissingArgumentError if a required argument is not found
-            if (!optional) throw new MissingArgumentError(command.name, name);
+            if (!optional) throw new MissingArgumentError(commandName, name);
             // Break the loop as no arguments remaining means no more parsing can be done
             break;
         }
@@ -56,11 +53,11 @@ export function parseTextArgs(argString: string, command: ParserCommand, client:
         if (bracket === '<') {
             // Check for bad patterns
             if (repeating)
-                console.warn(`Bad pattern in ${command.name}, field <${name}> cannot be repeating`);
+                console.warn(`Bad pattern in ${commandName}, field <${name}> cannot be repeating`);
             if (prefix)
-                console.warn(`Bad pattern in ${command.name}, field <${name}> cannot have a prefix`);
+                console.warn(`Bad pattern in ${commandName}, field <${name}> cannot have a prefix`);
             if (i !== patterns.length - 1)
-                console.warn(`Bad pattern in ${command.name}, field <${name}> is not the last field`);
+                console.warn(`Bad pattern in ${commandName}, field <${name}> is not the last field`);
 
             parsed[name.toLowerCase()] = argString.substring(index - arg.length);
 
@@ -71,13 +68,13 @@ export function parseTextArgs(argString: string, command: ParserCommand, client:
         if (repeating) {
             // Check for bad patterns
             if (i !== patterns.length - 1)
-                console.warn(`Bad pattern in ${command.name}, repeating field ${name} is not the last field`);
+                console.warn(`Bad pattern in ${commandName}, repeating field ${name} is not the last field`);
 
             args.unshift(arg)
             parsed[name.toLowerCase()] = args
                 .map(arg => arg.replace(/^"|"$/g, '')) // Sanitize quotes
                 .map(arg => matchSingular({
-                    arg, prefix, bracket, argName: name, commandName: command.name, repeating: true, rangeFrom, rangeTo,
+                    arg, prefix, bracket, argName: name, commandName, repeating: true, rangeFrom, rangeTo,
                     client, guild
                 }));
 
@@ -87,7 +84,7 @@ export function parseTextArgs(argString: string, command: ParserCommand, client:
         // Otherwise, match arg based on prefix
         arg = arg.replace(/^"|"$/g, ''); // Sanitize quotes
         parsed[name.toLowerCase()] = matchSingular({
-            arg, prefix, bracket, argName: name, commandName: command.name, repeating: false, rangeFrom, rangeTo,
+            arg, prefix, bracket, argName: name, commandName, repeating: false, rangeFrom, rangeTo,
             client, guild
         });
     }

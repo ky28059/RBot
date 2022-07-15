@@ -130,11 +130,11 @@ client.on('messageCreate', async (message) => {
                 const subcommand = command.subcommands.find(cmd => cmd.name === subcommandName);
                 if (!subcommand) return; // TODO: error
 
-                const parsed = parseTextArgs(newArgString ?? '', subcommand, client, guild);
-                return subcommand.execute(message, parsed, tag);
+                const parsed = parseTextArgs(`${command.name} ${subcommand.name}`, subcommand.pattern, newArgString ?? '', client, guild);
+                return await subcommand.execute(message, parsed, tag);
             }
 
-            const parsed = parseTextArgs(argString ?? '', command, client, guild);
+            const parsed = parseTextArgs(command.name, command.pattern, argString ?? '', client, guild);
             await command.execute(message, parsed, tag);
         } catch (e) {
             await handleCommandError(message, commandName, e);
@@ -193,7 +193,7 @@ client.on('interactionCreate', async (interaction) => {
 
             // TODO: this is probably a little hacky
             const parsed = parseSlashCommandArgs(interaction.options.data.find(opt => opt.name === subcommandName)!.options!);
-            return subcommand.execute(interaction, parsed, tag);
+            return await subcommand.execute(interaction, parsed, tag);
         }
 
         const parsed = parseSlashCommandArgs(interaction.options.data);

@@ -1,5 +1,5 @@
 import {createGuildOnlySlashSubCommands} from '../../utils/commands';
-import {Channel, TextChannel} from 'discord.js';
+import {Channel} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 import {PermissionFlagsBits} from 'discord-api-types/v10';
 
@@ -50,15 +50,17 @@ export default createGuildOnlySlashSubCommands<{prefix: {prefix: string}, logcha
                 const {channel} = parsed;
                 const guild = message.guild!;
 
-                if (channel.type !== 'GUILD_TEXT')
-                    throw new IllegalArgumentError('set.logchannel', '`Channel` must be a text channel.');
-                if (!((channel as TextChannel).guild.id === guild.id))
-                    throw new IllegalArgumentError('set.logchannel', '`Channel` must be within this server.');
+                if (!channel.isText())
+                    throw new IllegalArgumentError('set logchannel', '`channel` must be a text-based channel.');
+                if (channel.type === 'DM')
+                    throw new IllegalArgumentError('set logchannel', '`channel` cannot be a DM.');
+                if (channel.guild.id !== guild.id)
+                    throw new IllegalArgumentError('set logchannel', '`channel` must be within this server.');
 
                 tag.logchannel = channel.id;
                 await tag.save();
 
-                await replyEmbed(message, success().setDescription(`\`logchannel\` has been updated to \`#${(channel as TextChannel).name}\`.`));
+                await replyEmbed(message, success().setDescription(`\`logchannel\` has been updated to \`#${channel.name}\`.`));
             }
         }
     }
