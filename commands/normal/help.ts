@@ -56,10 +56,10 @@ export default createSlashCommand<{command?: string}>({
         const isSubCommand = 'subcommands' in command;
 
         // If there were arguments given and the argument was a valid command, display info about that command
-        const helpEmbed = requestedBy(author(message)).setTitle(command.name);
+        const helpEmbed = requestedBy(author(message))
+            .setTitle(command.name)
+            .setDescription(`\`\`\`cs\n[${command.commandGroup}]${(command.guildOnly ? ' [guildOnly]' : '')}${(command.isSlashCommand ? ' [slashCommand]' : '')}\n\`\`\`${command.description}`);
 
-        if (command.description) helpEmbed.setDescription(command.description);
-        if (command.commandGroup) helpEmbed.addField('**Command Group:**', command.commandGroup);
         if (command.aliases) helpEmbed.addField('**Aliases:**', command.aliases.join(', '));
         if (isSubCommand) helpEmbed.addField(
             '**Subcommands:**',
@@ -73,8 +73,17 @@ export default createSlashCommand<{command?: string}>({
         // TODO: these fields should really be arrays only to simplify parsing
         if (command.examples) helpEmbed.addField('**Examples:**',
             Array.isArray(command.examples) ? command.examples.map(example => prefix + example).join('\n') : prefix + command.examples);
-        if (command.permReqs) helpEmbed.addField('**Permissions Required:**',
-            Array.isArray(command.permReqs) ? command.permReqs.join(', ') : command.permReqs.toString());
+
+        if (command.permReqs) helpEmbed.addField(
+            '**Permissions required:**',
+            Array.isArray(command.permReqs) ? command.permReqs.map(p => `\`${p}\``).join(', ') : `\`${command.permReqs.toString()}\``,
+            true
+        );
+        if (command.clientPermReqs) helpEmbed.addField(
+            '**Client permissions required:**',
+            Array.isArray(command.clientPermReqs) ? command.clientPermReqs.map(p => `\`${p}\``).join(', ') : `\`${command.clientPermReqs.toString()}\``,
+            true
+        );
 
         await replyEmbed(message, helpEmbed);
     },
