@@ -27,15 +27,15 @@ type GuildOnlyBaseCommandOpts = BaseCommandOpts & {
 }
 
 type SlashCommandData = Omit<SlashCommandBuilder, "addSubcommand" | "addSubcommandGroup">;
-type SlashCommandOpts<Args> = {
+type SlashCommandOpts<Args, GuildOnly extends boolean> = {
     data: SlashCommandData,
-    execute: CommandCallback<Message | CommandInteraction, Args, false>,
-    handleAutocomplete?: (interaction: AutocompleteInteraction) => Promise<any>
+    execute: CommandCallback<Message | CommandInteraction, Args, GuildOnly>,
+    handleAutocomplete?: (interaction: AutocompleteInteraction, tag: Tag<GuildOnly>) => Promise<any>
 }
 // Creates a non-guild-only slash command. Pass command properties to this function using the `SlashCommandBuilder`,
 // or pass extra options as `opts`.
 export function createSlashCommand<Args = {}>(
-    command: BaseCommandOpts & SlashCommandOpts<Args>
+    command: BaseCommandOpts & SlashCommandOpts<Args, false>
 ): Command<Args, false, true> {
     const {data, ...opts} = command;
     const permissions = new Permissions((data.default_member_permissions || undefined) as PermissionResolvable | undefined).toArray()
@@ -50,15 +50,12 @@ export function createSlashCommand<Args = {}>(
     }
 }
 
-type GuildOnlySlashCommandOpts<Args> = Omit<SlashCommandOpts<Args>, 'execute'> & {
-    execute: CommandCallback<Message | CommandInteraction, Args, true>
-}
 // Creates a guild-only slash command. This command's usage will be restricted to guilds, but will have access
 // to a non-nullable `Tag` and guild-specific properties like `permReqs` and `clientPermReqs`. **Important:** ensure
 // that the `SlashCommandBuilder` has a call to `.setDMPermission(false)`, or else the slash command will be
 // usable in DMs.
 export function createGuildOnlySlashCommand<Args = {}>(
-    command: GuildOnlyBaseCommandOpts & GuildOnlySlashCommandOpts<Args>
+    command: GuildOnlyBaseCommandOpts & SlashCommandOpts<Args, true>
 ): Command<Args, true, true> {
     const {data, ...opts} = command;
     const permissions = new Permissions((data.default_member_permissions || undefined) as PermissionResolvable | undefined).toArray()
@@ -75,7 +72,7 @@ export function createGuildOnlySlashCommand<Args = {}>(
 
 type SlashCommandSubCommandsOpts<Args> = {
     data: SlashCommandSubcommandsOnlyBuilder
-    subcommands: { [P in keyof Args]: Omit<GuildOnlySlashCommandOpts<Args[P]>, 'data'> }
+    subcommands: { [P in keyof Args]: Omit<SlashCommandOpts<Args[P], true>, 'data'> }
 }
 export function createGuildOnlySlashSubCommands<Args = {}>(
     command: BaseCommandOpts & SlashCommandSubCommandsOpts<Args>,
@@ -156,7 +153,7 @@ export type CommandExecutionData<Args, GuildOnly extends boolean, SlashCommandCo
         ? CommandCallback<Message | CommandInteraction, Args, GuildOnly>
         : CommandCallback<Message, Args, GuildOnly>,
     // TODO: is there a type-safe way to express that this is always undefined when `SlashCommandCompat` is false?
-    handleAutocomplete?: (interaction: AutocompleteInteraction) => Promise<any>
+    handleAutocomplete?: (interaction: AutocompleteInteraction, tag: Tag<GuildOnly>) => Promise<any>
 }
 
 // The target type of the subcommand factory functions

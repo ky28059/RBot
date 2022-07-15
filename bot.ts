@@ -221,15 +221,18 @@ client.on('interactionCreate', async (interaction) => {
     const command = interaction.client.commands.get(interaction.commandName);
     if (!command) return;
 
+    const guild = interaction.guild;
+    const tag = guild && await GuildPresets.findOne({ where: { guildID: guild.id } });
+
     if ('subcommands' in command) {
         const subcommandName = interaction.options.getSubcommand(true);
         const subcommand = command.subcommands.find(cmd => cmd.name === subcommandName);
         if (!subcommand || !subcommand.handleAutocomplete) return;
-        return subcommand.handleAutocomplete(interaction);
+        return subcommand.handleAutocomplete(interaction, tag);
     }
 
     if (!command.handleAutocomplete) return;
-    await command.handleAutocomplete(interaction);
+    await command.handleAutocomplete(interaction, tag);
 })
 
 
