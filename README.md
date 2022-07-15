@@ -136,6 +136,8 @@ options.
 
 Remember to call `.setAutocomplete(true)` on all options you wish to receive `AutocompleteInteraction`s for.
 ```ts
+// help.ts
+
 export const data = new SlashCommandBuilder()
     .setName('help')
     .setDescription('Gets info about a command, or sends a command list.')

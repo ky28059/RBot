@@ -16,14 +16,14 @@ export const data = new SlashCommandBuilder()
     .setDescription('Sets new token data for this server.')
     .setDMPermission(false)
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
-    .addSubcommand(option => option
+    .addSubcommand(command => command
         .setName('prefix')
         .setDescription('Sets the text command prefix for this server.')
         .addStringOption(option => option
             .setName('prefix')
             .setDescription('The prefix to set')
             .setRequired(true)))
-    .addSubcommand(option => option
+    .addSubcommand(command => command
         .setName('logchannel')
         .setDescription('Sets the logging channel for this server.')
         .addChannelOption(option => option

@@ -75,7 +75,7 @@ type SlashCommandSubCommandsOpts<Args> = {
     subcommands: { [P in keyof Args]: Omit<SlashCommandOpts<Args[P], true>, 'data'> }
 }
 export function createGuildOnlySlashSubCommands<Args = {}>(
-    command: BaseCommandOpts & SlashCommandSubCommandsOpts<Args>,
+    command: GuildOnlyBaseCommandOpts & SlashCommandSubCommandsOpts<Args>,
 ): CommandWithSubCommands<Args, true, true> {
     const {data, subcommands: execData, ...opts} = command;
 
