@@ -100,6 +100,66 @@ export default createSlashCommand<{ name: string, user?: User }>({
 });
 ```
 
+To create guild-only commands, use the `createGuildOnlySlashCommand()` and `createGuildOnlyTextCommand()` factory functions.
+Guild-only commands can only be used within servers, but allows you to set permission requirements and safely access the
+SQL server presets.
+
+When creating a guild-only slash command, remember to call `.setDMPermission(false)` on the slash command builder, or the
+registered slash command won't be guild-only.
+```ts
+// purge.ts
+
+export const data = new SlashCommandBuilder()
+    .setName('purge')
+    .setDescription('Bulk deletes the specified amount of messages in the channel, or only messages sent by a given user.')
+    .setDMPermission(false)
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages)
+    .addIntegerOption(option => option
+        .setName('count')
+        .setDescription('The number of messages to purge.')
+        .setMinValue(1)
+        .setMaxValue(100)
+        .setRequired(true))
+
+export default createGuildOnlySlashCommand<{count: number}>({
+    data,
+    // ...
+    async execute(message, parsed, tag) {
+        // tag: GuildPresets
+    }
+});
+```
+
+To add autocomplete to a slash command option, export an async function to handle the autocomplete interaction. `async handleAutocomplete()`
+takes two arguments -- the `AutocompleteInteraction` and `Tag` -- and responds to the interaction with the autocomplete 
+options.
+
+Remember to call `.setAutocomplete(true)` on all options you wish to receive `AutocompleteInteraction`s for.
+```ts
+export const data = new SlashCommandBuilder()
+    .setName('help')
+    .setDescription('Gets info about a command, or sends a command list.')
+    .addStringOption(option => option
+        .setName('command')
+        .setDescription('The command to get info about.')
+        .setAutocomplete(true))
+
+export default createSlashCommand<{command?: string}>({
+    data,
+    // ...
+    async execute(message, parsed, tag) {
+        // ...
+    },
+    async handleAutocomplete(interaction) {
+        const focused = interaction.options.getFocused();
+        const choices = [...interaction.client.commands.keys()]
+            .filter(command => command.startsWith(focused.toString()))
+            .slice(0, 25)
+        await interaction.respond(choices.map(command => ({name: command, value: command})));
+    }
+});
+```
+
 ### Parsing
 Responsible for parsing command arguments, `argParser.ts` (inspired by HarVM's simpleArgumentParser) determines how to 
 parse text arguments based on a custom string-based pattern syntax. The full documentation for said syntax is as follows:
