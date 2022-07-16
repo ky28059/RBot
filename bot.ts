@@ -309,8 +309,8 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => { // TODO: finish
         updateEmbed
             .setDescription(`**${newMember.user} changed their nickname:**`)
             .addFields(
-                {name: 'Before:', value: oldMember.nickname || 'None'},
-                {name: 'After:', value: newMember.nickname || 'None'}
+                {name: 'Before:', value: oldMember.nickname || 'None', inline: true},
+                {name: 'After:', value: newMember.nickname || 'None', inline: true}
             );
         (client.channels.cache.get(tag.logchannel) as TextChannel)?.send({embeds: [updateEmbed]})
             .catch(error => console.error(`guildMemberUpdate in ${oldMember.guild} could not be logged because of ${error}!`));

@@ -53,7 +53,7 @@ export default createGuildOnlySlashSubCommands<{add: {role: Role}, remove: {role
 
                 await log(message.client, message.guild!, {
                     id: tag.logchannel, color: 0xf6b40c, author: author(message).tag, authorIcon: author(message).displayAvatarURL(),
-                    desc: `**\`${role.name}\` added to this server's autorole by ${author(message).tag} in ${message.channel}**${message instanceof Message ? `\n[Jump to message](${message.url})` : ''}`
+                    desc: `**${role} added to this server's autorole by ${author(message).tag} in ${message.channel}**${message instanceof Message ? `\n[Jump to message](${message.url})` : ''}`
                 });
                 await replyEmbed(message, success().setDescription(`Added ${role} to server autorole.`));
             }
@@ -70,7 +70,7 @@ export default createGuildOnlySlashSubCommands<{add: {role: Role}, remove: {role
 
                 await log(message.client, message.guild!, {
                     id: tag.logchannel, color: 0xf6b40c, author: author(message).tag, authorIcon: author(message).displayAvatarURL(),
-                    desc: `**\`${role.name}\` removed from this server's autorole by ${author(message).tag} in ${message.channel}**${message instanceof Message ? `\n[Jump to message](${message.url})` : ''}`
+                    desc: `**${role} removed from this server's autorole by ${author(message).tag} in ${message.channel}**${message instanceof Message ? `\n[Jump to message](${message.url})` : ''}`
                 });
                 await replyEmbed(message, success().setDescription(`Removed ${role} from server autorole.`));
             }

@@ -34,14 +34,6 @@ export default createGuildOnlySlashCommand({
                     value: autoroles ? autoroles.trim().split(' ').join(', ') : 'None'
                 },
                 {
-                    name: 'Censored Users:',
-                    value: censored_users ? censored_users.trim().split(' ').join(', ') : 'No one'
-                },
-                {
-                    name: 'Censored Phrases:',
-                    value: censored_words ? censored_words.trim().split('ҩ').join('\n') : 'Nothing'
-                },
-                {
                     name: 'Blacklist:',
                     value: blacklist ? blacklist.trim().split(' ').join(', ') : 'No one'
                 },

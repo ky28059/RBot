@@ -166,34 +166,43 @@ export default createSlashCommand<{command?: string}>({
 Responsible for parsing command arguments, `argParser.ts` (inspired by HarVM's simpleArgumentParser) determines how to 
 parse text arguments based on a custom string-based pattern syntax. The full documentation for said syntax is as follows:
 
-| Pattern    | Type                                                    |
-|------------|---------------------------------------------------------|
-| `[field]`  | Singular string.                                        |
-| `(field)`  | Singular integer.                                       |
-| `@[field]` | Singular `User`. Resolves both mentions and raw IDs.    |
-| `#[field]` | Singular `Channel`. Resolves both mentions and raw IDs. |
-| `&[field]` | Singular `Role`. Resolves both mentions and raw IDs.    |
-| `<field>`  | The rest of the `argString`.                            |
+| Pattern    | Type                                                                                                                                                                                                                                                                    | Corresponds to (slash commands) |
+|------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------|
+| `[field]`  | Singular string.                                                                                                                                                                                                                                                        | `.addStringOption()`            |
+| `(field)`  | Singular integer.                                                                                                                                                                                                                                                       | `.addIntegerOption()`           |
+| `@[field]` | Singular `User`. Resolves both mentions and raw IDs.                                                                                                                                                                                                                    | `.addUserOption()`              |
+| `#[field]` | Singular `Channel`. Resolves both mentions and raw IDs.                                                                                                                                                                                                                 | `.addChannelOption()`           |
+| `&[field]` | Singular `Role`. Resolves both mentions and raw IDs.                                                                                                                                                                                                                    | `.addRoleOption()`              |
+| `{field}`  | Singular duration. Supports days, hours, minutes, and seconds. Must specify units in descending length, but can be specified as long form ("3 days 2 hours") or shorthand ("3d2h"). Returned as a `number` representing milliseconds. See `argParser` for more details. |                                 |
+| `<field>`  | The rest of the `argString`.                                                                                                                                                                                                                                            |                                 |
 
-| Pattern        | Modifier                                                                                                                                                          |
-|----------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `[field]?`     | Optionality. The field will be matched if it exists, or will be `undefined` if it doesn't. Unlike required fields, no error will be thrown if nothing is matched. |
-| `[...field]`   | Repeating. The rest of the given arguments will be matched as this field, and the match will be returned as an array.                                             |
-| `(field)[a-b]` | (for integer fields) Range. The field will only match if the argument lies within the inclusive range from `a` to `b`, and an error will be thrown otherwise.     |
+| Pattern        | Modifier                                                                                                                                                          | Corresponds to (slash commands)    |
+|----------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------|
+| `[field]?`     | Optionality. The field will be matched if it exists, or will be `undefined` if it doesn't. Unlike required fields, no error will be thrown if nothing is matched. | `.setRequired(false)` (default)    |
+| `[...field]`   | Repeating. The rest of the given arguments will be matched as this field, and the match will be returned as an array.                                             |                                    |
+| `(field)[a-b]` | (for integer fields) Range. The field will only match if the argument lies within the inclusive range from `a` to `b`, and an error will be thrown otherwise.     | `.setMinValue()`, `.setMaxValue()` |
 
-For the confused, here's some examples of patterns and what they match:
+For types that do not have a slash command equivalent, if slash command support is needed, use `.addStringOption()` and
+manually parse it within the command body with the corresponding `parseTypeArg()` function from `argParser`. Though this
+doesn't correctly represent the argument type in the `pattern` for `/help`, it achieves the same functionality.
 
-| Pattern               | Arguments   | Parsed                                  |
-|-----------------------|-------------|-----------------------------------------|
-| `[message]`           | `hello`     | `{message: 'hello'}`                    |
-| `(message)`           | `hello`     | IntegerConversionError                  |
-| `[action] &[role]`    | `add @role` | `{action: 'add', role: Role}`           |
-| `(count) @[target]?`  | `100 @user` | `{count: 100, target: User}`            |
-| `(count) @[target]?`  | `100`       | `{count: 100}`                          |
-| `[initial] [...args]` | `a b c d`   | `{initial: 'a', args: ['b', 'c', 'd']}` |
-| `[initial] <args>`    | `a b c d`   | `{initial: 'a', args: 'b c d'}`         |
-| `(days)[0-7]`         | `5`         | `{days: 5}`                             |
-| `(days)[0-7]`         | `56`        | IntegerRangeError                       |
+Here's some examples of patterns and what they match:
+
+| Pattern               | Arguments       | Parsed                                  |
+|-----------------------|-----------------|-----------------------------------------|
+| `[message]`           | `hello`         | `{message: 'hello'}`                    |
+| `[message]`           | `"hello world"` | `{message: 'hello world'}`              |
+| `(message)`           | `hello`         | IntegerConversionError                  |
+| `[action] &[role]`    | `add @role`     | `{action: 'add', role: Role}`           |
+| `(count) @[target]?`  | `100 @user`     | `{count: 100, target: User}`            |
+| `(count) @[target]?`  | `100`           | `{count: 100}`                          |
+| `[initial] [...args]` | `a b c d`       | `{initial: 'a', args: ['b', 'c', 'd']}` |
+| `[initial] [...args]` | `a b "c d"`     | `{initial: 'a', args: ['b', 'c d']}`    |
+| `[initial] <args>`    | `a b c d`       | `{initial: 'a', args: 'b c d'}`         |
+| `[initial] <args>`    | `a b "c d"`     | `{initial: 'a', args: 'b "c d"'}`       |
+| `(days)[0-7]`         | `5`             | `{days: 5}`                             |
+| `(days)[0-7]`         | `56`            | IntegerRangeError                       |
+| `@[user] {time}`      | `@user "3m 2s"` | `{user: User, time: 182000}`            |
 
 ### Running RBot locally
 While most files RBot uses are committed directly to GitHub, there are a few things you need to do before being able to 

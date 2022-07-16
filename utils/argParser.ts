@@ -8,12 +8,15 @@ import IntegerConversionError from "../errors/IntegerConversionError";
 import ChannelConversionError from '../errors/ChannelConversionError';
 import UserConversionError from '../errors/UserConversionError';
 import RoleConversionError from '../errors/RoleConversionError';
+import DurationConversionError from '../errors/DurationConversionError';
 
 
 // Regexes to get ID from mention (<@!someid> => someid)
 const mentionRegex = /^<@!?(\d+)>$/;
 const channelRegex = /^<#(\d+)>$/;
 const roleRegex = /^<@&(\d+)>$/;
+
+const timeRegex = /(?:(\d+)\s*d(?:ays?)?)?\s*(?:(\d+)\s*h(?:(?:ou)?rs?)?)?\s*(?:(\d+)\s*m(?:in(?:ute)?s?)?)?\s*(?:(\d+)\s*s(?:ec(?:ond)?s?)?)?/i;
 
 
 // Parses an `argString` into command arguments for the given `ParserCommand`. Throws conversion errors if an
@@ -33,7 +36,7 @@ export function parseTextArgs(commandName: string, pattern: string | undefined, 
     // Go down the queue of args and attempt to match 1:1 to patterns
     for (let i = 0; i < patterns.length; i++) {
 
-        const pattern = patterns[i].match(/^(?<prefix>[@#&]?)(?<bracket>[<\[(])(?<repeating>(?:\.{3})?)(?<name>\w+)[)\]>](?:\[(?<rangeFrom>\d+)-(?<rangeTo>\d+)])?(?<optional>\??)$/)!;
+        const pattern = patterns[i].match(/^(?<prefix>[@#&]?)(?<bracket>[<\[({])(?<repeating>(?:\.{3})?)(?<name>\w+)[})\]>](?:\[(?<rangeFrom>\d+)-(?<rangeTo>\d+)])?(?<optional>\??)$/)!;
         // @ts-ignore
         const { name, bracket, prefix, repeating, optional, rangeFrom, rangeTo } = pattern.groups;
 
@@ -60,7 +63,6 @@ export function parseTextArgs(commandName: string, pattern: string | undefined, 
                 console.warn(`Bad pattern in ${commandName}, field <${name}> is not the last field`);
 
             parsed[name.toLowerCase()] = argString.substring(index - arg.length);
-
             return parsed;
         }
 
@@ -115,36 +117,64 @@ type FieldProps = {
 function matchSingular(props: FieldProps) {
     const {arg, prefix, bracket, argName, commandName, repeating, rangeFrom, rangeTo, client, guild} = props;
 
-    if (bracket === '(') { // Integers
-        const num = Number(arg);
-        if (isNaN(num) || num % 1 !== 0)
-            throw new IntegerConversionError(commandName, argName, repeating);
-        if (rangeFrom && rangeTo && (num < Number(rangeFrom) || num > Number(rangeTo)))
-            throw new IntegerRangeError(commandName, argName, rangeFrom, rangeTo, repeating);
-        return num;
-    }
+    if (bracket === '(') return parseIntegerArg(arg, commandName, argName, rangeFrom, rangeTo, repeating);
+    if (bracket === '{') return parseDurationArg(arg, commandName, argName, repeating);
 
     switch (prefix) {
-        case '@': // Users
-            const userID = arg.match(mentionRegex)?.[1] ?? arg;
-            const user = client.users.cache.get(userID);
-            if (!user) throw new UserConversionError(commandName, argName, repeating);
-            return user;
-
-        case '#': // Channels
-            const channelID = arg.match(channelRegex)?.[1] ?? arg;
-            const channel = client.channels.cache.get(channelID);
-            if (!channel) throw new ChannelConversionError(commandName, argName, repeating);
-            return channel;
-
-        case '&': // Roles
-            if (!guild) return;
-            const roleID = arg.match(roleRegex)?.[1] ?? arg;
-            const role = guild.roles.cache.get(roleID);
-            if (!role) throw new RoleConversionError(commandName, argName, repeating);
-            return role;
-
-        default: // Default string field
-            return arg;
+        case '@': return parseUserArg(arg, commandName, argName, client, repeating);
+        case '#': return parseChannelArg(arg, commandName, argName, client, repeating);
+        case '&': return parseRoleArg(arg, commandName, argName, guild, repeating);
+        default: return arg;
     }
+}
+
+// Parses a string argument as an integer, erroring if the argument is not a number or if it isn't an integer.
+// Returns the parsed integer as a `number`.
+export function parseIntegerArg(arg: string, commandName: string, argName: string, rangeFrom?: string, rangeTo?: string, repeating?: boolean) {
+    const num = Number(arg);
+    if (isNaN(num) || num % 1 !== 0)
+        throw new IntegerConversionError(commandName, argName, repeating);
+    if (rangeFrom && rangeTo && (num < Number(rangeFrom) || num > Number(rangeTo)))
+        throw new IntegerRangeError(commandName, argName, rangeFrom, rangeTo, repeating);
+    return num;
+}
+
+// Parses a string argument as a `User`, erroring if the argument is not a user mention or id.
+// Returns the parsed `User`.
+export function parseUserArg(arg: string, commandName: string, argName: string, client: Client, repeating?: boolean) {
+    const userID = arg.match(mentionRegex)?.[1] ?? arg;
+    const user = client.users.cache.get(userID);
+    if (!user) throw new UserConversionError(commandName, argName, repeating);
+    return user;
+}
+
+// Parses a string argument as a `Channel`, erroring if the argument is not a channel mention or id.
+// Returns the parsed `Channel`.
+export function parseChannelArg(arg: string, commandName: string, argName: string, client: Client, repeating?: boolean) {
+    const channelID = arg.match(channelRegex)?.[1] ?? arg;
+    const channel = client.channels.cache.get(channelID);
+    if (!channel) throw new ChannelConversionError(commandName, argName, repeating);
+    return channel;
+}
+
+// Parses a string argument as a `Role`, erroring if the argument is not a role mention or id.
+// Returns the parsed `Role`.
+export function parseRoleArg(arg: string, commandName: string, argName: string, guild: Guild | null, repeating?: boolean) {
+    if (!guild) return;
+    const roleID = arg.match(roleRegex)?.[1] ?? arg;
+    const role = guild.roles.cache.get(roleID);
+    if (!role) throw new RoleConversionError(commandName, argName, repeating);
+    return role;
+}
+
+// Parses a string argument as a duration, matching it against the `timeRegex` and erroring if the match failed.
+// Returns the duration, in milliseconds, as a `number`.
+export function parseDurationArg(arg: string, commandName: string, argName: string, repeating?: boolean) {
+    const match = arg.match(timeRegex);
+    if (!match?.[0]) throw new DurationConversionError(commandName, argName, repeating);
+    const [, days, hours, minutes, seconds] = match;
+    return Number(days ?? 0) * 1000 * 60 * 60 * 24
+        + Number(hours ?? 0) * 1000 * 60 * 60
+        + Number(minutes ?? 0) * 1000 * 60
+        + Number(seconds ?? 0) * 1000
 }

@@ -42,23 +42,19 @@ export default createGuildOnlySlashCommand<{target: User, reason?: string, days?
         const target = guild.members.cache.get(parsed.target.id);
 
         if (!target)
-            throw new IllegalArgumentError('kick', `${parsed.target} is not a valid GuildMember.`);
+            throw new IllegalArgumentError('ban', `${parsed.target} is not a valid GuildMember.`);
         if (target.user.id === author(message).id)
             throw new ActionOnSelfError('ban', 'target');
         if (!target.bannable)
             throw new ActionUntakeableError('ban', `${target} too high in hierarchy, unable to ban.`);
 
-        const reason = parsed.reason || 'No reason provided.';
-        const days = parsed.days || 0;
-
-        // TODO: see todo in `purge.ts`
-        if (days < 0 || days > 7)
-            throw new IntegerRangeError('ban', 'days', 0, 7);
+        const reason = parsed.reason ?? 'No reason provided.';
+        const days = parsed.days ?? 0;
 
         await target.ban({days, reason});
 
         await log(message.client, guild, {
-            id: tag!.logchannel, color: 0x7f0000, author: target.user.tag, authorIcon: target.user.displayAvatarURL(),
+            id: tag.logchannel, color: 0x7f0000, author: target.user.tag, authorIcon: target.user.displayAvatarURL(),
             desc: `**${target} has been banned by ${author(message)} for the reason:**\n${reason}`
         });
         await replyEmbed(message, success().setDescription(`Banned ${target}.`));
