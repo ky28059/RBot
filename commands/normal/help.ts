@@ -58,7 +58,7 @@ export default createSlashCommand<{command?: string}>({
         // If there were arguments given and the argument was a valid command, display info about that command
         const helpEmbed = requestedBy(author(message))
             .setTitle(command.name)
-            .setDescription(`\`\`\`cs\n[${command.commandGroup}]${(command.guildOnly ? ' [guildOnly]' : '')}${(command.isSlashCommand ? ' [slashCommand]' : '')}\n\`\`\`${command.description}`);
+            .setDescription(`\`\`\`cs\n[${command.commandGroup}]${(command.guildOnly ? ' [guildOnly]' : '')}${(command.ownerOnly ? ' [ownerOnly]' : '')}${(command.isSlashCommand ? ' [slashCommand]' : '')}\n\`\`\`${command.description}`);
 
         if (command.aliases) helpEmbed.addField('**Aliases:**', command.aliases.join(', '));
         if (isSubCommand) helpEmbed.addField(

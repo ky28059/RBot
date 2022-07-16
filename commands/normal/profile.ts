@@ -18,16 +18,19 @@ export const data = new SlashCommandBuilder()
 export default createGuildOnlySlashCommand<{target?: User}>({
     data,
     async execute(message, parsed) {
-        // TODO: make prettier, add functionality
-        const profileTarget = parsed.target || author(message);
-        const guildProfileTarget = message.guild!.members.cache.get(profileTarget.id)!;
+        const target = parsed.target ?? author(message);
+        const member = message.guild!.members.cache.get(target.id)!;
 
         const profileEmbed = requestedBy(author(message))
-            .setAuthor({name: profileTarget.tag, iconURL: profileTarget.displayAvatarURL({format: 'png'})})
-            .addFields(
-                {name: 'Account created on', value: profileTarget.createdAt.toISOString()},
-                {name: 'Server joined on', value: guildProfileTarget.joinedAt?.toISOString() ?? 'Unknown'},
-            );
+            .setColor(member.displayHexColor)
+            .setAuthor({name: target.tag, iconURL: target.displayAvatarURL({format: 'png'})})
+            .addField('Account created:', `<t:${Math.floor(target.createdTimestamp / 1000)}>`, true)
+        if (member.joinedTimestamp)
+            profileEmbed.addField('Server joined:', `<t:${Math.floor(member.joinedTimestamp / 1000)}>`, true);
+        if (member.premiumSinceTimestamp)
+            profileEmbed.addField('Boosting since:', `<t:${Math.floor(member.premiumSinceTimestamp / 1000)}>`, true);
+        profileEmbed.addField('Roles:', [...member.roles.cache.values()].join(' '))
+
         await replyEmbed(message, profileEmbed);
     }
 });
