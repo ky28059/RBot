@@ -10,9 +10,9 @@ export default createTextCommand<{pattern: string, args: string}>({
     examples: 'parserTest "[field1] @[field2] <field3>?" one two three four',
     ownerOnly: true,
     async execute(message, parsed) {
-        await message.channel.send(`Parsed arguments to this command: \`${JSON.stringify(parsed)}\``);
+        await message.channel.send(`Parsed arguments to this command: \`\`\`js\n${JSON.stringify(parsed)}\`\`\``);
         await message.channel.send(`
-            Custom parse: \`${JSON.stringify(parseTextArgs('test', parsed.pattern, parsed.args, message.client, message.guild))}\`
+            Custom parse: \`\`\`js\n${JSON.stringify(parseTextArgs('test', parsed.pattern, parsed.args, message.client, message.guild))}\`\`\`
         `);
     }
 });

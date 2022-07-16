@@ -8,6 +8,7 @@ import IntegerConversionError from "../errors/IntegerConversionError";
 import ChannelConversionError from '../errors/ChannelConversionError';
 import UserConversionError from '../errors/UserConversionError';
 import RoleConversionError from '../errors/RoleConversionError';
+import EmojiConversionError from '../errors/EmojiConversionError';
 import DurationConversionError from '../errors/DurationConversionError';
 
 
@@ -15,6 +16,7 @@ import DurationConversionError from '../errors/DurationConversionError';
 const mentionRegex = /^<@!?(\d+)>$/;
 const channelRegex = /^<#(\d+)>$/;
 const roleRegex = /^<@&(\d+)>$/;
+const emojiRegex = /^<a?:\w+:(\d+)>$/;
 
 const timeRegex = /(?:(\d+)\s*d(?:ays?)?)?\s*(?:(\d+)\s*h(?:(?:ou)?rs?)?)?\s*(?:(\d+)\s*m(?:in(?:ute)?s?)?)?\s*(?:(\d+)\s*s(?:ec(?:ond)?s?)?)?/i;
 
@@ -36,7 +38,7 @@ export function parseTextArgs(commandName: string, pattern: string | undefined, 
     // Go down the queue of args and attempt to match 1:1 to patterns
     for (let i = 0; i < patterns.length; i++) {
 
-        const pattern = patterns[i].match(/^(?<prefix>[@#&]?)(?<bracket>[<\[({])(?<repeating>(?:\.{3})?)(?<name>\w+)[})\]>](?:\[(?<rangeFrom>\d+)-(?<rangeTo>\d+)])?(?<optional>\??)$/)!;
+        const pattern = patterns[i].match(/^(?<prefix>[@#&:]?)(?<bracket>[<\[({])(?<repeating>(?:\.{3})?)(?<name>\w+)[})\]>](?:\[(?<rangeFrom>\d+)-(?<rangeTo>\d+)])?(?<optional>\??)$/)!;
         // @ts-ignore
         const { name, bracket, prefix, repeating, optional, rangeFrom, rangeTo } = pattern.groups;
 
@@ -124,6 +126,7 @@ function matchSingular(props: FieldProps) {
         case '@': return parseUserArg(arg, commandName, argName, client, repeating);
         case '#': return parseChannelArg(arg, commandName, argName, client, repeating);
         case '&': return parseRoleArg(arg, commandName, argName, guild, repeating);
+        case ':': return parseEmojiArg(arg, commandName, argName, client, repeating);
         default: return arg;
     }
 }
@@ -165,6 +168,15 @@ export function parseRoleArg(arg: string, commandName: string, argName: string, 
     const role = guild.roles.cache.get(roleID);
     if (!role) throw new RoleConversionError(commandName, argName, repeating);
     return role;
+}
+
+// Parses a string argument as a `GuildEmoji`, erroring if the argument is not an emoji or emoji id.
+// Returns the parsed `GuildEmoji`.
+export function parseEmojiArg(arg: string, commandName: string, argName: string, client: Client, repeating?: boolean) {
+    const emojiID = arg.match(emojiRegex)?.[1] ?? arg;
+    const emoji = client.emojis.cache.get(emojiID);
+    if (!emoji) throw new EmojiConversionError(commandName, argName, repeating);
+    return emoji;
 }
 
 // Parses a string argument as a duration, matching it against the `timeRegex` and erroring if the match failed.
