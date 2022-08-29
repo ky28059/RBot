@@ -1,10 +1,10 @@
-import {MessageEmbed, User} from 'discord.js'
+import {EmbedBuilder, User} from 'discord.js'
 import {Track} from './track';
 
 
 // General purpose error embed.
 export function err(title?: string, desc?: string) {
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
         .setColor(0xb50300)
         .setFooter({text: new Date().toISOString()});
 
@@ -20,7 +20,7 @@ export function err(title?: string, desc?: string) {
 // General purpose success embed.
 // TODO: should this support `.setTitle()` as well as `.setAuthor({name})`?
 export function success() {
-    return new MessageEmbed()
+    return new EmbedBuilder()
         .setColor(0xf6b40c);
 }
 

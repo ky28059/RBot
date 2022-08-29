@@ -35,14 +35,14 @@ export default createSlashCommand<{command?: string}>({
                 .setDescription(`Use \`${prefix}help [Command]\` for information about a command.`);
 
             for (const module of client.submodules) {
-                commandListEmbed.addField(
-                    module,
-                    [...client.commands.values()]
+                commandListEmbed.addFields({
+                    name: module,
+                    value: [...client.commands.values()]
                         .filter(cmd => cmd.commandGroup === module)
                         .map(cmd => cmd.name)
                         .join(', '),
-                    true
-                );
+                    inline: true
+                });
             }
 
             return replyEmbed(message, commandListEmbed);
@@ -60,30 +60,34 @@ export default createSlashCommand<{command?: string}>({
             .setTitle(command.name)
             .setDescription(`\`\`\`cs\n[${command.commandGroup}]${(command.guildOnly ? ' [guildOnly]' : '')}${(command.ownerOnly ? ' [ownerOnly]' : '')}${(command.isSlashCommand ? ' [slashCommand]' : '')}\n\`\`\`${command.description}`);
 
-        if (command.aliases) helpEmbed.addField('**Aliases:**', command.aliases.join(', '));
-        if (isSubCommand) helpEmbed.addField(
-            '**Subcommands:**',
-            command.subcommands.map((cmd) => `**${command.name} ${cmd.name}** - ${cmd.description}`).join('\n')
-        );
-        helpEmbed.addField('**Usage:**', isSubCommand
-            ? command.subcommands.map((cmd) => `${prefix}${command.name} ${cmd.name} ${cmd.pattern || ''}`).join('\n')
-            : `${prefix}${command.name} ${command.pattern || ''}`
-        );
+        if (command.aliases) helpEmbed.addFields({name: '**Aliases:**', value: command.aliases.join(', ')});
+        if (isSubCommand) helpEmbed.addFields({
+            name: '**Subcommands:**',
+            value: command.subcommands.map((cmd) => `**${command.name} ${cmd.name}** - ${cmd.description}`).join('\n')
+        });
+        helpEmbed.addFields({
+            name: '**Usage:**',
+            value: isSubCommand
+                ? command.subcommands.map((cmd) => `${prefix}${command.name} ${cmd.name} ${cmd.pattern || ''}`).join('\n')
+                : `${prefix}${command.name} ${command.pattern || ''}`
+        });
 
         // TODO: these fields should really be arrays only to simplify parsing
-        if (command.examples) helpEmbed.addField('**Examples:**',
-            Array.isArray(command.examples) ? command.examples.map(example => prefix + example).join('\n') : prefix + command.examples);
+        if (command.examples) helpEmbed.addFields({
+            name: '**Examples:**',
+            value: Array.isArray(command.examples) ? command.examples.map(example => prefix + example).join('\n') : prefix + command.examples
+        });
 
-        if (command.permReqs) helpEmbed.addField(
-            '**Permissions required:**',
-            Array.isArray(command.permReqs) ? command.permReqs.map(p => `\`${p}\``).join(', ') : `\`${command.permReqs.toString()}\``,
-            true
-        );
-        if (command.clientPermReqs) helpEmbed.addField(
-            '**Client permissions required:**',
-            Array.isArray(command.clientPermReqs) ? command.clientPermReqs.map(p => `\`${p}\``).join(', ') : `\`${command.clientPermReqs.toString()}\``,
-            true
-        );
+        if (command.permReqs) helpEmbed.addFields({
+            name: '**Permissions required:**',
+            value: Array.isArray(command.permReqs) ? command.permReqs.map(p => `\`${p}\``).join(', ') : `\`${command.permReqs.toString()}\``,
+            inline: true
+        });
+        if (command.clientPermReqs) helpEmbed.addFields({
+            name: '**Client permissions required:**',
+            value: Array.isArray(command.clientPermReqs) ? command.clientPermReqs.map(p => `\`${p}\``).join(', ') : `\`${command.clientPermReqs.toString()}\``,
+            inline: true
+        });
 
         await replyEmbed(message, helpEmbed);
     },

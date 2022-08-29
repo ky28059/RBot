@@ -1,10 +1,10 @@
 import {createSlashCommand} from '../../utils/commands';
-import {MessageEmbed, Util} from 'discord.js';
+import {EmbedBuilder} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 import fetch from 'node-fetch';
 
 // Utilities
-import {author, pagedMessage} from '../../utils/messageUtils';
+import {author, pagedMessage, splitMessage} from '../../utils/messageUtils';
 import {requestedBy} from '../../utils/messages';
 
 
@@ -25,18 +25,15 @@ export default createSlashCommand<{url: string}>({
         const fetchEmbed = requestedBy(author(message))
             .setTitle('Fetched:');
 
-        const splitDescription = Util.splitMessage(source, {
-            maxLength: 2048 - 12,
-            char: '',
+        const splitDescription = splitMessage(source, {
+            len: 2048 - 12,
             prepend: '...',
             append: '...'
         });
 
         await pagedMessage(
             message,
-            splitDescription.map(m => (
-                new MessageEmbed(fetchEmbed).setDescription(`\`\`\`html\n${m}\`\`\``)
-            ))
+            splitDescription.map(m => EmbedBuilder.from(fetchEmbed).setDescription(`\`\`\`html\n${m}\`\`\``))
         );
     }
 });

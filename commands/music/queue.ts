@@ -1,11 +1,11 @@
 import {createGuildOnlySlashCommand} from '../../utils/commands';
-import {MessageEmbed, Util} from 'discord.js';
+import {EmbedBuilder, escapeMarkdown} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 import {AudioPlayerStatus, AudioResource} from '@discordjs/voice';
 import {Track} from '../../utils/track';
 
 // Utilities
-import {pagedMessage, replyEmbed} from '../../utils/messageUtils';
+import {pagedMessage, replyEmbed, splitMessage} from '../../utils/messageUtils';
 import {success} from '../../utils/messages';
 
 // Errors
@@ -39,19 +39,19 @@ export default createGuildOnlySlashCommand({
             const seconds = track.length % 60;
             const minutes = (track.length - seconds) / 60;
 
-            return `${index + 1}) ${Util.escapeMarkdown(track.title)} ${minutes}:${seconds}`;
+            return `${index + 1}) ${escapeMarkdown(track.title)} ${minutes}:${seconds}`;
         });
 
         const queueEmbed = success()
             .setAuthor({name: 'Queue'});
 
-        const splitDescription = Util.splitMessage(`\`\`\`elm\n${description.join('\n')}\n\`\`\``, {
-            maxLength: 2048,
+        const splitDescription = splitMessage(`\`\`\`elm\n${description.join('\n')}\n\`\`\``, {
+            len: 2048,
             char: '\n',
             prepend: '```elm\n',
             append: '```'
         });
 
-        await pagedMessage(message, splitDescription.map(m => new MessageEmbed(queueEmbed).setDescription(m)));
+        await pagedMessage(message, splitDescription.map(m => EmbedBuilder.from(queueEmbed).setDescription(m)));
     }
 });

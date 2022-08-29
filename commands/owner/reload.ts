@@ -9,9 +9,9 @@ export default createTextCommand({
     ownerOnly: true,
     async execute(message) {
         // Return early if running without sharding
-        if (!message.client.shard)
-            return message.channel.send({embeds: [
-                err('UNSHARDED', 'Bot currently running in unsharded mode; cannot reload commands')]});
+        if (!message.client.shard) return message.channel.send({
+            embeds: [err('UNSHARDED', 'Bot currently running in unsharded mode; cannot reload commands')]
+        });
 
         await message.channel.send({embeds: [success().setDescription('Reloading commands...')]});
 

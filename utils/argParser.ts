@@ -1,8 +1,7 @@
-import {Client, CommandInteractionOption, Guild} from 'discord.js';
+import {ApplicationCommandOptionType, Client, CommandInteractionOption, Guild} from 'discord.js';
 
 // Errors
 import MissingArgumentError from '../errors/MissingArgumentError';
-import NumberConversionError from '../errors/NumberConversionError';
 import IntegerRangeError from "../errors/IntegerRangeError";
 import IntegerConversionError from "../errors/IntegerConversionError";
 import ChannelConversionError from '../errors/ChannelConversionError';
@@ -102,9 +101,9 @@ export function parseSlashCommandArgs(options: readonly CommandInteractionOption
     for (const option of options) {
         const type = option.type;
         parsed[option.name] =
-            type === 'USER' ? option.user
-            : type === 'CHANNEL' ? option.channel
-            : type === 'ROLE' ? option.role
+            type === ApplicationCommandOptionType.User ? option.user
+            : type === ApplicationCommandOptionType.Channel ? option.channel
+            : type === ApplicationCommandOptionType.Role ? option.role
             : option.value
     }
     return parsed;

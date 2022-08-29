@@ -23,13 +23,13 @@ export default createGuildOnlySlashCommand<{target?: User}>({
 
         const profileEmbed = requestedBy(author(message))
             .setColor(member.displayHexColor)
-            .setAuthor({name: target.tag, iconURL: target.displayAvatarURL({format: 'png'})})
-            .addField('Account created:', `<t:${Math.floor(target.createdTimestamp / 1000)}>`, true)
+            .setAuthor({name: target.tag, iconURL: target.displayAvatarURL()})
+            .addFields({name: 'Account created:', value: `<t:${Math.floor(target.createdTimestamp / 1000)}>`, inline: true})
         if (member.joinedTimestamp)
-            profileEmbed.addField('Server joined:', `<t:${Math.floor(member.joinedTimestamp / 1000)}>`, true);
+            profileEmbed.addFields({name: 'Server joined:', value: `<t:${Math.floor(member.joinedTimestamp / 1000)}>`, inline: true});
         if (member.premiumSinceTimestamp)
-            profileEmbed.addField('Boosting since:', `<t:${Math.floor(member.premiumSinceTimestamp / 1000)}>`, true);
-        profileEmbed.addField('Roles:', [...member.roles.cache.values()].join(' '))
+            profileEmbed.addFields({name: 'Boosting since:', value: `<t:${Math.floor(member.premiumSinceTimestamp / 1000)}>`, inline: true});
+        profileEmbed.addFields({name: 'Roles:', value: [...member.roles.cache.values()].join(' ')});
 
         await replyEmbed(message, profileEmbed);
     }

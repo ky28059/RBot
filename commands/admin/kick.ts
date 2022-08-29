@@ -31,7 +31,7 @@ export const data = new SlashCommandBuilder()
 export default createGuildOnlySlashCommand<{target: User, reason?: string}>({
     data,
     examples: 'kick @example "Spamming in #general"',
-    clientPermReqs: 'KICK_MEMBERS',
+    clientPermReqs: 'KickMembers',
     async execute(message, parsed, tag) {
         const guild = message.guild!;
         const target = guild.members.cache.get(parsed.target.id);

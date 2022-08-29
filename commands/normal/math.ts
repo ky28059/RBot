@@ -23,7 +23,7 @@ export default createTextCommand<{expressions: string[]}>({
             let parsed = parser.evaluate(expression);
             if (typeof parsed === 'function') parsed = '*Function definition*';
 
-            mathEmbed.addField(`\\> ${expression}`, String(parsed));
+            mathEmbed.addFields({name: `\\> ${expression}`, value: parsed.toString()});
         }
 
         message.channel.send({embeds: [mathEmbed]});

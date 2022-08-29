@@ -1,13 +1,13 @@
-import {Client, MessageEmbed, Collection, TextChannel, GuildMember, Message, CommandInteraction} from 'discord.js';
+import {ActivityType, Client, Collection, CommandInteraction, GuildMember, Message, EmbedBuilder, TextChannel} from 'discord.js';
 import {Sequelize} from 'sequelize';
-import {token, ownerId} from './auth';
+import {ownerId, token} from './auth';
 
 // Utils
 import {parseSlashCommandArgs, parseTextArgs} from './utils/argParser';
-import {getSubmodules, forEachRawCommand} from './utils/commands';
+import {forEachRawCommand, getSubmodules} from './utils/commands';
 import loadGuilds, {Guild as GuildPresets} from './models/Guild';
 import {log} from './utils/logger';
-import {update, isInField, containsField} from './utils/tokens';
+import {isInField, update} from './utils/tokens';
 import {truncate} from './utils/messageUtils';
 
 // Messages
@@ -17,16 +17,17 @@ import CommandError from './errors/CommandError';
 
 const client = new Client({
     intents: [
-        "GUILDS",
-        "GUILD_MESSAGES",
-        "GUILD_PRESENCES",
-        "GUILD_MEMBERS",
-        "GUILD_EMOJIS_AND_STICKERS",
-        "GUILD_VOICE_STATES",
-        "GUILD_MESSAGE_REACTIONS",
-        "DIRECT_MESSAGES"
+        "Guilds",
+        "GuildMessages",
+        "GuildPresences",
+        "GuildMembers",
+        "GuildEmojisAndStickers",
+        "GuildVoiceStates",
+        "GuildMessageReactions",
+        "DirectMessages",
+        "MessageContent"
     ],
-    presence: {activities: [{name: '!help', type: "LISTENING"}]},
+    presence: {activities: [{name: '!help', type: ActivityType.Listening}]},
     allowedMentions: {repliedUser: false}
 });
 
@@ -72,8 +73,8 @@ client.on('guildCreate', async (guild) => {
 client.on('messageCreate', async (message) => {
     if (message.author.bot) return; // Bot ignores itself and other bots
 
-    if (message.channel.type === 'DM') { // DM forwarding
-        const dmEmbed = new MessageEmbed()
+    if (message.channel.isDMBased()) { // DM forwarding
+        const dmEmbed = new EmbedBuilder()
             .setColor(0x7f0000)
             .setAuthor({name: message.author.tag, iconURL: message.author.displayAvatarURL()})
             .setDescription(`**${message.author} DMed RBot this message:**\n${message.content}`)
@@ -86,7 +87,6 @@ client.on('messageCreate', async (message) => {
     const guild = message.guild;
     const tag = guild && await update(guild, client);
     const prefix = tag?.prefix || '!';
-    const member = guild?.members.cache.get(message.author.id);
 
     if (message.content.substring(0, prefix.length) === prefix) {
         // Splits content string by first chunk of whitespace, preserving whitespace in arguments
@@ -106,15 +106,15 @@ client.on('messageCreate', async (message) => {
         if (!command) return;
 
         // List of conditions to check before executing command
-        if (command.guildOnly && message.channel.type === 'DM') {
+        if (command.guildOnly && message.channel.isDMBased()) {
             const embed = err('DM_ERROR', 'Guild only command cannot be executed inside DMs');
             await message.reply({embeds: [embed]}).catch();
             return;
-        } else if (command.permReqs && !member?.permissions.has(command.permReqs)) {
+        } else if (command.permReqs && !message.member?.permissions.has(command.permReqs)) {
             const embed = err('USER_PERMS_MISSING', `User lacks permissions: \`${command.permReqs}\``);
             await message.reply({embeds: [embed]}).catch();
             return;
-        } else if (command.clientPermReqs && !guild?.me?.permissions.has(command.clientPermReqs)) {
+        } else if (command.clientPermReqs && !guild?.members.me?.permissions.has(command.clientPermReqs)) {
             const embed = err('CLIENT_PERMS_MISSING', `Client lacks permissions: \`${command.clientPermReqs}\``);
             await message.reply({embeds: [embed]}).catch();
             return;
@@ -151,7 +151,7 @@ client.on('messageCreate', async (message) => {
 
 // Slash commands
 client.on('interactionCreate', async (interaction) => {
-    if (!interaction.isCommand()) return;
+    if (!interaction.isChatInputCommand()) return;
 
     const command = client.commands.get(interaction.commandName);
     if (!command || !command.isSlashCommand) return;
@@ -167,7 +167,7 @@ client.on('interactionCreate', async (interaction) => {
     }
 
     // List of conditions to check before executing command
-    if (command.guildOnly && interaction.channel!.type === 'DM') {
+    if (command.guildOnly && interaction.channel!.isDMBased()) {
         const embed = err('DM_ERROR', 'Guild only command cannot be executed inside DMs');
         await interaction.reply({embeds: [embed]}).catch();
         return;
@@ -175,7 +175,7 @@ client.on('interactionCreate', async (interaction) => {
         const embed = err('USER_PERMS_MISSING', `User lacks permissions: \`${command.permReqs}\``);
         await interaction.reply({embeds: [embed]}).catch();
         return;
-    } else if (command.clientPermReqs && !guild?.me?.permissions.has(command.clientPermReqs)) {
+    } else if (command.clientPermReqs && !guild?.members.me?.permissions.has(command.clientPermReqs)) {
         const embed = err('CLIENT_PERMS_MISSING', `Client lacks permissions: \`${command.clientPermReqs}\``);
         await interaction.reply({embeds: [embed]}).catch();
         return;
@@ -255,7 +255,7 @@ client.on('messageDelete', async message => {
         : undefined;
 
     await log(client, message.guild, {
-        id: tag.logchannel, color: 0xb50300, author: message.author?.tag, authorIcon: message.author?.displayAvatarURL(),
+        id: tag.logchannel, color: 0xb50300, author: message.author?.tag, authorIcon: message.member?.displayAvatarURL(),
         desc, fields
     });
 });
@@ -300,10 +300,10 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => { // TODO: finish
     if (!(tag.logchannel && tag.log_nickname_change)) return; // will have to update later if I wish to use this for more things than nickname changes
 
     // not sure how compatible this is with new log function
-    const updateEmbed = new MessageEmbed()
+    const updateEmbed = new EmbedBuilder()
         .setColor(0xf6b40c)
-        .setAuthor(newMember.user.tag, newMember.user.displayAvatarURL())
-        .setFooter(`${new Date()}`);
+        .setAuthor({name: newMember.user.tag, iconURL: newMember.displayAvatarURL()})
+        .setFooter({text: new Date().toUTCString()});
 
     if (oldMember.nickname !== newMember.nickname) {
         updateEmbed
@@ -324,7 +324,7 @@ client.on('guildMemberAdd', async (member) => {
     if (tag.blacklist.includes(member.id)) { // Enforces blacklist
         await member.ban({reason: 'Blacklisted user'});
         await log(client, guild, {
-            id: tag.logchannel, color: 0x7f0000, author: member.user.tag, authorIcon: member.user.displayAvatarURL(),
+            id: tag.logchannel, color: 0x7f0000, author: member.user.tag, authorIcon: member.displayAvatarURL(),
             desc: `**User ${member.user} has been banned on join (blacklist)**`
         });
         return;
@@ -338,7 +338,7 @@ client.on('guildMemberAdd', async (member) => {
     // Log event
     if (tag.logchannel && tag.log_member_join) {
         await log(client, guild, {
-            id: tag.logchannel, color: 0x79ff3b, author: 'Member joined the server', authorIcon: member.user.displayAvatarURL(),
+            id: tag.logchannel, color: 0x79ff3b, author: 'Member joined the server', authorIcon: member.displayAvatarURL(),
             desc: `${member.user} ${member.user.tag}`
         });
     }
@@ -350,11 +350,11 @@ client.on('guildMemberRemove', async (member) => {
     const tag = (await GuildPresets.findOne({ where: { guildID: guild.id } }))!;
     if (!(guild.systemChannel && tag.log_member_leave)) return;
 
-    const leaveEmbed = new MessageEmbed()
+    const leaveEmbed = new EmbedBuilder()
         .setColor(0x333333)
-        .setAuthor('Member left the server', member.user?.displayAvatarURL({dynamic: true}))
-        .setDescription(`${member.user} ${member.user?.tag ?? ''}`)
-        .setFooter(`${new Date()}`);
+        .setAuthor({name: 'Member left the server', iconURL: member.displayAvatarURL()})
+        .setDescription(`${member.user} ${member.user.tag}`)
+        .setFooter({text: new Date().toUTCString()});
 
     guild.systemChannel.send({embeds: [leaveEmbed]}).catch(error => console.error(`guildMemberRemove in ${guild} could not be logged because of ${error}!`));
 });

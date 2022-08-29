@@ -1,4 +1,7 @@
-import {Collection, CommandInteraction, Message, Permissions, PermissionResolvable, Snowflake, AutocompleteInteraction} from 'discord.js';
+import {
+    Collection, CommandInteraction, Message, PermissionsBitField, PermissionResolvable,
+    Snowflake, AutocompleteInteraction
+} from 'discord.js';
 import {SlashCommandBuilder, SlashCommandSubcommandsOnlyBuilder} from '@discordjs/builders';
 import {
     APIApplicationCommandOption,
@@ -29,7 +32,7 @@ type GuildOnlyBaseCommandOpts = BaseCommandOpts & {
 type SlashCommandData = Omit<SlashCommandBuilder, "addSubcommand" | "addSubcommandGroup">;
 type SlashCommandOpts<Args, GuildOnly extends boolean> = {
     data: SlashCommandData,
-    execute: CommandCallback<Message | CommandInteraction, Args, GuildOnly>,
+    execute: CommandCallback<Message<GuildOnly> | CommandInteraction, Args, GuildOnly>,
     handleAutocomplete?: (interaction: AutocompleteInteraction, tag: Tag<GuildOnly>) => Promise<any>
 }
 // Creates a non-guild-only slash command. Pass command properties to this function using the `SlashCommandBuilder`,
@@ -38,7 +41,7 @@ export function createSlashCommand<Args = {}>(
     command: BaseCommandOpts & SlashCommandOpts<Args, false>
 ): Command<Args, false, true> {
     const {data, ...opts} = command;
-    const permissions = new Permissions((data.default_member_permissions || undefined) as PermissionResolvable | undefined).toArray()
+    const permissions = new PermissionsBitField((data.default_member_permissions || undefined) as PermissionResolvable | undefined).toArray()
     return {
         isSlashCommand: true,
         guildOnly: false, //data.dm_permission
@@ -58,7 +61,7 @@ export function createGuildOnlySlashCommand<Args = {}>(
     command: GuildOnlyBaseCommandOpts & SlashCommandOpts<Args, true>
 ): Command<Args, true, true> {
     const {data, ...opts} = command;
-    const permissions = new Permissions((data.default_member_permissions || undefined) as PermissionResolvable | undefined).toArray()
+    const permissions = new PermissionsBitField((data.default_member_permissions || undefined) as PermissionResolvable | undefined).toArray()
     return {
         isSlashCommand: true,
         guildOnly: true, //data.dm_permission
@@ -80,7 +83,7 @@ export function createGuildOnlySlashSubCommands<Args = {}>(
     const {data, subcommands: execData, ...opts} = command;
 
     const json = data.toJSON();
-    const permissions = new Permissions((json.default_member_permissions || undefined) as PermissionResolvable | undefined).toArray()
+    const permissions = new PermissionsBitField((json.default_member_permissions || undefined) as PermissionResolvable | undefined).toArray()
     const subcommands = json.options!
         .filter((opt): opt is APIApplicationCommandSubcommandOption => opt.type === ApplicationCommandOptionType.Subcommand)
         .map(opt => ({
@@ -109,7 +112,7 @@ type TextCommandOpts = {
 }
 // Creates a non-guild-only text command. Pass command properties to this function as `opts`.
 export function createTextCommand<Args = {}>(
-    command: BaseCommandOpts & TextCommandOpts & { execute: CommandCallback<Message, Args, false> }
+    command: BaseCommandOpts & TextCommandOpts & { execute: CommandCallback<Message<false>, Args, false> }
 ): Command<Args, false, false> {
     return {
         isSlashCommand: false,
@@ -124,7 +127,7 @@ type GuildOnlyTextCommandOpts = TextCommandOpts & {
 // Creates a guild-only text command. This command's usage will be restricted to guilds, but will have access
 // to a non-nullable `Tag` and guild-specific properties like `permReqs` and `clientPermReqs`.
 export function createGuildOnlyTextCommand<Args = {}>(
-    command: GuildOnlyBaseCommandOpts & GuildOnlyTextCommandOpts & { execute: CommandCallback<Message, Args, true> }
+    command: GuildOnlyBaseCommandOpts & GuildOnlyTextCommandOpts & { execute: CommandCallback<Message<true>, Args, true> }
 ): Command<Args, true, false> {
     return {
         isSlashCommand: false,
@@ -150,8 +153,8 @@ export type CommandExecutionData<Args, GuildOnly extends boolean, SlashCommandCo
     description: string,
     pattern?: string,
     execute: SlashCommandCompat extends true
-        ? CommandCallback<Message | CommandInteraction, Args, GuildOnly>
-        : CommandCallback<Message, Args, GuildOnly>,
+        ? CommandCallback<Message<GuildOnly> | CommandInteraction, Args, GuildOnly>
+        : CommandCallback<Message<GuildOnly>, Args, GuildOnly>,
     // TODO: is there a type-safe way to express that this is always undefined when `SlashCommandCompat` is false?
     handleAutocomplete?: (interaction: AutocompleteInteraction, tag: Tag<GuildOnly>) => Promise<any>
 }

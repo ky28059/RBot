@@ -26,11 +26,11 @@ export const data = new SlashCommandBuilder()
 export default createGuildOnlySlashCommand<{count: number, target?: User}>({
     data,
     examples: 'expunge 80',
-    clientPermReqs: 'MANAGE_MESSAGES',
+    clientPermReqs: 'ManageMessages',
     async execute(message, parsed) {
         const {count, target} = parsed;
 
-        if (!message.channel) return;
+        if (!message.channel || message.channel.isDMBased()) return;
         let fetched = await message.channel.messages.fetch({limit: count + 1})
         if (target) fetched = fetched.filter(message => message.author.id === target.id); // Support expunge by user
 

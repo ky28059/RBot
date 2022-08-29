@@ -20,7 +20,7 @@ export default createSlashCommand<{user?: User}>({
         const avatarTarget = parsed.user ?? author(message);
         const avatarEmbed = requestedBy(author(message))
             .setTitle(avatarTarget.username)
-            .setImage(avatarTarget.displayAvatarURL({size: 4096, dynamic: true, format: 'png'}));
+            .setImage(avatarTarget.displayAvatarURL({size: 4096}));
         await replyEmbed(message, avatarEmbed);
     }
 });

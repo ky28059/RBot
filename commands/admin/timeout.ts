@@ -34,7 +34,7 @@ export const data = new SlashCommandBuilder()
 
 export default createGuildOnlySlashCommand<{user: User, duration: string, reason?: string}>({
     data,
-    clientPermReqs: 'MODERATE_MEMBERS',
+    clientPermReqs: 'ModerateMembers',
     async execute(message, parsed, tag) {
         const guild = message.guild!;
         const member = guild.members.cache.get(parsed.user.id);

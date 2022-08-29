@@ -9,7 +9,7 @@ export default createGuildOnlyTextCommand<{presets: string[]}>({
     description: 'Toggles whether the specific action(s) will be logged.',
     pattern: '[...presets]',
     examples: ['toggle message_delete', 'toggle message_delete member_join member_leave', 'toggle all'],
-    permReqs: 'MANAGE_GUILD',
+    permReqs: 'ManageGuild',
     async execute(message, parsed, tag) {
         const presets = parsed.presets;
 

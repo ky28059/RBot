@@ -50,9 +50,10 @@ export default createGuildOnlySlashSubCommands<{prefix: {prefix: string}, logcha
                 const {channel} = parsed;
                 const guild = message.guild!;
 
-                if (!channel.isText())
+                // TODO: add check for whether RBot can speak in the channel
+                if (!channel.isTextBased())
                     throw new IllegalArgumentError('set logchannel', '`channel` must be a text-based channel.');
-                if (channel.type === 'DM')
+                if (channel.isDMBased())
                     throw new IllegalArgumentError('set logchannel', '`channel` cannot be a DM.');
                 if (channel.guild.id !== guild.id)
                     throw new IllegalArgumentError('set logchannel', '`channel` must be within this server.');

@@ -28,12 +28,13 @@ export default createGuildOnlySlashCommand<{url: string}>({
     data,
     aliases: ['p'],
     examples: ['play https://www.youtube.com/watch?v=dQw4w9WgXcQ'],
-    clientPermReqs: 'CONNECT',
+    clientPermReqs: 'Connect',
     async execute(message, parsed) {
         if (!message.member || !(message.member instanceof GuildMember)) return;
 
         const { channel } = message.member.voice;
         let subscription = message.client.subscriptions.get(message.guild!.id);
+        const currChannel = message.guild!.members.me!.voice.channel;
 
         if (!channel)
             throw new MemberNotInVCError('play');
@@ -41,12 +42,12 @@ export default createGuildOnlySlashCommand<{url: string}>({
             throw new ActionUntakeableError('play', `Cannot connect to channel \`${channel.name}\`, missing permissions`);
         if (channel instanceof StageChannel || !channel.speakable)
             throw new ActionUntakeableError('play', `Cannot speak in channel \`${channel.name}\`, missing permissions`);
-        if (subscription && message.guild!.me!.voice.channel && channel !== message.guild!.me!.voice.channel)
-            throw new MusicAlreadyBoundError('play', message.guild!.me!.voice.channel, channel);
+        if (subscription && currChannel && channel !== currChannel)
+            throw new MusicAlreadyBoundError('play', currChannel, channel);
 
         // If the subscription doesn't exist or if its VoiceConnection has been destroyed after a forced disconnect,
         // create a new subscription and VoiceConnection by joining the channel
-        if (!subscription || !message.guild!.me!.voice.channel) {
+        if (!subscription || !currChannel) {
             subscription = new MusicSubscription(
                 joinVoiceChannel({
                     channelId: channel.id,

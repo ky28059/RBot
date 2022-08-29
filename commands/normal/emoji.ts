@@ -25,12 +25,13 @@ export default createSlashCommand<{emoji: string}>({
             .setTitle(emoji.name!)
             .setThumbnail(emoji.url)
 
-        if (emoji.author) emojiEmbed.addField('Created by:', emoji.author.toString());
-        emojiEmbed
-            .addField('Created at:', `<t:${Math.floor(emoji.createdTimestamp / 1000)}>`)
-            .addField('Guild:', emoji.guild.name, true)
-            .addField('Animated:', emoji.animated ? 'true' : 'false', true)
-            .addField('Available:', emoji.available ? 'true' : 'false', true)
+        if (emoji.author) emojiEmbed.addFields({name: 'Created by:', value: emoji.author.toString()});
+        emojiEmbed.addFields(
+            {name: 'Created at:', value: `<t:${Math.floor(emoji.createdTimestamp / 1000)}>`},
+            {name: 'Guild:', value: emoji.guild.name, inline: true},
+            {name: 'Animated:', value: emoji.animated ? 'true' : 'false', inline: true},
+            {name: 'Available:', value: emoji.available ? 'true' : 'false', inline: true}
+        );
 
         await replyEmbed(message, emojiEmbed);
     }

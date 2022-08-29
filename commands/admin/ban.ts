@@ -36,7 +36,7 @@ export const data = new SlashCommandBuilder()
 export default createGuildOnlySlashCommand<{target: User, reason?: string, days?: number}>({
     data,
     examples: ['ban @example', 'ban @example "NSFW imagery"', 'ban @example "NSFW imagery" 7'],
-    clientPermReqs: 'BAN_MEMBERS',
+    clientPermReqs: 'BanMembers',
     async execute(message, parsed, tag) {
         const guild = message.guild!;
         const target = guild.members.cache.get(parsed.target.id);
@@ -51,7 +51,7 @@ export default createGuildOnlySlashCommand<{target: User, reason?: string, days?
         const reason = parsed.reason ?? 'No reason provided.';
         const days = parsed.days ?? 0;
 
-        await target.ban({days, reason});
+        await target.ban({deleteMessageDays: days, reason});
 
         await log(message.client, guild, {
             id: tag.logchannel, color: 0x7f0000, author: target.user.tag, authorIcon: target.user.displayAvatarURL(),

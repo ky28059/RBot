@@ -1,5 +1,5 @@
 import {createSlashCommand} from '../../utils/commands';
-import {MessageEmbed} from 'discord.js';
+import {EmbedBuilder} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 import {URL} from 'url';
 import fetch from 'node-fetch';
@@ -65,7 +65,7 @@ export default createSlashCommand<{word: string}>({
 
         const pages = [];
         for (const lang of Object.keys(res)) {
-            const langEmbed = new MessageEmbed(dictionaryEmbed).setTitle(`${word} (${lang})`);
+            const langEmbed = EmbedBuilder.from(dictionaryEmbed).setTitle(`${word} (${lang})`);
 
             // A hacky workaround, but TS doesn't recognize that all strings returned by Object.keys are valid to index with
             for (const definition of res[lang as LangCode]!) {
@@ -81,7 +81,7 @@ export default createSlashCommand<{word: string}>({
                 }).join('\n');
 
                 // TODO: handle description length overflow
-                langEmbed.addField(definition.partOfSpeech, desc);
+                langEmbed.addFields({name: definition.partOfSpeech, value: desc});
             }
             pages.push(langEmbed);
         }

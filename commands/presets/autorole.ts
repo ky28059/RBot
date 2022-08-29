@@ -37,7 +37,7 @@ export const data = new SlashCommandBuilder()
 export default createGuildOnlySlashSubCommands<{add: {role: Role}, remove: {role: Role}}>({
     data,
     examples: ['autorole add @verified', 'autorole remove @moderator'],
-    clientPermReqs: 'MANAGE_ROLES',
+    clientPermReqs: 'ManageRoles',
     subcommands: {
         add: {
             async execute(message, parsed, tag) {

@@ -1,5 +1,5 @@
 import {createTextCommand} from '../../utils/commands';
-import {Util} from 'discord.js';
+import {splitMessage} from '../../utils/messageUtils';
 
 // Errors
 import IntegerRangeError from '../../errors/IntegerRangeError';
@@ -44,8 +44,8 @@ export default createTextCommand<{sides?: string, dice?: string}>({
         if (rolls.length === 1)
             return message.channel.send(`Rolled a **${sidesNum}** sided die and got **${rolls[0]}**!`);
 
-        const splitDescription = Util.splitMessage(`Rolled **${diceNum}** **${sidesNum}** sided die and got **[${rolls.join(', ')}]**, for a total of **${total}**!`, {
-            maxLength: 2000,
+        const splitDescription = splitMessage(`Rolled **${diceNum}** **${sidesNum}** sided die and got **[${rolls.join(', ')}]**, for a total of **${total}**!`, {
+            len: 2000,
             char: ' ',
             prepend: '**...',
             append: '...**'

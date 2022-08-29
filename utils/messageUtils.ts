@@ -1,6 +1,6 @@
 import {
-    CommandInteraction, Message, MessageEmbed,
-    MessageActionRow, MessageButton, MessageSelectMenu, MessageComponentInteraction, MessageOptions,
+    ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction,
+    EmbedBuilder, Message, MessageOptions,
 } from 'discord.js';
 import {err} from './messages';
 
@@ -15,7 +15,7 @@ export async function reply(target: Message | CommandInteraction, content: strin
 }
 
 // Replies to a message or interaction with the specified embed.
-export async function replyEmbed(target: Message | CommandInteraction, embed: MessageEmbed) {
+export async function replyEmbed(target: Message | CommandInteraction, embed: EmbedBuilder) {
     return reply(target, {embeds: [embed]})
 }
 
@@ -25,94 +25,96 @@ export function author(target: Message | CommandInteraction) {
 }
 
 // Slices a string down to a set length.
-export function truncate(string: string, len: number) {
-    if (string.length <= len) return string;
+export function truncate(str: string, len: number) {
+    if (str.length <= len) return str;
 
-    const diff = len - string.length;
+    const diff = len - str.length;
     // 24 is the length of truncateMessage without ${truncated}
     const truncated = diff + 24 + String(diff + 24).length;
     const truncateMessage = `\n[Truncated ${truncated} characters]`;
 
-    return string.slice(0, len - truncated) + truncateMessage;
+    return str.slice(0, len - truncated) + truncateMessage;
+}
+
+// Splits a string into chunks of no greater than `len` length at a designated character, optionally prepending
+// and appending a "continuation" string. See https://discord.js.org/#/docs/discord.js/v13/class/Util?scrollTo=s-splitMessage.
+type SplitMessageOpts = {len: number, char?: string, prepend?: string, append?: string};
+export function splitMessage(str: string, {len, char = '', prepend = '', append = ''}: SplitMessageOpts) {
+    const chunks: string[] = [];
+
+    let i = 0;
+    while (true) {
+        const prefix = i === 0 ? '' : prepend;
+        const isLastChunk = i + len - prefix.length >= str.length;
+        const suffix = isLastChunk ? '' : append;
+
+        const o = char && !isLastChunk
+            ? str.lastIndexOf(char, i + len - prefix.length - suffix.length)
+            : i + len - prefix.length - suffix.length;
+        if (o === -1 || o <= i) throw new Error(); // TODO
+
+        chunks.push(`${prefix}${str.substring(i, o)}${suffix}`);
+
+        i = o + char.length;
+        if (isLastChunk) break;
+    }
+
+    return chunks;
 }
 
 // Sends a multi-embed, paginated message.
-export async function pagedMessage(target: Message | CommandInteraction, pages: MessageEmbed[]) {
+export async function pagedMessage(target: Message | CommandInteraction, pages: EmbedBuilder[]) {
     if (!pages.length) return;
     if (pages.length === 1) return reply(target, {embeds: [pages[0]]});
 
     let index = 0;
-    const buttonRow = new MessageActionRow()
-        .addComponents(
-            new MessageButton()
-                .setCustomId('first')
-                .setLabel('⏮️')
-                .setStyle('SECONDARY'),
-            new MessageButton()
-                .setCustomId('previous')
-                .setLabel('◀️')
-                .setStyle('SECONDARY'),
-            /* Maybe a select menu that let you choose pages would be nice
-            new MessageSelectMenu()
-                .setCustomId('select')
-                .setPlaceholder('Nothing selected')
-                .addOptions([
-                    {
-                        label: 'Select me',
-                        description: 'This is a description',
-                        value: 'first_option',
-                    },
-                    {
-                        label: 'You can select me too',
-                        description: 'This is also a description',
-                        value: 'second_option',
-                    },
-                ]),
-            */
-            new MessageButton()
-                .setCustomId('counter')
-                .setLabel(String(index + 1))
-                .setDisabled(true)
-                .setStyle('SECONDARY'),
-            new MessageButton()
-                .setCustomId('next')
-                .setLabel('▶️')
-                .setStyle('SECONDARY'),
-            new MessageButton()
-                .setCustomId('last')
-                .setLabel('⏭️')
-                .setStyle('SECONDARY'),
-        );
+
+    // TODO: change middle "button" page indicator to select menu
+    const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder()
+            .setCustomId('first')
+            .setLabel('⏮️')
+            .setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder()
+            .setCustomId('previous')
+            .setLabel('◀️')
+            .setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder()
+            .setCustomId('counter')
+            .setLabel((index + 1).toString())
+            .setDisabled(true)
+            .setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder()
+            .setCustomId('next')
+            .setLabel('▶️')
+            .setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder()
+            .setCustomId('last')
+            .setLabel('⏭️')
+            .setStyle(ButtonStyle.Secondary),
+    );
 
     const pagedMessage = await reply(target, {embeds: [pages[0]], components: [buttonRow]});
-    if (!('createMessageComponentCollector' in pagedMessage)) return;
-
-    const authorID = author(target).id;
     const collector = pagedMessage.createMessageComponentCollector({time: 30000});
+    const authorID = author(target).id;
 
     collector.on('collect', i => {
         // If the interaction was not generated by the original message author, inform them they are not allowed to switch pages
-        if (i.user.id !== authorID)
-            return i.reply({embeds: [err('PAGINATION_ERROR', 'Non-author users are not allowed to switch pages on commands they didn\'t send')], ephemeral: true});
+        if (i.user.id !== authorID) return void i.reply({
+            embeds: [err('PAGINATION_ERROR', 'Non-author users are not allowed to switch pages on commands they didn\'t send')],
+            ephemeral: true
+        });
 
         // Defer component loading to prevent "This interaction failed"
         i.deferUpdate();
 
         switch (i.customId) {
-            case 'first':
-                index = 0;
-                break;
-            case 'previous':
-                index = index === 0 ? pages.length - 1 : index - 1;
-                break;
-            case 'next':
-                index = (index + 1) % pages.length;
-                break;
-            case 'last':
-                index = pages.length - 1;
-                break;
+            case 'first': index = 0; break;
+            case 'previous': index = index === 0 ? pages.length - 1 : index - 1; break;
+            case 'next': index = (index + 1) % pages.length; break;
+            case 'last': index = pages.length - 1; break;
         }
-        (buttonRow.components.find(x => x.customId === 'counter') as MessageButton).setLabel(String(index + 1));
+        buttonRow.components[2].setLabel((index + 1).toString());
         pagedMessage.edit({embeds: [pages[index]], components: [buttonRow]});
     });
 

@@ -25,20 +25,18 @@ export const data = new SlashCommandBuilder()
 
 export default createGuildOnlySlashCommand<{count: number, target?: User}>({
     data,
-    clientPermReqs: 'MANAGE_MESSAGES',
+    clientPermReqs: 'ManageMessages',
     async execute(message, parsed) {
         const {count, target} = parsed;
 
         // Delete the original message so that more messages can be bulk deleted
         if (message instanceof Message) await message.delete()
 
-        if (!message.channel) return;
+        if (!message.channel || message.channel.isDMBased()) return;
         let fetched = await message.channel.messages.fetch({limit: count});
         if (target) fetched = fetched.filter(message => message.author.id === target.id); // Support purge by user
 
-        if (!('bulkDelete' in message.channel)) return;
         const deleted = await message.channel.bulkDelete(fetched, true);
-
         await replyEmbed(message, success().setDescription(`Purged ${deleted.size} messages`));
     }
 });

@@ -1,5 +1,5 @@
 # RBot
-An unreliable Discord moderator bot, built using Discord.js 13 and Node 16!
+An unreliable Discord moderator bot, built using Node.js and Discord.js 14!
 
 #### Invite link:
 https://discord.com/oauth2/authorize?client_id=684587440777986090&scope=bot+applications.commands&permissions=8
