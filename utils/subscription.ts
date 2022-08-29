@@ -145,6 +145,14 @@ export class MusicSubscription {
     }
 
     /**
+     * Ends the current song (if it's playing) and starts playing the next song in the queue.
+     */
+    public next() {
+        if (this.audioPlayer.state.status !== AudioPlayerStatus.Idle) this.audioPlayer.stop();
+        else void this.processQueue();
+    }
+
+    /**
      * Attempts to play a Track from the queue.
      */
     private async processQueue(): Promise<void> {

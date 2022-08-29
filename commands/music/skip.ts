@@ -29,10 +29,7 @@ export default createGuildOnlySlashCommand({
         if (!canModifyQueue(message.member))
             throw new MemberNotInSameVCError('skip');
 
-        // Calling .stop() on an AudioPlayer causes it to transition into the Idle state. Because of a state transition
-        // listener defined in `subscription.ts`, transitions into the Idle state mean the next track from the queue
-        // will be loaded and played.
-        subscription.audioPlayer.stop();
+        subscription.next();
         await replyEmbed(message, skip());
     }
 });

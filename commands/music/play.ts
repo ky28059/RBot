@@ -1,10 +1,10 @@
 import {createGuildOnlySlashCommand} from '../../utils/commands';
-import {GuildMember, StageChannel} from 'discord.js';
+import {CommandInteraction, GuildMember, StageChannel} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 import {entersState, joinVoiceChannel, VoiceConnectionStatus} from '@discordjs/voice';
 
 // Utilities
-import {author, replyEmbed} from '../../utils/messageUtils';
+import {author, deferredReplyEmbed} from '../../utils/messageUtils';
 import {Track} from '../../utils/track';
 import {MusicSubscription} from '../../utils/subscription';
 import {err, nowPlaying, success} from '../../utils/messages';
@@ -31,6 +31,7 @@ export default createGuildOnlySlashCommand<{url: string}>({
     clientPermReqs: 'Connect',
     async execute(message, parsed) {
         if (!message.member || !(message.member instanceof GuildMember)) return;
+        if (message instanceof CommandInteraction) await message.deferReply();
 
         const { channel } = message.member.voice;
         let subscription = message.client.subscriptions.get(message.guild!.id);
@@ -75,6 +76,6 @@ export default createGuildOnlySlashCommand<{url: string}>({
 
         // Enqueue the track and reply a success message to the user
         subscription.enqueue(track);
-        await replyEmbed(message, success().setDescription(`Enqueued **${track.title}**`));
+        await deferredReplyEmbed(message, success().setDescription(`Enqueued **${track.title}**`));
     }
 });

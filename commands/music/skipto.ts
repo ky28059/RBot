@@ -40,9 +40,9 @@ export default createGuildOnlySlashCommand<{index: number}>({
         if (index < 1 || index >= subscription.queue.length)
             throw new ActionUntakeableError('skipto', `Index \`${index}\` is not a valid index of the queue.`);
 
-        // Set the index, then stop the audio player to begin playing the next song.
+        // Set the index, then begin playing the next song.
         subscription.index = index - 1;
-        subscription.audioPlayer.stop();
+        subscription.next();
 
         await replyEmbed(message, success().setDescription(`Skipped to index **${index}**.`));
     }

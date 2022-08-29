@@ -14,9 +14,22 @@ export async function reply(target: Message | CommandInteraction, content: strin
         : target.channel.send(content);
 }
 
+// Replies to a message or deferred interaction.
+// TODO: see TODO above.
+export async function deferredReply(target: Message | CommandInteraction, content: string | Omit<MessageOptions, 'flags'>) {
+    return target instanceof CommandInteraction
+        ? target.editReply({...(typeof content === 'string' ? {content} : content)})
+        : target.channel.send(content);
+}
+
 // Replies to a message or interaction with the specified embed.
 export async function replyEmbed(target: Message | CommandInteraction, embed: EmbedBuilder) {
-    return reply(target, {embeds: [embed]})
+    return reply(target, {embeds: [embed]});
+}
+
+// Replies to a message or deferred interaction with the specified embed.
+export async function deferredReplyEmbed(target: Message | CommandInteraction, embed: EmbedBuilder) {
+    return deferredReply(target, {embeds: [embed]});
 }
 
 // Returns the author of a message or interaction.
@@ -51,7 +64,7 @@ export function splitMessage(str: string, {len, char = '', prepend = '', append 
         const o = char && !isLastChunk
             ? str.lastIndexOf(char, i + len - prefix.length - suffix.length)
             : i + len - prefix.length - suffix.length;
-        if (o === -1 || o <= i) throw new Error(); // TODO
+        if (o === -1 || o <= i) throw new Error('Could not split by char while maintaining max length.');
 
         chunks.push(`${prefix}${str.substring(i, o)}${suffix}`);
 
