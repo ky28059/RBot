@@ -1,5 +1,5 @@
 import {createGuildOnlySlashSubCommands} from '../../utils/commands';
-import {Channel} from 'discord.js';
+import {Channel, ChannelType} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 import {PermissionFlagsBits} from 'discord-api-types/v10';
 
@@ -21,14 +21,15 @@ export const data = new SlashCommandBuilder()
         .setDescription('Sets the text command prefix for this server.')
         .addStringOption(option => option
             .setName('prefix')
-            .setDescription('The prefix to set')
+            .setDescription('The prefix to set.')
             .setRequired(true)))
     .addSubcommand(command => command
         .setName('logchannel')
         .setDescription('Sets the logging channel for this server.')
         .addChannelOption(option => option
             .setName('channel')
-            .setDescription('The channel RBot should log in')
+            .setDescription('The channel RBot should log in.')
+            .addChannelTypes(ChannelType.GuildText, ChannelType.GuildVoice, ChannelType.GuildNews, ChannelType.GuildPublicThread, ChannelType.GuildNewsThread, ChannelType.GuildPrivateThread)
             .setRequired(true)))
 
 export default createGuildOnlySlashSubCommands<{prefix: {prefix: string}, logchannel: {channel: Channel}}>({
