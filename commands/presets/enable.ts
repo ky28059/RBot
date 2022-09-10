@@ -37,9 +37,9 @@ export default createGuildOnlySlashCommand<{command: string}>({
             || client.commands.find(c => !!c.aliases && c.aliases.includes(command));
 
         if (!cmd)
-            throw new IllegalArgumentError('enable', `Command \`${command}\` does not exist.`);
+            throw new IllegalArgumentError(data.name, `Command \`${command}\` does not exist.`);
         if (!isInField(tag, 'disabled_commands', command))
-            throw new IllegalArgumentError('enable', `Command \`${command}\` was not disabled.`);
+            throw new IllegalArgumentError(data.name, `Command \`${command}\` was not disabled.`);
 
         // Add command and aliases to the disables array
         toEnable.push(cmd.name);

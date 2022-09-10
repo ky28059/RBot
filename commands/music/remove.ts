@@ -32,11 +32,11 @@ export default createGuildOnlySlashCommand<{index: number}>({
         const subscription = message.client.subscriptions.get(message.guild!.id);
 
         if (!subscription)
-            throw new QueueNonexistentError('remove');
+            throw new QueueNonexistentError(data.name);
         if (!canModifyQueue(message.member!))
-            throw new MemberNotInSameVCError('remove');
+            throw new MemberNotInSameVCError(data.name);
         if (index < 1 || index >= subscription.queue.length)
-            throw new ActionUntakeableError('skipto', `Index \`${index}\` is not a valid index of the queue.`);
+            throw new ActionUntakeableError(data.name, `Index \`${index}\` is not a valid index of the queue.`);
 
         const song = subscription.remove(index);
         await replyEmbed(message, success().setDescription(`❌ Song **${song.title}** was removed from the queue`));

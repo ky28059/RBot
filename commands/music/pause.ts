@@ -26,11 +26,11 @@ export default createGuildOnlySlashCommand({
         const subscription = message.client.subscriptions.get(message.guild!.id);
 
         if (!subscription)
-            throw new QueueNonexistentError('pause');
+            throw new QueueNonexistentError(data.name);
         if (!canModifyQueue(message.member))
-            throw new MemberNotInSameVCError('pause');
+            throw new MemberNotInSameVCError(data.name);
         if (subscription.audioPlayer.state.status === AudioPlayerStatus.Paused)
-            throw new ActionUntakeableError('pause', 'Music already paused.');
+            throw new ActionUntakeableError(data.name, 'Music already paused.');
 
         subscription.audioPlayer.pause();
         await replyEmbed(message, pause());

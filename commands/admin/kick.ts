@@ -37,11 +37,11 @@ export default createGuildOnlySlashCommand<{target: User, reason?: string}>({
         const target = guild.members.cache.get(parsed.target.id);
 
         if (!target)
-            throw new IllegalArgumentError('kick', `${parsed.target} is not a valid GuildMember.`);
+            throw new IllegalArgumentError(data.name, `${parsed.target} is not a valid GuildMember.`);
         if (target.user.id === author(message).id)
-            throw new ActionOnSelfError('kick', 'target');
+            throw new ActionOnSelfError(data.name, 'target');
         if (!target.kickable)
-            throw new ActionUntakeableError('kick', `${target} too high in hierarchy, unable to kick.`);
+            throw new ActionUntakeableError(data.name, `${target} too high in hierarchy, unable to kick.`);
 
         const reason = parsed.reason || 'No reason provided.';
         await target.kick(reason);

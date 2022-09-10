@@ -22,7 +22,7 @@ export default createGuildOnlySlashCommand({
     aliases: ['q'],
     async execute(message) {
         const subscription = message.client.subscriptions.get(message.guild!.id);
-        if (!subscription) throw new QueueNonexistentError('queue');
+        if (!subscription) throw new QueueNonexistentError(data.name);
 
         // TODO: do something with this
         const current =

@@ -25,9 +25,9 @@ export default createGuildOnlySlashCommand({
         const subscription = message.client.subscriptions.get(message.guild!.id);
 
         if (!subscription)
-            throw new QueueNonexistentError('disconnect');
+            throw new QueueNonexistentError(data.name);
         if (!canModifyQueue(message.member))
-            throw new MemberNotInSameVCError('disconnect');
+            throw new MemberNotInSameVCError(data.name);
 
         subscription.voiceConnection.destroy();
         message.client.subscriptions.delete(message.guild!.id);

@@ -19,7 +19,7 @@ export default createSlashCommand<{emoji: string}>({
     data,
     examples: 'emoji 762731625498542091',
     async execute(message, parsed) {
-        const emoji = parseEmojiArg(parsed.emoji, 'emoji', 'emoji', message.client);
+        const emoji = parseEmojiArg(parsed.emoji, data.name, 'emoji', message.client);
 
         const emojiEmbed = requestedBy(author(message))
             .setTitle(emoji.name!)

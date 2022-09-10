@@ -18,7 +18,7 @@ export default createSlashCommand<{number: string}>({
         const { number } = parsed;
 
         if (isNaN(Number(number)))
-            throw new NumberConversionError('sigfig', 'number');
+            throw new NumberConversionError(data.name, 'number');
 
         // Since e is never significant, ignore it for the calculations and add it in at the end
         const [num, expt] = number.split('e');

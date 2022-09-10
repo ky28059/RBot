@@ -25,7 +25,7 @@ export default createSlashCommand<{comic?: number}>({
 
         // If num is invalid
         if (typeof num === 'number' && (num < 1 || num > max))
-            throw new IntegerRangeError('xkcd', 'comic', 1, max);
+            throw new IntegerRangeError(data.name, 'comic', 1, max);
 
         // If no number is specified, send a random comic
         if (!num) num = Math.ceil(Math.random() * max);

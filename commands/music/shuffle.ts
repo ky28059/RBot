@@ -24,9 +24,9 @@ export default createGuildOnlySlashCommand({
         const subscription = message.client.subscriptions.get(message.guild!.id);
 
         if (!subscription)
-            throw new QueueNonexistentError('shuffle');
+            throw new QueueNonexistentError(data.name);
         if (!canModifyQueue(message.member))
-            throw new MemberNotInSameVCError('shuffle');
+            throw new MemberNotInSameVCError(data.name);
 
         subscription.shuffle();
         await replyEmbed(message, shuffle());

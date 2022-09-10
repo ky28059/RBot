@@ -25,9 +25,9 @@ export default createGuildOnlySlashCommand({
         const subscription = message.client.subscriptions.get(message.guild!.id);
 
         if (!subscription)
-            throw new QueueNonexistentError('skip');
+            throw new QueueNonexistentError(data.name);
         if (!canModifyQueue(message.member))
-            throw new MemberNotInSameVCError('skip');
+            throw new MemberNotInSameVCError(data.name);
 
         subscription.next();
         await replyEmbed(message, skip());

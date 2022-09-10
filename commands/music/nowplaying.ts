@@ -21,7 +21,7 @@ export default createGuildOnlySlashCommand({
     aliases: ['np'],
     async execute(message) {
         const subscription = message.client.subscriptions.get(message.guild!.id);
-        if (!subscription) throw new QueueNonexistentError('nowplaying');
+        if (!subscription) throw new QueueNonexistentError(data.name);
 
         // If nothing is currently playing
         if (subscription.audioPlayer.state.status === AudioPlayerStatus.Idle)

@@ -25,9 +25,9 @@ export default createGuildOnlySlashCommand({
         const subscription = message.client.subscriptions.get(message.guild!.id);
 
         if (!subscription)
-            throw new QueueNonexistentError('loop');
+            throw new QueueNonexistentError(data.name);
         if (!canModifyQueue(message.member))
-            throw new MemberNotInSameVCError('loop');
+            throw new MemberNotInSameVCError(data.name);
 
         // Toggle the queue loop
         subscription.queueLoop = !subscription.queueLoop;

@@ -42,11 +42,11 @@ export default createGuildOnlySlashCommand<{target: User, reason?: string, days?
         const target = guild.members.cache.get(parsed.target.id);
 
         if (!target)
-            throw new IllegalArgumentError('ban', `${parsed.target} is not a valid GuildMember.`);
+            throw new IllegalArgumentError(data.name, `${parsed.target} is not a valid GuildMember.`);
         if (target.user.id === author(message).id)
-            throw new ActionOnSelfError('ban', 'target');
+            throw new ActionOnSelfError(data.name, 'target');
         if (!target.bannable)
-            throw new ActionUntakeableError('ban', `${target} too high in hierarchy, unable to ban.`);
+            throw new ActionUntakeableError(data.name, `${target} too high in hierarchy, unable to ban.`);
 
         const reason = parsed.reason ?? 'No reason provided.';
         const days = parsed.days ?? 0;

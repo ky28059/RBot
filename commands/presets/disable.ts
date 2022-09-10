@@ -32,7 +32,7 @@ export default createGuildOnlySlashCommand<{command: string}>({
         const client = message.client;
 
         if (command === 'disable' || command === 'enable')
-            throw new IllegalArgumentError('disable', `Cannot disable protected command \`${command}\`.`);
+            throw new IllegalArgumentError(data.name, `Cannot disable protected command \`${command}\`.`);
 
         const toDisable: string[] = [];
 
@@ -40,9 +40,9 @@ export default createGuildOnlySlashCommand<{command: string}>({
             || client.commands.find(c => !!c.aliases && c.aliases.includes(command));
 
         if (!cmd)
-            throw new IllegalArgumentError('disable', `Command \`${command}\` does not exist.`);
+            throw new IllegalArgumentError(data.name, `Command \`${command}\` does not exist.`);
         if (isInField(tag, 'disabled_commands', command))
-            throw new IllegalArgumentError('disable', `Command \`${command}\` is already disabled.`);
+            throw new IllegalArgumentError(data.name, `Command \`${command}\` is already disabled.`);
 
         // Add command and aliases to the disables array
         toDisable.push(cmd.name);

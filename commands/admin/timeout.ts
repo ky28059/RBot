@@ -39,14 +39,14 @@ export default createGuildOnlySlashCommand<{user: User, duration: string, reason
         const guild = message.guild!;
         const member = guild.members.cache.get(parsed.user.id);
 
-        const duration = parseDurationArg(parsed.duration, 'timeout', 'duration');
+        const duration = parseDurationArg(parsed.duration, data.name, 'duration');
 
         if (!member)
-            throw new IllegalArgumentError('timeout', '`member` must be a member of this server.');
+            throw new IllegalArgumentError(data.name, '`member` must be a member of this server.');
         if (parsed.user.id === author(message).id)
-            throw new ActionOnSelfError('timeout', 'target');
+            throw new ActionOnSelfError(data.name, 'target');
         if (!member.moderatable)
-            throw new ActionUntakeableError('timeout', `${parsed.user} too high in hierarchy, unable to timeout.`)
+            throw new ActionUntakeableError(data.name, `${parsed.user} too high in hierarchy, unable to timeout.`)
 
         const reason = parsed.reason ?? 'No reason provided.';
         await member.timeout(duration, reason);

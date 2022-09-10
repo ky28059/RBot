@@ -38,13 +38,13 @@ export default createGuildOnlySlashCommand<{url: string}>({
         const currChannel = message.guild!.members.me!.voice.channel;
 
         if (!channel)
-            throw new MemberNotInVCError('play');
+            throw new MemberNotInVCError(data.name);
         if (!channel.joinable)
-            throw new ActionUntakeableError('play', `Cannot connect to channel \`${channel.name}\`, missing permissions`);
+            throw new ActionUntakeableError(data.name, `Cannot connect to channel \`${channel.name}\`, missing permissions`);
         if (channel instanceof StageChannel || !channel.speakable)
-            throw new ActionUntakeableError('play', `Cannot speak in channel \`${channel.name}\`, missing permissions`);
+            throw new ActionUntakeableError(data.name, `Cannot speak in channel \`${channel.name}\`, missing permissions`);
         if (subscription && currChannel && channel !== currChannel)
-            throw new MusicAlreadyBoundError('play', currChannel, channel);
+            throw new MusicAlreadyBoundError(data.name, currChannel, channel);
 
         // If the subscription doesn't exist or if its VoiceConnection has been destroyed after a forced disconnect,
         // create a new subscription and VoiceConnection by joining the channel
