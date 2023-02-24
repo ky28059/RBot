@@ -19,7 +19,7 @@
     "mathjs": "^10.4.2",
     "moment": "^2.29.4",
     "node-fetch": "^2.6.7",
-    "sequelize": "^6.3.5",
+    "sequelize": "^6.29.0",
     "sqlite3": "^5.0.8",
     "ts-node": "^10.8.2",
     "typescript": "^4.8.2",
