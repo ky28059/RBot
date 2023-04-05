@@ -1,13 +1,13 @@
-import {createGuildOnlySlashCommand} from '../../utils/commands';
+import {createGuildOnlySlashCommand} from '../../util/commands';
 import {CommandInteraction, GuildMember, StageChannel} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 import {entersState, joinVoiceChannel, VoiceConnectionStatus} from '@discordjs/voice';
 
 // Utilities
-import {author, deferredReplyEmbed} from '../../utils/messageUtils';
-import {Track} from '../../utils/track';
-import {MusicSubscription} from '../../utils/subscription';
-import {err, nowPlaying, success} from '../../utils/messages';
+import {author, deferredReplyEmbed} from '../../util/messageUtils';
+import {Track} from '../../util/track';
+import {MusicSubscription} from '../../util/subscription';
+import {err, nowPlaying, success} from '../../util/messages';
 
 // Errors
 import MemberNotInVCError from '../../errors/MemberNotInVCError';

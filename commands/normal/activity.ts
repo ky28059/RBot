@@ -1,7 +1,7 @@
-import {createGuildOnlySlashCommand} from '../../utils/commands';
+import {createGuildOnlySlashCommand} from '../../util/commands';
 import {Channel, ChannelType, GuildPremiumTier, InviteTargetType, Snowflake} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
-import {reply} from '../../utils/messageUtils';
+import {reply} from '../../util/messageUtils';
 import PremiumTierRequiredError from '../../errors/PremiumTierRequiredError';
 import IllegalArgumentError from '../../errors/IllegalArgumentError';
 

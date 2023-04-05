@@ -1,11 +1,11 @@
-import {createSlashCommand} from '../../utils/commands';
+import {createSlashCommand} from '../../util/commands';
 import {EmbedBuilder} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 import fetch from 'node-fetch';
 
 // Utilities
-import {author, pagedMessage, splitMessage} from '../../utils/messageUtils';
-import {requestedBy} from '../../utils/messages';
+import {author, pagedMessage, splitMessage} from '../../util/messageUtils';
+import {requestedBy} from '../../util/messages';
 
 
 export const data = new SlashCommandBuilder()

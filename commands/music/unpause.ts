@@ -1,12 +1,12 @@
-import {createGuildOnlySlashCommand} from '../../utils/commands';
+import {createGuildOnlySlashCommand} from '../../util/commands';
 import {GuildMember} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 import {AudioPlayerStatus} from '@discordjs/voice';
 
 // Utils
-import { canModifyQueue } from '../../utils/canModifyQueue';
-import {replyEmbed} from '../../utils/messageUtils';
-import {unpause} from '../../utils/messages';
+import { canModifyQueue } from '../../util/canModifyQueue';
+import {replyEmbed} from '../../util/messageUtils';
+import {unpause} from '../../util/messages';
 
 // Errors
 import QueueNonexistentError from '../../errors/QueueNonexistentError';

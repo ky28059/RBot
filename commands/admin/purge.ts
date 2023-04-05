@@ -1,11 +1,11 @@
-import {createGuildOnlySlashCommand, createSlashCommand} from '../../utils/commands';
+import {createGuildOnlySlashCommand, createSlashCommand} from '../../util/commands';
 import {Message, User} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 import {PermissionFlagsBits} from 'discord-api-types/v10';
 
 // Utilities
-import {replyEmbed} from '../../utils/messageUtils';
-import {success} from '../../utils/messages';
+import {replyEmbed} from '../../util/messageUtils';
+import {success} from '../../util/messages';
 
 
 export const data = new SlashCommandBuilder()

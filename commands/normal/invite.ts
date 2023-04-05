@@ -1,8 +1,8 @@
-import {createSlashCommand} from '../../utils/commands';
+import {createSlashCommand} from '../../util/commands';
 import {OAuth2Scopes, PermissionsBitField} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
-import {replyEmbed} from '../../utils/messageUtils';
-import {success} from '../../utils/messages';
+import {replyEmbed} from '../../util/messageUtils';
+import {success} from '../../util/messages';
 
 
 export const data = new SlashCommandBuilder()

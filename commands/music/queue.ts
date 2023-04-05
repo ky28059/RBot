@@ -1,12 +1,12 @@
-import {createGuildOnlySlashCommand} from '../../utils/commands';
+import {createGuildOnlySlashCommand} from '../../util/commands';
 import {EmbedBuilder, escapeMarkdown} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 import {AudioPlayerStatus, AudioResource} from '@discordjs/voice';
-import {Track} from '../../utils/track';
+import {Track} from '../../util/track';
 
 // Utilities
-import {pagedMessage, replyEmbed, splitMessage} from '../../utils/messageUtils';
-import {success} from '../../utils/messages';
+import {pagedMessage, replyEmbed, splitMessage} from '../../util/messageUtils';
+import {success} from '../../util/messages';
 
 // Errors
 import QueueNonexistentError from '../../errors/QueueNonexistentError';

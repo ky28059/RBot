@@ -1,5 +1,5 @@
-import {createTextCommand} from '../../utils/commands';
-import {parseTextArgs} from '../../utils/argParser';
+import {createTextCommand} from '../../util/commands';
+import {parseTextArgs} from '../../util/argParser';
 
 
 export default createTextCommand<{pattern: string, args: string}>({

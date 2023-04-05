@@ -1,4 +1,4 @@
-import {createSlashCommand} from '../../utils/commands';
+import {createSlashCommand} from '../../util/commands';
 import {EmbedBuilder} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 import {URL} from 'url';
@@ -6,8 +6,8 @@ import fetch from 'node-fetch';
 import he from 'he';
 
 // Utils
-import {author, pagedMessage, reply, replyEmbed} from '../../utils/messageUtils';
-import {requestedBy, success} from "../../utils/messages";
+import {author, pagedMessage, reply, replyEmbed} from '../../util/messageUtils';
+import {requestedBy, success} from "../../util/messages";
 
 
 // The structure of the API response seems to be
