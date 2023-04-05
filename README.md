@@ -1,5 +1,5 @@
 # RBot
-An unreliable Discord moderator bot, built using Node.js and Discord.js 14!
+A generic Discord moderator bot, built using Node.js, TypeScript, and Discord.js 14!
 
 #### Invite link:
 https://discord.com/oauth2/authorize?client_id=684587440777986090&scope=bot+applications.commands&permissions=8
@@ -8,7 +8,7 @@ https://discord.com/oauth2/authorize?client_id=684587440777986090&scope=bot+appl
 `bot.ts` is the main program file, run by `npm start` to start the bot. To register new slash commands, use 
 `npm run registerSlashCommands`; see **Commands** for how RBot's dynamic command parsing works. 
 
-Utilities used by `bot.ts` and other commands are in `/utils`.
+Utilities used by `bot.ts` and other commands are in `/util`.
 
 RBot's commands are located in `/commands`, and are currently organized into 5 submodules:
 - `/commands/admin`: Basic moderator commands; purge, kick, ban, etc.
@@ -78,7 +78,7 @@ export default createTextCommand<{ name: string, user?: User }>({
 ```
 
 For slash commands, using the `SlashCommandBuilder`'s `.addStringOption`, `.addUserOption`, etc. methods will be automatically 
-parsed to an `argParser` pattern via the factory function.
+parsed to an `argParser` pattern by the factory function.
 ```ts
 // example.ts
 
