@@ -1,11 +1,11 @@
-import {createGuildOnlySlashCommand} from '../../utils/commands';
+import {createGuildOnlySlashCommand} from '../../util/commands';
 import {GuildMember} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 
 // Utilities
-import {replyEmbed} from '../../utils/messageUtils';
-import { canModifyQueue } from '../../utils/canModifyQueue';
-import {die} from '../../utils/messages';
+import {replyEmbed} from '../../util/messageUtils';
+import { canModifyQueue } from '../../util/canModifyQueue';
+import {die} from '../../util/messages';
 
 // Errors
 import QueueNonexistentError from '../../errors/QueueNonexistentError';

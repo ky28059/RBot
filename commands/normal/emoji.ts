@@ -1,10 +1,10 @@
-import {createSlashCommand} from '../../utils/commands';
+import {createSlashCommand} from '../../util/commands';
 import {SlashCommandBuilder} from '@discordjs/builders';
 
 // Utils
-import {parseEmojiArg} from '../../utils/argParser';
-import {author, replyEmbed} from '../../utils/messageUtils';
-import {requestedBy} from '../../utils/messages';
+import {parseEmojiArg} from '../../util/argParser';
+import {author, replyEmbed} from '../../util/messageUtils';
+import {requestedBy} from '../../util/messages';
 
 
 export const data = new SlashCommandBuilder()

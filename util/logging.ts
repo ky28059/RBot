@@ -7,6 +7,18 @@ type logOptions = {
     desc?: string,
     fields?: APIEmbedField[]
 };
+
+/**
+ * Logs an event to a guild's log channel.
+ * @param client - The instantiating `Client`.
+ * @param guild - The `Guild` to log to.
+ * @param id - The snowflake id of the guild's log channel.
+ * @param color - The color of the log embed.
+ * @param author - The author of the log embed.
+ * @param authorIcon - The author icon of the log embed.
+ * @param desc - The description of the log embed.
+ * @param fields - The fields of the log embed.
+ */
 export async function log(
     client: Client, guild: Guild, {id, color, author, authorIcon, desc, fields}: logOptions
 ) {

@@ -1,7 +1,7 @@
 import { REST } from '@discordjs/rest';
 import {RESTPostAPIApplicationCommandsJSONBody, Routes} from 'discord-api-types/v9';
 import { token } from './auth';
-import {forEachRawCommand, getSubmodules} from './utils/commands';
+import {forEachRawCommand, getSubmodules} from './util/commands';
 
 
 const commands: RESTPostAPIApplicationCommandsJSONBody[] = [];

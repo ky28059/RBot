@@ -1,6 +1,6 @@
-import {createTextCommand} from '../../utils/commands';
+import {createTextCommand} from '../../util/commands';
 import { create, all } from 'mathjs';
-import {requestedBy} from '../../utils/messages';
+import {requestedBy} from '../../util/messages';
 
 const config = { };
 const math = create(all, config);

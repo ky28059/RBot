@@ -1,43 +1,65 @@
 import {
     ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction,
-    EmbedBuilder, Message, MessageOptions,
+    EmbedBuilder, Message, MessageCreateOptions
 } from 'discord.js';
 import {err} from './messages';
 
 
-// Replies to a message or interaction.
-// TODO: `options.flags` are incompatible between messages and command interactions;
-// is there any fix beyond disallowing this property?
-export async function reply(target: Message | CommandInteraction, content: string | Omit<MessageOptions, 'flags'>) {
+/**
+ * Replies to a message or interaction.
+ * @param target - The `Message` or `CommandInteraction` to reply to.
+ * @param content - The content to reply to the target with. Either a text string or an object of message options.
+ */
+export async function reply(target: Message | CommandInteraction, content: string | Omit<MessageCreateOptions, 'flags'>) {
+    // TODO: `options.flags` are incompatible between messages and command interactions;
+    // is there any fix beyond disallowing this property?
     return target instanceof CommandInteraction
         ? target.reply({...(typeof content === 'string' ? {content} : content), fetchReply: true})
         : target.channel.send(content);
 }
 
-// Replies to a message or deferred interaction.
-// TODO: see TODO above.
-export async function deferredReply(target: Message | CommandInteraction, content: string | Omit<MessageOptions, 'flags'>) {
+/**
+ * Replies to a message or deferred interaction. See {@link reply}.
+ * @param target - The `Message` or `CommandInteraction` to reply to.
+ * @param content - The content to reply to the target with.
+ */
+export async function deferredReply(target: Message | CommandInteraction, content: string | Omit<MessageCreateOptions, 'flags'>) {
     return target instanceof CommandInteraction
         ? target.editReply({...(typeof content === 'string' ? {content} : content)})
         : target.channel.send(content);
 }
 
-// Replies to a message or interaction with the specified embed.
+/**
+ * Replies to a message or interaction with the given embed.
+ * @param target - The `Message` or `CommandInteraction` to reply to.
+ * @param embed - The message embed to reply with.
+ */
 export async function replyEmbed(target: Message | CommandInteraction, embed: EmbedBuilder) {
     return reply(target, {embeds: [embed]});
 }
 
-// Replies to a message or deferred interaction with the specified embed.
+/**
+ * Replies to a message or deferred interaction with the given embed. See {@link replyEmbed}.
+ * @param target - The `Message` or `CommandInteraction` to reply to.
+ * @param embed - The message embed to reply with.
+ */
 export async function deferredReplyEmbed(target: Message | CommandInteraction, embed: EmbedBuilder) {
     return deferredReply(target, {embeds: [embed]});
 }
 
-// Returns the author of a message or interaction.
+/**
+ * Gets the author of a message or interaction.
+ * @param target - The `Message` or `CommandInteraction` to get the author of.
+ */
 export function author(target: Message | CommandInteraction) {
     return target instanceof CommandInteraction ? target.user : target.author;
 }
 
-// Slices a string down to a set length.
+/**
+ * Truncates a string to a set length, appending a footer indicating how many characters were truncated (if any).
+ * @param str - The string to truncate.
+ * @param len - The length to truncate the string to.
+ */
 export function truncate(str: string, len: number) {
     if (str.length <= len) return str;
 
@@ -49,9 +71,18 @@ export function truncate(str: string, len: number) {
     return str.slice(0, len - truncated) + truncateMessage;
 }
 
-// Splits a string into chunks of no greater than `len` length at a designated character, optionally prepending
-// and appending a "continuation" string. See https://discord.js.org/#/docs/discord.js/v13/class/Util?scrollTo=s-splitMessage.
 type SplitMessageOpts = {len: number, char?: string, prepend?: string, append?: string};
+
+/**
+ * Splits a string into chunks of no greater than `len` length at a designated character, optionally prepending
+ * and appending a "continuation" string. See {@link https://discord.js.org/#/docs/discord.js/v13/class/Util?scrollTo=s-splitMessage discord.js 13's `Util.splitMessage`}.
+ *
+ * @param str - The string to split.
+ * @param len - The length of each chunk.
+ * @param char - The (optional) character to split the string at.
+ * @param prepend - The (optional) string to prepend to each chunk, excluding the first.
+ * @param append - The (optional) string to append to each chunk, excluding the last.
+ */
 export function splitMessage(str: string, {len, char = '', prepend = '', append = ''}: SplitMessageOpts) {
     const chunks: string[] = [];
 
@@ -75,7 +106,11 @@ export function splitMessage(str: string, {len, char = '', prepend = '', append 
     return chunks;
 }
 
-// Sends a multi-embed, paginated message.
+/**
+ * Replies to a message or interaction with a multi-embed, paginated message.
+ * @param target - The `Message` or `CommandInteraction` to reply to.
+ * @param pages - The pages of the message, represented by an array of embeds.
+ */
 export async function pagedMessage(target: Message | CommandInteraction, pages: EmbedBuilder[]) {
     if (!pages.length) return;
     if (pages.length === 1) return reply(target, {embeds: [pages[0]]});

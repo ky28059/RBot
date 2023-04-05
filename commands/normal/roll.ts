@@ -1,10 +1,9 @@
-import {createTextCommand} from '../../utils/commands';
-import {splitMessage} from '../../utils/messageUtils';
+import {createTextCommand} from '../../util/commands';
+import {splitMessage} from '../../util/messageUtils';
 
 // Errors
 import IntegerRangeError from '../../errors/IntegerRangeError';
 import IntegerConversionError from '../../errors/IntegerConversionError';
-
 
 
 export default createTextCommand<{sides?: string, dice?: string}>({

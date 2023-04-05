@@ -1,10 +1,10 @@
-import {createSlashCommand} from '../../utils/commands';
+import {createSlashCommand} from '../../util/commands';
 import {SlashCommandBuilder} from '@discordjs/builders';
 import fetch from 'node-fetch';
 
 // Utilities
-import {author, replyEmbed} from '../../utils/messageUtils';
-import {success} from '../../utils/messages';
+import {author, replyEmbed} from '../../util/messageUtils';
+import {success} from '../../util/messages';
 
 
 export const data = new SlashCommandBuilder()

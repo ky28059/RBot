@@ -1,13 +1,13 @@
-import {createGuildOnlySlashSubCommands} from '../../utils/commands';
+import {createGuildOnlySlashSubCommands} from '../../util/commands';
 import {Message, Role} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 import {PermissionFlagsBits} from 'discord-api-types/v10';
 
 // Utils
-import {isInField, addToField, removeFromField} from '../../utils/tokens';
-import {author, replyEmbed} from '../../utils/messageUtils';
-import {success} from '../../utils/messages';
-import {log} from '../../utils/logger';
+import {isInField, addToField, removeFromField} from '../../util/tokens';
+import {author, replyEmbed} from '../../util/messageUtils';
+import {success} from '../../util/messages';
+import {log} from '../../util/logging';
 
 // Errors
 import IllegalArgumentError from '../../errors/IllegalArgumentError';

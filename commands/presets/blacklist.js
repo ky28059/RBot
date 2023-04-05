@@ -1,6 +1,6 @@
-import {isInField, addToField, removeFromField} from '../../utils/tokens.ts';
-import {log} from '../../utils/logger.ts';
-import {success} from '../../utils/messages.js';
+import {isInField, addToField, removeFromField} from '../../util/tokens.ts';
+import {log} from '../../util/logging.ts';
+import {success} from '../../util/messages.js';
 
 // Errors
 import IllegalArgumentError from '../../errors/IllegalArgumentError.js';

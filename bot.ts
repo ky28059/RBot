@@ -3,15 +3,15 @@ import {Sequelize} from 'sequelize';
 import {ownerId, token} from './auth';
 
 // Utils
-import {parseSlashCommandArgs, parseTextArgs} from './utils/argParser';
-import {forEachRawCommand, getSubmodules} from './utils/commands';
+import {parseSlashCommandArgs, parseTextArgs} from './util/argParser';
+import {forEachRawCommand, getSubmodules} from './util/commands';
 import loadGuilds, {Guild as GuildPresets} from './models/Guild';
-import {log} from './utils/logger';
-import {isInField, update} from './utils/tokens';
-import {truncate} from './utils/messageUtils';
+import {log} from './util/logging';
+import {isInField, update} from './util/tokens';
+import {truncate} from './util/messageUtils';
 
 // Messages
-import {err} from './utils/messages';
+import {err} from './util/messages';
 import CommandError from './errors/CommandError';
 
 
@@ -73,7 +73,7 @@ client.on('guildCreate', async (guild) => {
 client.on('messageCreate', async (message) => {
     if (message.author.bot) return; // Bot ignores itself and other bots
 
-    if (message.channel.isDMBased()) { // DM forwarding
+    if (!message.inGuild()) { // DM forwarding
         const dmEmbed = new EmbedBuilder()
             .setColor(0x7f0000)
             .setAuthor({name: message.author.tag, iconURL: message.author.displayAvatarURL()})
@@ -106,7 +106,7 @@ client.on('messageCreate', async (message) => {
         if (!command) return;
 
         // List of conditions to check before executing command
-        if (command.guildOnly && message.channel.isDMBased()) {
+        if (command.guildOnly && !message.inGuild()) {
             const embed = err('DM_ERROR', 'Guild only command cannot be executed inside DMs');
             await message.reply({embeds: [embed]}).catch();
             return;
@@ -167,7 +167,7 @@ client.on('interactionCreate', async (interaction) => {
     }
 
     // List of conditions to check before executing command
-    if (command.guildOnly && interaction.channel!.isDMBased()) {
+    if (command.guildOnly && !interaction.inGuild()) {
         const embed = err('DM_ERROR', 'Guild only command cannot be executed inside DMs');
         await interaction.reply({embeds: [embed]}).catch();
         return;
@@ -238,7 +238,7 @@ client.on('interactionCreate', async (interaction) => {
 
 // Bot logs the following events:
 
-client.on('messageDelete', async message => {
+client.on('messageDelete', async (message) => {
     if (!message.guild) return; // Ignore DMs
     if (message.author?.bot) return; // Ignore other bots
 
@@ -260,7 +260,7 @@ client.on('messageDelete', async message => {
     });
 });
 
-client.on('messageDeleteBulk', async messages => {
+client.on('messageDeleteBulk', async (messages) => {
     const first = messages.first()!;
     const guild = first.guild!;
     const tag = (await GuildPresets.findOne({ where: { guildID: guild.id } }))!;

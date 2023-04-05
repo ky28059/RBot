@@ -1,9 +1,9 @@
-import {createSlashCommand} from '../../utils/commands';
+import {createSlashCommand} from '../../util/commands';
 import {SlashCommandBuilder} from '@discordjs/builders';
 
 // Utilities
-import {author, replyEmbed} from '../../utils/messageUtils';
-import {requestedBy} from '../../utils/messages';
+import {author, replyEmbed} from '../../util/messageUtils';
+import {requestedBy} from '../../util/messages';
 
 // Errors
 import IllegalArgumentError from '../../errors/IllegalArgumentError';

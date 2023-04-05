@@ -1,11 +1,11 @@
-import {createSlashCommand} from '../../utils/commands';
+import {createSlashCommand} from '../../util/commands';
 import {AttachmentBuilder, escapeMarkdown} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 import fetch from 'node-fetch';
 
 // Utilities
-import {author, reply, replyEmbed} from '../../utils/messageUtils';
-import {requestedBy, success} from '../../utils/messages';
+import {author, reply, replyEmbed} from '../../util/messageUtils';
+import {requestedBy, success} from '../../util/messages';
 
 
 export const data = new SlashCommandBuilder()

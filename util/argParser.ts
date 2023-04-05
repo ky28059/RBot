@@ -2,8 +2,8 @@ import {ApplicationCommandOptionType, Client, CommandInteractionOption, Guild} f
 
 // Errors
 import MissingArgumentError from '../errors/MissingArgumentError';
-import IntegerRangeError from "../errors/IntegerRangeError";
-import IntegerConversionError from "../errors/IntegerConversionError";
+import IntegerRangeError from '../errors/IntegerRangeError';
+import IntegerConversionError from '../errors/IntegerConversionError';
 import ChannelConversionError from '../errors/ChannelConversionError';
 import UserConversionError from '../errors/UserConversionError';
 import RoleConversionError from '../errors/RoleConversionError';
@@ -20,8 +20,17 @@ const emojiRegex = /^<a?:\w+:(\d+)>$/;
 const timeRegex = /(?:(\d+)\s*d(?:ays?)?)?\s*(?:(\d+)\s*h(?:(?:ou)?rs?)?)?\s*(?:(\d+)\s*m(?:in(?:ute)?s?)?)?\s*(?:(\d+)\s*s(?:ec(?:ond)?s?)?)?/i;
 
 
-// Parses an `argString` into command arguments for the given `ParserCommand`. Throws conversion errors if an
-// argument is of the wrong type, and `MissingArgumentError`s if a required argument is missing.
+/**
+ * Parses an `argString` into command arguments for the given `ParserCommand`. Throws conversion errors if an
+ * argument is of the wrong type, and a `MissingArgumentError` if a required argument is missing.
+ *
+ * @param commandName - The name of the command to parse arguments for.
+ * @param pattern - The argument pattern to use when parsing.
+ * @param argString - The raw string of user-provided arguments to parse.
+ * @param client - The instantiating `Client`.
+ * @param guild - The `Guild`, if present, the command was invoked in.
+ * @returns The parsed arguments, as an object mapping `{argName: value}`.
+ */
 export function parseTextArgs(commandName: string, pattern: string | undefined, argString: string, client: Client, guild: Guild | null) {
     const parsed: any = {};
     let index = 0; // Current index in the string for <Rest> patterns
@@ -95,7 +104,11 @@ export function parseTextArgs(commandName: string, pattern: string | undefined, 
     return parsed;
 }
 
-// Converts a `CommandInteractionOption[]` from a `CommandInteraction` into an argParser object.
+/**
+ * Converts a `CommandInteractionOption[]` from a `CommandInteraction` into an argParser object.
+ * @param options - The `CommandInteraction` options to convert.
+ * @returns The parsed arguments, as an object mapping `{argName: value}`.
+ */
 export function parseSlashCommandArgs(options: readonly CommandInteractionOption[]) {
     const parsed: any = {};
     for (const option of options) {
@@ -130,8 +143,24 @@ function matchSingular(props: FieldProps) {
     }
 }
 
-// Parses a string argument as an integer, erroring if the argument is not a number or if it isn't an integer.
-// Returns the parsed integer as a `number`.
+/**
+ * Parses a string argument as an integer, erroring if the argument is not a number, not an integer, or not within
+ * the required range.
+ *
+ * @param arg - The string argument to parse.
+ * @param commandName - The name of the invoking command.
+ * @param argName - The name of the argument to parse for.
+ * @param rangeFrom - The (optional) min value of the integer.
+ * @param rangeTo - The (optional) max value of the integer.
+ * @param repeating - Whether this is a repeating field.
+ * @returns The parsed integer as a `number`.
+ *
+ * @throws {@link IntegerConversionError}
+ * if the argument is not an integer (NaN or a decimal value).
+ *
+ * @throws {@link IntegerRangeError}
+ * if a min and max value is provided and the argument does not fall within that range.
+ */
 export function parseIntegerArg(arg: string, commandName: string, argName: string, rangeFrom?: string, rangeTo?: string, repeating?: boolean) {
     const num = Number(arg);
     if (isNaN(num) || num % 1 !== 0)
@@ -141,8 +170,19 @@ export function parseIntegerArg(arg: string, commandName: string, argName: strin
     return num;
 }
 
-// Parses a string argument as a `User`, erroring if the argument is not a user mention or id.
-// Returns the parsed `User`.
+/**
+ * Parses a string argument as a `User`, erroring if the argument is not a user mention or id.
+ *
+ * @param arg - The string argument to parse.
+ * @param commandName - The name of the invoking command.
+ * @param argName - The name of the argument to parse for.
+ * @param client - The instantiating `Client`.
+ * @param repeating - Whether this is a repeating field.
+ * @returns The parsed `User`.
+ *
+ * @throws {@link UserConversionError}
+ * if the argument is not parseable as a `User`.
+ */
 export function parseUserArg(arg: string, commandName: string, argName: string, client: Client, repeating?: boolean) {
     const userID = arg.match(mentionRegex)?.[1] ?? arg;
     const user = client.users.cache.get(userID);
@@ -150,8 +190,19 @@ export function parseUserArg(arg: string, commandName: string, argName: string, 
     return user;
 }
 
-// Parses a string argument as a `Channel`, erroring if the argument is not a channel mention or id.
-// Returns the parsed `Channel`.
+/**
+ * Parses a string argument as a `Channel`, erroring if the argument is not a channel mention or id.
+ *
+ * @param arg - The string argument to parse.
+ * @param commandName - The name of the invoking command.
+ * @param argName - The name of the argument to parse for.
+ * @param client - The instantiating `Client`.
+ * @param repeating - Whether this is a repeating field.
+ * @returns The parsed `Channel`.
+ *
+ * @throws {@link ChannelConversionError}
+ * if the argument is not parseable as a `Channel`.
+ */
 export function parseChannelArg(arg: string, commandName: string, argName: string, client: Client, repeating?: boolean) {
     const channelID = arg.match(channelRegex)?.[1] ?? arg;
     const channel = client.channels.cache.get(channelID);
@@ -159,8 +210,19 @@ export function parseChannelArg(arg: string, commandName: string, argName: strin
     return channel;
 }
 
-// Parses a string argument as a `Role`, erroring if the argument is not a role mention or id.
-// Returns the parsed `Role`.
+/**
+ * Parses a string argument as a `Role`, erroring if the argument is not a role mention or id.
+ *
+ * @param arg - The string argument to parse.
+ * @param commandName - The name of the invoking command.
+ * @param argName - The name of the argument to parse for.
+ * @param guild - The guild to fetch roles from.
+ * @param repeating - Whether this is a repeating field.
+ * @returns The parsed `Role`.
+ *
+ * @throws {@link RoleConversionError}
+ * if the argument is not parseable as a `Role`.
+ */
 export function parseRoleArg(arg: string, commandName: string, argName: string, guild: Guild | null, repeating?: boolean) {
     if (!guild) return;
     const roleID = arg.match(roleRegex)?.[1] ?? arg;
@@ -169,8 +231,19 @@ export function parseRoleArg(arg: string, commandName: string, argName: string, 
     return role;
 }
 
-// Parses a string argument as a `GuildEmoji`, erroring if the argument is not an emoji or emoji id.
-// Returns the parsed `GuildEmoji`.
+/**
+ * Parses a string argument as a `GuildEmoji`, erroring if the argument is not an emoji or emoji id.
+ *
+ * @param arg - The string argument to parse.
+ * @param commandName - The name of the invoking command.
+ * @param argName - The name of the argument to parse for.
+ * @param client - The instantiating `Client`.
+ * @param repeating - Whether this is a repeating field.
+ * @returns The parsed `GuildEmoji`.
+ *
+ * @throws {@link EmojiConversionError}
+ * if the argument is not parseable as a `GuildEmoji`.
+ */
 export function parseEmojiArg(arg: string, commandName: string, argName: string, client: Client, repeating?: boolean) {
     const emojiID = arg.match(emojiRegex)?.[1] ?? arg;
     const emoji = client.emojis.cache.get(emojiID);
@@ -178,8 +251,18 @@ export function parseEmojiArg(arg: string, commandName: string, argName: string,
     return emoji;
 }
 
-// Parses a string argument as a duration, matching it against the `timeRegex` and erroring if the match failed.
-// Returns the duration, in milliseconds, as a `number`.
+/**
+ * Parses a string argument as a duration, matching it against the `timeRegex` and erroring if the match failed.
+ *
+ * @param arg - The string argument to parse.
+ * @param commandName - The name of the invoking command.
+ * @param argName - The name of the argument to parse for.
+ * @param repeating - Whether this is a repeating field.
+ * @returns The parsed duration, in milliseconds, as a `number`.
+ *
+ * @throws {@link DurationConversionError}
+ * if the argument is not parseable as a duration.
+ */
 export function parseDurationArg(arg: string, commandName: string, argName: string, repeating?: boolean) {
     const match = arg.match(timeRegex);
     if (!match?.[0]) throw new DurationConversionError(commandName, argName, repeating);

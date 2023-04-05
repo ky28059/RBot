@@ -1,10 +1,10 @@
-import {createSlashCommand} from '../../utils/commands';
+import {createSlashCommand} from '../../util/commands';
 import {User} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 
 // Utils
-import {author, replyEmbed} from '../../utils/messageUtils';
-import {requestedBy} from '../../utils/messages';
+import {author, replyEmbed} from '../../util/messageUtils';
+import {requestedBy} from '../../util/messages';
 
 
 export const data = new SlashCommandBuilder()
@@ -19,7 +19,7 @@ export default createSlashCommand<{user?: User}>({
     async execute(message, parsed) {
         const avatarTarget = parsed.user ?? author(message);
         const avatarEmbed = requestedBy(author(message))
-            .setTitle(avatarTarget.username)
+            .setAuthor({name: avatarTarget.username, iconURL: avatarTarget.displayAvatarURL()})
             .setImage(avatarTarget.displayAvatarURL({size: 4096}));
         await replyEmbed(message, avatarEmbed);
     }

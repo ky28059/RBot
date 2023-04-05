@@ -1,6 +1,6 @@
-import {createSlashCommand} from '../../utils/commands';
+import {createSlashCommand} from '../../util/commands';
 import {SlashCommandBuilder} from '@discordjs/builders';
-import {reply} from '../../utils/messageUtils';
+import {reply} from '../../util/messageUtils';
 import NumberConversionError from '../../errors/NumberConversionError';
 
 

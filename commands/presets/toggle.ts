@@ -1,5 +1,5 @@
-import {createGuildOnlyTextCommand} from '../../utils/commands';
-import {success} from '../../utils/messages';
+import {createGuildOnlyTextCommand} from '../../util/commands';
+import {success} from '../../util/messages';
 
 import IllegalArgumentError from '../../errors/IllegalArgumentError';
 

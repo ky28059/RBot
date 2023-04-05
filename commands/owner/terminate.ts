@@ -1,5 +1,5 @@
-import {createTextCommand} from '../../utils/commands';
-import {success} from '../../utils/messages';
+import {createTextCommand} from '../../util/commands';
+import {success} from '../../util/messages';
 
 
 export default createTextCommand({

@@ -1,12 +1,12 @@
-import {createGuildOnlySlashCommand} from '../../utils/commands';
+import {createGuildOnlySlashCommand} from '../../util/commands';
 import {User} from 'discord.js';
 import {SlashCommandBuilder} from '@discordjs/builders';
 import {PermissionFlagsBits} from 'discord-api-types/v10';
 
 // Utilities
-import {log} from '../../utils/logger';
-import {author, replyEmbed} from '../../utils/messageUtils';
-import {success} from '../../utils/messages';
+import {log} from '../../util/logging';
+import {author, replyEmbed} from '../../util/messageUtils';
+import {success} from '../../util/messages';
 
 // Errors
 import IllegalArgumentError from '../../errors/IllegalArgumentError';

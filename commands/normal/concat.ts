@@ -1,4 +1,4 @@
-import {createTextCommand} from '../../utils/commands';
+import {createTextCommand} from '../../util/commands';
 
 
 export default createTextCommand<{args: string[]}>({

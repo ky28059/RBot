@@ -1,12 +1,12 @@
 import { MessageEmbed } from 'discord.js';
-import { play } from '../utils/play.js';
+import { play } from '../util/play.js';
 import { youtubeAPIKey } from '../../auth.js';
 
 import YouTubeAPI from 'simple-youtube-api';
 const youtube = new YouTubeAPI(youtubeAPIKey);
 //import scdl from 'soundcloud-downloader';
 
-import {success} from '../../utils/messages.js';
+import {success} from '../../util/messages.js';
 
 // Errors
 import MemberNotInVCError from '../../errors/MemberNotInVCError.js';
